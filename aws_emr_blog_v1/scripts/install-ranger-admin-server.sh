@@ -13,9 +13,7 @@ ldap_admin_password=$7
 ldap_bind_password=$8
 ldap_default_user_password=$9
 
-if [ "$ranger_version" == "2.2" ]; then
-   ranger_download_version=2.2.0-SNAPSHOT
-elif [ "$ranger_version" == "2.0" ]; then
+if [ "$ranger_version" == "2.0" ]; then
    ranger_download_version=2.1.0-SNAPSHOT
 elif [ "$ranger_version" == "1.0" ]; then
    ranger_download_version=1.1.0

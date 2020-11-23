@@ -16,15 +16,10 @@ s3bucket=$3
 ranger_version=$2
 ranger_fqdn=$1
 emr_version=$4
-presto_engine=$5
 
 ranger_download_version=0.5
-if [[ ("$ranger_version" == "2.0" || "$ranger_version" == "2.2") ]]; then
-  if [ "$presto_engine" == "PrestoSQL" ]; then
-    ranger_download_version=2.2.0-SNAPSHOT
-  else
-    ranger_download_version=2.1.0-SNAPSHOT
-  fi
+if [ "$ranger_version" == "2.0" ]; then
+   ranger_download_version=2.1.0-SNAPSHOT
 elif [ "$ranger_version" == "1.0" ]; then
    ranger_download_version=1.2.1-SNAPSHOT
 elif [ "$ranger_version" == "0.7" ]; then
@@ -35,21 +30,13 @@ else
    ranger_download_version=0.5
 fi
 
-engine_name=prestodb
-emr_release_version_regex="^(emr-5.30*|emr-6.*)"
-if [[ "$emr_version" =~ $emr_release_version_regex ]]; then
+ranger_s3bucket=$s3bucket/ranger/ranger-$ranger_download_version
+if [ "$emr_version" == "emr-5.30.0" ]; then
     ranger_presto_plugin=ranger-$ranger_download_version-prestodb-plugin-presto232
   else
     ranger_presto_plugin=ranger-$ranger_download_version-prestodb-plugin
 fi
 
-emr_release_version_regex="^(emr-6.*)"
-if [[ ("$emr_version" =~ $emr_release_version_regex && "$presto_engine" == "PrestoSQL") ]]; then
-  ranger_presto_plugin=ranger-$ranger_download_version-presto-plugin
-  engine_name=presto
-fi
-
-ranger_s3bucket=$s3bucket/ranger/ranger-$ranger_download_version
 
 #Setup
 sudo rm -rf $installpath/$ranger_presto_plugin
@@ -84,7 +71,7 @@ echo "XAAUDIT.SUMMARY.ENABLE=true" | sudo tee -a install.properties
 sudo mkdir -p /usr/presto/etc/
 sudo ln -s /etc/presto/conf/ /usr/presto/conf/ || true
 sudo ln -s /usr/lib/presto/ /usr/presto/ || true
-sudo -E bash enable-$engine_name-plugin.sh
+sudo -E bash enable-prestodb-plugin.sh
 
 sudo cp /usr/presto/etc/access-control.properties /usr/lib/presto/etc/
 sudo cp -r /usr/presto/plugin/ranger /usr/lib/presto/plugin/
@@ -95,10 +82,10 @@ sudo aws s3 cp $ranger_s3bucket/jdom-1.1.3.jar /usr/lib/presto/plugin/ranger/ --
 sudo aws s3 cp $ranger_s3bucket/rome-0.9.jar /usr/lib/presto/plugin/ranger/ --region us-east-1
 sudo aws s3 cp $ranger_s3bucket/javax.mail-api-1.6.0.jar /usr/lib/presto/plugin/ranger/ --region us-east-1
 
-sudo ln -s /usr/lib/presto/plugin/ranger/ranger-$engine_name-plugin-impl/conf /usr/lib/presto/plugin/ranger/ || true
+sudo ln -s /usr/lib/presto/plugin/ranger/ranger-prestodb-plugin-impl/conf /usr/lib/presto/plugin/ranger/ || true
 
 ## Added for hive integration
-sudo sed -i "s|ranger_host|$ranger_fqdn|g" /usr/lib/presto/plugin/ranger/conf/ranger-hive-*.xml || true
+sudo sed -i "s|ranger_host|$ranger_fqdn|g" /usr/lib/presto/plugin/ranger/conf/ranger-hive-*.xml
 #sudo ln -s /etc/hive/conf.dist/ranger-hive-security.xml /usr/lib/presto/plugin/ranger/conf/ranger-hive-security.xml || true
 #sudo ln -s /etc/hive/conf.dist/ranger-hive-audit.xml /usr/lib/presto/plugin/ranger/conf/ranger-hive-audit.xml || true
 
