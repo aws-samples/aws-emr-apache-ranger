@@ -1,0 +1,22 @@
+{
+"policyName": "Analyst1Policy",
+"resourceName": "/user/analyst1,/tmp/",
+"description": "Home",
+"repositoryName": "hadoopdev",
+"repositoryType": "hdfs",
+"isEnabled": "true",
+"isRecursive": true,
+"isAuditEnabled": true,
+"permMapList": [ 
+{
+ "userList": [
+ "analyst1"
+ ],
+ "permList": [
+ "read",
+ "write",
+ "execute"
+ ]
+ }
+]
+}

@@ -1,0 +1,18 @@
+{
+ "name": "hadoopdev",
+ "description": "Create HDFS Repo using CURL",
+ "repositoryType": "hdfs",
+"config": "{
+ \"username\": \"policymgr\",
+ \"password\": \"policymgr\",
+ \"fs.default.name\": \"hdfs://emr_masternode:8020\",
+ \"hadoop.security.authorization\": \"true\",
+ \"hadoop.security.authentication\": \"simple\",
+ \"hadoop.security.auth_to_local\": \"\",
+ \"dfs.datanode.kerberos.principal\": \"\",
+ \"dfs.namenode.kerberos.principal\": \"\",
+ \"dfs.secondary.namenode.kerberos.principal\": \"\",
+ \"commonNameForCertificate\": \"\"
+ }",
+"isActive": true
+}

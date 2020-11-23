@@ -1,0 +1,12 @@
+ {
+"name": "hbasedev",
+ "description": "HBase Dev Repo",
+ "repositoryType": "HBase",
+"config": "{
+ \"username\": \"policymgr_hbase\",
+ \"password\": \"policymgr_hbase\",
+ \"hbase.zookeeper.quorum\": \"emr_masternode\",
+ \"commonNameForCertificate\": \"\"
+ }",
+"isActive": true
+}

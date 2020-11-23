@@ -1,0 +1,22 @@
+{
+"policyName": "user-access",
+"resourceName": "/user/{USER},/var/log/{USER},/tmp/{USER}",
+"description": "Home",
+"repositoryName": "hadoopdev",
+"repositoryType": "hdfs",
+"isEnabled": "true",
+"isRecursive": true,
+"isAuditEnabled": true,
+"permMapList": [ 
+{
+ "userList": [
+ "{USER}"
+ ],
+ "permList": [
+ "read",
+ "write",
+ "execute"
+ ]
+ }
+]
+}

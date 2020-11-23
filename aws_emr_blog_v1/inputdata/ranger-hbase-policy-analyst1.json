@@ -1,0 +1,25 @@
+{
+ "policyName": "Analyst1Policy",
+ "tables": "hbase_tblanalyst1",
+ "columnFamilies" : "analyst1",
+ "columns": "*",
+ "description": "HBase Policy",
+ "repositoryName": "hbasedev",
+ "repositoryType": "hbase",
+ "tableType": "Inclusion",
+ "columnType": "Inclusion",
+ "isEnabled": true,
+ "isAuditEnabled": true,
+ "permMapList": [
+ {
+ "userList": [
+ "analyst1"
+ ],
+ "permList": [
+ "Read",
+ "Write",
+ "Admin"
+ ]
+ }
+ ]
+}

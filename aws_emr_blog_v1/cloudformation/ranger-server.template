@@ -1,0 +1,338 @@
+Description: Sample CloudFormation template for creating an EMR cluster
+Parameters:
+  VPC:
+    Description: VPC ID for creating the EMR cluster
+    Type: AWS::EC2::VPC::Id
+  VPCCidrBlock:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Default: 10.0.0.0/16
+    Description: VPC CIDR Block (eg 10.0.0.0/16)
+    Type: String
+  Subnet:
+    Description: Subnet ID for creating the EMR cluster
+    Type: AWS::EC2::Subnet::Id
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH to the instances
+    Type: AWS::EC2::KeyPair::KeyName
+  InstanceType:
+    Description: Instance type of the Ranger Server
+    Type: String
+    Default: m5.xlarge
+    AllowedValues:
+      - t1.micro
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - m1.small
+      - m1.medium
+      - m1.large
+      - m1.xlarge
+      - m2.xlarge
+      - m2.2xlarge
+      - m2.4xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m4.10xlarge
+      - c1.medium
+      - c1.xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - g2.2xlarge
+      - g2.8xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+      - d2.xlarge
+      - d2.2xlarge
+      - d2.4xlarge
+      - d2.8xlarge
+      - hi1.4xlarge
+      - hs1.8xlarge
+      - cr1.8xlarge
+      - cc2.8xlarge
+      - cg1.4xlarge
+      - m5.xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  myDirectoryIPAddress:
+    Description: IP Address of the SimpleAD server
+    Type: String
+  myDirectoryBaseDN:
+    Description: Base DN SimpleAD server
+    Type: String
+    Default: dc=corp,dc=emr,dc=local
+    AllowedValues:
+      - dc=corp,dc=emr,dc=local
+  myDirectoryBindUser:
+    Description: BindUser SimpleAD server
+    Type: String
+    Default: binduser@corp.emr.local
+    AllowedValues:
+      - binduser@corp.emr.local
+  myDirectoryAdminPassword:
+    Description: Admin Password used to setup SimpleAD server
+    Type: String
+    NoEcho: true
+  myDirectoryBindPassword:
+    Description: BindPassword SimpleAD server
+    Type: String
+    NoEcho: true
+  myDirectoryDefaultUserPassword:
+    Description: Default Password for all users created in the SimpleAD server
+    Type: String
+    NoEcho: true
+  rangerVersion:
+    Description: RangerVersion
+    Type: String
+    Default: '0.7'
+    AllowedValues:
+      - '0.6'
+      - '0.7'
+      - '1.0'
+      - '2.0'
+  s3artifactsRepoHttp:
+    Default: https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger
+    Description: Git Repo URL for this blog.
+    Type: String
+Mappings:
+  AWSInstanceType2Arch:
+    t1.micro:
+      Arch: PV64
+    t2.nano:
+      Arch: HVM64
+    t2.micro:
+      Arch: HVM64
+    t2.small:
+      Arch: HVM64
+    t2.medium:
+      Arch: HVM64
+    t2.large:
+      Arch: HVM64
+    m3.medium:
+      Arch: HVM64
+    m3.large:
+      Arch: HVM64
+    m3.xlarge:
+      Arch: HVM64
+    m3.2xlarge:
+      Arch: HVM64
+    m4.large:
+      Arch: HVM64
+    m4.xlarge:
+      Arch: HVM64
+    m4.2xlarge:
+      Arch: HVM64
+    m4.4xlarge:
+      Arch: HVM64
+    m4.10xlarge:
+      Arch: HVM64
+    c1.medium:
+      Arch: PV64
+    c1.xlarge:
+      Arch: PV64
+    c3.large:
+      Arch: HVM64
+    c3.xlarge:
+      Arch: HVM64
+    c3.2xlarge:
+      Arch: HVM64
+    c3.4xlarge:
+      Arch: HVM64
+    c3.8xlarge:
+      Arch: HVM64
+    c4.large:
+      Arch: HVM64
+    c4.xlarge:
+      Arch: HVM64
+    c4.2xlarge:
+      Arch: HVM64
+    c4.4xlarge:
+      Arch: HVM64
+    c4.8xlarge:
+      Arch: HVM64
+    r3.large:
+      Arch: HVM64
+    r3.xlarge:
+      Arch: HVM64
+    r3.2xlarge:
+      Arch: HVM64
+    r3.4xlarge:
+      Arch: HVM64
+    r3.8xlarge:
+      Arch: HVM64
+    i2.xlarge:
+      Arch: HVM64
+    i2.2xlarge:
+      Arch: HVM64
+    i2.4xlarge:
+      Arch: HVM64
+    i2.8xlarge:
+      Arch: HVM64
+    d2.xlarge:
+      Arch: HVM64
+    d2.2xlarge:
+      Arch: HVM64
+    d2.4xlarge:
+      Arch: HVM64
+    d2.8xlarge:
+      Arch: HVM64
+    hi1.4xlarge:
+      Arch: HVM64
+    hs1.8xlarge:
+      Arch: HVM64
+    cr1.8xlarge:
+      Arch: HVM64
+    cc2.8xlarge:
+      Arch: HVM64
+    r5.xlarge:
+      Arch: HVM64
+    r5.2xlarge:
+      Arch: HVM64
+    r5.4xlarge:
+      Arch: HVM64
+  AWSRegionArch2AMI:
+    us-east-1:
+      PV64: ami-0023040df18933030
+      HVM64: ami-0915e09cc7ceee3ab
+    us-east-2:
+      PV64: ami-0ea2bc03f34d1ada4
+      HVM64: ami-097834fcb3081f51a
+    us-west-2:
+      PV64: ami-00cb981adfcebb519
+      HVM64: ami-01f08ef3e76b957e5
+    us-west-1:
+      PV64: ami-0027eed75be6f3bf4
+      HVM64: ami-014743cb7690ea737
+    eu-west-1:
+      PV64: ami-00b6370b096f24de2
+      HVM64: ami-00890f614e48ce866
+    eu-central-1:
+      PV64: ami-0001160eb97d88825
+      HVM64: ami-03ab4e8f1d88ce614
+    ap-northeast-1:
+      PV64: ami-0095079896fca4cca
+      HVM64: ami-0318ecd6d05daa212
+    ap-northeast-2:
+      PV64: NOT_SUPPORTED
+      HVM64: ami-09391a0ad9f9243b6
+    ap-southeast-1:
+      PV64: ami-021f73ba029345fb1
+      HVM64: ami-0dff4318d85149d5d
+    ap-southeast-2:
+      PV64: ami-01c6bf0aeb3c63052
+      HVM64: ami-050e1ec030abb8dde
+    sa-east-1:
+      PV64: ami-0015527da78932f76
+      HVM64: ami-03e1e4abf50e14ded
+    cn-north-1:
+      PV64: ami-7f84361b
+      HVM64: ami-021321e9bc16d5186
+Resources:
+  sgRangerAdminServer:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Open Up all Ranger Server ports
+      VpcId: !Ref 'VPC'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '6080'
+          ToPort: '6080'
+          CidrIp: !Ref VPCCidrBlock
+        - IpProtocol: tcp
+          FromPort: '8983'
+          ToPort: '8983'
+          CidrIp: !Ref VPCCidrBlock
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: !Ref VPCCidrBlock
+  myEC2:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          InstallRangerServer:
+            - RangerServer
+        RangerServer:
+          commands:
+            installrangerserver:
+              command: !Join
+                - ''
+                - - 'bash /home/ec2-user/install-ranger-admin-server.sh '
+                  - !Ref 'myDirectoryIPAddress'
+                  - ' '
+                  - !Ref 'myDirectoryBaseDN'
+                  - ' '
+                  - !Ref 'myDirectoryBindUser'
+                  - ' '
+                  - !Ref 'myDirectoryBindPassword'
+                  - ' '
+                  - !Ref 'rangerVersion'
+                  - ' '
+                  - !Ref 's3artifactsRepoHttp'
+                  - ' '
+                  - !Ref 'myDirectoryAdminPassword'
+                  - ' '
+                  - !Ref 'myDirectoryBindPassword'
+                  - ' '
+                  - !Ref 'myDirectoryDefaultUserPassword'
+                  - " > create-ranger-server-output.log \n"
+    Properties:
+      SubnetId: !Ref 'Subnet'
+      SecurityGroupIds:
+        - !Ref 'sgRangerAdminServer'
+      ImageId: !FindInMap
+        - AWSRegionArch2AMI
+        - !Ref 'AWS::Region'
+        - !FindInMap
+          - AWSInstanceType2Arch
+          - !Ref 'InstanceType'
+          - Arch
+      InstanceType: !Ref 'InstanceType'
+      KeyName: !Ref 'KeyName'
+      UserData: !Base64
+        Fn::Join:
+          - ''
+          - - "#!/bin/bash\n"
+            - "cd /home/ec2-user/\n"
+            - 'wget '
+            - !Ref 's3artifactsRepoHttp'
+            - "/scripts/install-ranger-admin-server.sh\n"
+            - "yum update aws-cfn-bootstrap\n"
+            - "# Install the files and packages from the metadata\n"
+            - '/opt/aws/bin/cfn-init '
+            - '         --stack '
+            - !Ref 'AWS::StackName'
+            - '         --resource myEC2 '
+            - '         --configsets InstallRangerServer '
+            - '         --region '
+            - !Ref 'AWS::Region'
+            - "\n"
+      Tags:
+        - Key: Name
+          Value: RangerServer
+Outputs:
+  IPAddress:
+    Description: IP address of the Ranger server
+    Value: !GetAtt 'myEC2.PrivateIp'
