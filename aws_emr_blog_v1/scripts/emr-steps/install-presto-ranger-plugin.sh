@@ -31,7 +31,7 @@ else
 fi
 
 ranger_s3bucket=$s3bucket/ranger/ranger-$ranger_download_version
-if [ "$emr_version" == "emr-5.30.0" ]; then
+if [ "$emr_version" == "emr-5.30.1" ]; then
     ranger_presto_plugin=ranger-$ranger_download_version-prestodb-plugin-presto232
   else
     ranger_presto_plugin=ranger-$ranger_download_version-prestodb-plugin

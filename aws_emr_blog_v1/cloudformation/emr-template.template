@@ -59,7 +59,7 @@ Parameters:
       - emr-5.28.0
       - emr-5.28.1
       - emr-5.29.0
-      - emr-5.30.0
+      - emr-5.30.1
     Description: Release label for the EMR cluster
     Type: String
   rangerVersion:
@@ -106,7 +106,7 @@ Conditions:
     - emr-5.29.0
   emr-5.30: !Equals
     - !Ref 'emrReleaseLabel'
-    - emr-5.30.0
+    - emr-5.30.1
   emr-6.0: !Equals
     - !Ref 'emrReleaseLabel'
     - emr-6.0.0
