@@ -21,7 +21,8 @@ The repo contains code tied to [AWS Big Data Blog](https://aws.amazon.com/blogs/
 ### Compatibility/Supported plugins: 
 | Module|  Tag | Apache Ranger Version | EMR Version | Supported Plugins|
 | -------| --- | --- | --- |-------------------------------------------------------- |
-| V1 | 1.0 | Apache Ranger 1.0, 2.1 | emr-5.28.1 emr-5.29.0 | Hive 2.x, Hadoop 2.x, Presto (DB) 0.227 | 
+| V1 | [1.0](https://github.com/aws-samples/aws-emr-apache-ranger/tree/1.0) | Apache Ranger 1.0, 2.1 | emr-5.28.1 emr-5.29.0 | Hive 2.x, Hadoop 2.x, PrestoDB 0.227 (Needs Ranger 2.0) | 
+| V1 (work in progress) | [2.0](https://github.com/aws-samples/aws-emr-apache-ranger/tree/2.0) | Apache Ranger 2.2 | emr-6.1.0 | Hive 3.x, Hadoop 3.x, PrestoSQL 338, PrestoDB 0.232 | 
 
 Please open Git Issues if you would like to see updates/other plugin integrations. 
 ### References:
