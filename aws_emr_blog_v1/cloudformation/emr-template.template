@@ -60,9 +60,6 @@ Parameters:
       - emr-5.28.1
       - emr-5.29.0
       - emr-5.30.0
-      - emr-5.31.0
-      - emr-5.32.0
-      - emr-6.1.0
     Description: Release label for the EMR cluster
     Type: String
   rangerVersion:
@@ -74,7 +71,6 @@ Parameters:
       - '0.7'
       - '1.0'
       - '2.0'
-      - '2.2'
   s3artifactsRepo:
     Default: s3://aws-bigdata-blog/artifacts/aws-blog-emr-ranger
     Description: Git Repo URL for this blog.
@@ -84,11 +80,6 @@ Parameters:
     Default: false
     Type: String
     AllowedValues: [true, false]
-  PrestoEngine:
-    Description: Presto Engine. PrestoSQL is only available with EMR 6.x
-    Default: Presto
-    Type: String
-    AllowedValues: [Presto, PrestoSQL]
 #  InstallSparkRangerPlugin:
 #    Description: Install the Ranger Spark Plugin. NOTE - This needs Ranger 2.0 and has not been tested with all versions
 #    Default: false
@@ -133,7 +124,7 @@ Resources:
         - Name: Hive
         - Name: Hadoop
         - Name: Hue
-        - Name: !Ref PrestoEngine
+        - Name: Presto
         - Name: Spark
         - Name: Livy
       BootstrapActions:
@@ -291,7 +282,6 @@ Resources:
           - !Ref 'RangerHostname'
           - !Ref 'rangerVersion'
           - !Ref 's3artifactsRepo'
-          - !Ref 'emrReleaseLabel'
         Jar: s3://elasticmapreduce/libs/script-runner/script-runner.jar
         MainClass: ''
       JobFlowId: !Ref 'EMRSampleCluster'
@@ -323,7 +313,6 @@ Resources:
           - !Ref 'rangerVersion'
           - !Ref 's3artifactsRepo'
           - !Ref 'emrReleaseLabel'
-          - !Ref 'PrestoEngine'
         Jar: s3://elasticmapreduce/libs/script-runner/script-runner.jar
         MainClass: ''
       JobFlowId: !Ref 'EMRSampleCluster'
