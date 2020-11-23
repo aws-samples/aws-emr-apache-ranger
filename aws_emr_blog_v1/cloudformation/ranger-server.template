@@ -112,7 +112,7 @@ Parameters:
       - '1.0'
       - '2.0'
   s3artifactsRepoHttp:
-    Default: https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger
+    Default: https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/v1-1.0
     Description: Git Repo URL for this blog.
     Type: String
 Mappings:

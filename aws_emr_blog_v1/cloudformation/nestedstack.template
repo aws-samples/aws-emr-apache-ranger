@@ -105,11 +105,11 @@ Parameters:
     Type: String
     Default: emr-5.29.0
   s3artifactsRepoHttp:
-    Default: https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger
+    Default: https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/v1-1.0
     Description: HTTP location of the repo.
     Type: String
   s3artifactsRepo:
-    Default: s3://aws-bigdata-blog/artifacts/aws-blog-emr-ranger
+    Default: s3://aws-bigdata-blog/artifacts/aws-blog-emr-ranger/v1-1.0
     Description: S3 location of the repo.
     Type: String
   InstallPrestoRangerPlugin:
