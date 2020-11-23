@@ -18,6 +18,11 @@ The repo contains code tied to [AWS Big Data Blog](https://aws.amazon.com/blogs/
 | ---------------- | --- | --- |-------------------------------------------------------- |
 | [Basic setup with LDAP](aws_emr_blog_v1) | [![Foo](images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/cloudformation/nestedstack.template) | ![](images/simple-ad-setup.png) | Basic deployment using [AWS Simple AD](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_simple_ad.html), Hive and HDFS plugins and optional Presto Plugin|
 
+### Compatibility/Supported plugins: 
+| Module|  Tag | Apache Ranger Version | EMR Version | Supported Plugins|
+| -------| --- | --- | --- |-------------------------------------------------------- |
+| V1 | 1.0 | Apache Ranger 1.0, 2.1 | emr-5.28.1 emr-5.29.0 | Hive 2.x, Hadoop 2.x, Presto (DB) 0.227 | 
+
 Please open Git Issues if you would like to see updates/other plugin integrations. 
 ### References:
 
