@@ -87,6 +87,7 @@ Parameters:
       - '0.7'
       - '1.0'
       - '2.0'
+      - '2.2'
     Type: String
     Default: '2.0'
   emrReleaseLabel:
@@ -102,8 +103,14 @@ Parameters:
       - emr-5.28.1
       - emr-5.29.0
       - emr-5.30.0
+      - emr-6.1.0
     Type: String
     Default: emr-5.29.0
+  PrestoEngine:
+    Description: Presto Engine. PrestoSQL is only available with EMR 6.x
+    Default: Presto
+    Type: String
+    AllowedValues: [Presto, PrestoSQL]
   s3artifactsRepoHttp:
     Default: https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger
     Description: HTTP location of the repo.
@@ -221,6 +228,7 @@ Resources:
         Subnet: !Ref 'DefaultSubnet'
         s3artifactsRepo: !Ref 's3artifactsRepo'
         InstallPrestoRangerPlugin: !Ref 'InstallPrestoRangerPlugin'
+        PrestoEngine: !Ref 'PrestoEngine'
       TimeoutInMinutes: '60'
 Outputs:
   RangerServerIP:
