@@ -22,7 +22,7 @@ The repo contains code tied to [AWS Big Data Blog](https://aws.amazon.com/blogs/
 | Module|  Tag | Cloudformation stack | Apache Ranger Version | EMR Version | Supported Plugins|
 | -------| --- | --- | --- | --- |-------------------------------------------------------- |
 | V1 | [1.0](https://github.com/aws-samples/aws-emr-apache-ranger/tree/1.0) | [![Foo](images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/cloudformation/nestedstack.template) | Apache Ranger 1.0, 2.1 | emr-5.28.1, emr-5.29.0 | Hive 2.x, Hadoop 2.x, PrestoDB 0.227 (Needs Ranger 2.0) | 
-| V1 (work in progress) | [1.1](https://github.com/aws-samples/aws-emr-apache-ranger/tree/1.1) | [![Foo](images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/1.1/cloudformation/nestedstack.template) | Apache Ranger 2.2 | emr-6.1.0 | Hive 3.x, Hadoop 3.x, PrestoSQL 338, PrestoDB 0.232 | 
+| V1 | (work in progress) | [![Foo](images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/1.1/cloudformation/nestedstack.template) | Apache Ranger 2.2 | emr-6.1.0 | Hive 3.x, Hadoop 3.x, PrestoSQL 338, PrestoDB 0.232 | 
 
 Please open Git Issues if you would like to see updates/other plugin integrations. 
 ### References:
