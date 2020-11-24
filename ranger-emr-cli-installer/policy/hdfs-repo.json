@@ -1,0 +1,18 @@
+{
+ "name": "HDFS_@EMR_CLUSTER_ID@",
+ "description": "HDFS Repo",
+ "repositoryType": "hdfs",
+ "isActive": true,
+ "config": "{
+  \"username\": \"hdfs\",
+  \"password\": \"hdfs\",
+  \"fs.default.name\": \"@EMR_HDFS_URL@\",
+  \"hadoop.security.authorization\": \"true\",
+  \"hadoop.security.authentication\": \"simple\",
+  \"hadoop.security.auth_to_local\": \"\",
+  \"dfs.datanode.kerberos.principal\": \"\",
+  \"dfs.namenode.kerberos.principal\": \"\",
+  \"dfs.secondary.namenode.kerberos.principal\": \"\",
+  \"commonNameForCertificate\": \"\"
+ }"
+}

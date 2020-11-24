@@ -1,0 +1,15 @@
+{
+ "name": "HBASE_@EMR_CLUSTER_ID@",
+ "description": "HBase Repo",
+ "repositoryType": "HBase",
+ "isActive": true,
+ "config": "{
+  \"username\": \"hbase\",
+  \"password\": \"hbase\",
+  \"hbase.zookeeper.quorum\": \"@EMR_ZK_QUORUM@\",
+  \"hbase.zookeeper.property.clientPort\": \"2181\",
+  \"zookeeper.znode.parent\": \"/hbase\",
+  \"hadoop.security.authentication\": \"simple\",
+  \"hbase.security.authentication\": \"simple\"
+}"
+}

@@ -1,0 +1,13 @@
+{
+  "name": "HIVE_@EMR_CLUSTER_ID@",
+  "description": "Hive Repo",
+  "repositoryType": "Hive",
+  "isActive": true,
+  "config": "{
+   \"username\": \"hive\",
+   \"password\": \"hive\",
+   \"jdbc.driverClassName\": \"org.apache.hive.jdbc.HiveDriver\",
+   \"jdbc.url\": \"jdbc:hive2://@EMR_HIVE_SERVER2@:10000/default\",
+   \"commonNameForCertificate\": \"\"
+ }"
+}
