@@ -111,10 +111,36 @@ Parameters:
       - '0.7'
       - '1.0'
       - '2.0'
-  s3artifactsRepoHttp:
-    Default: https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/1.0
+      - '2.2'
+  emrReleaseLabel:
+    Default: emr-5.29.0
+    AllowedValues:
+      - emr-5.0.0
+      - emr-5.4.0
+      - emr-5.16.0
+      - emr-5.17.0
+      - emr-5.26.0
+      - emr-5.27.0
+      - emr-5.28.0
+      - emr-5.28.1
+      - emr-5.29.0
+      - emr-5.30.0
+      - emr-5.31.0
+      - emr-5.32.0
+      - emr-6.1.0
+    Description: Release label for the EMR cluster
+    Type: String
+  s3artifactsRepo:
+    Default: aws-bigdata-blog/artifacts/aws-blog-emr-ranger
     Description: Git Repo URL for this blog.
     Type: String
+  s3artifactsRepoVersion:
+      Default: 1.0
+      Description: Current version of the code
+      Type: String
+      AllowedValues:
+        - 1.0
+        - 1.1
 Mappings:
   AWSInstanceType2Arch:
     t1.micro:
@@ -267,19 +293,78 @@ Resources:
           FromPort: '22'
           ToPort: '22'
           CidrIp: !Ref VPCCidrBlock
+  ManagedInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ssm.amazonaws.com
+            - ec2.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+      - arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess
+      - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+      Path: "/"
+
+  ManagedInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+        - !Ref ManagedInstanceRole
+  RangerLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      RetentionInDays: 14
+      #LogGroupName: rangerlogs-${AWS::StackName}
   myEC2:
     Type: AWS::EC2::Instance
     Metadata:
       AWS::CloudFormation::Init:
         configSets:
-          InstallRangerServer:
+          ascending:
+            - CloudwatchLogs
             - RangerServer
+        CloudwatchLogs:
+          files:
+            '/etc/awslogs/awslogs.conf':
+              content: !Sub |
+                [general]
+                # Path to the CloudWatch Logs agent's state file. The agent uses this file to maintain
+                # client side state across its executions.
+                state_file = /var/lib/awslogs/agent-state
+                [ranger_admin_setup_log]
+                datetime_format = %Y-%m-%d %H:%M:%S,%f
+                file = /tmp/create-ranger-server-output.log
+                buffer_duration = 500
+                log_stream_name = adminsetuplog-{instance_id}
+                initial_position = start_of_file
+                log_group_name = ${RangerLogGroup}
+                [ranger_admin_log]
+                datetime_format = %Y-%m-%d %H:%M:%S,%f
+                file = /usr/lib/ranger/logs/admin/logs/ranger-admin*
+                buffer_duration = 500
+                log_stream_name = adminlog-{instance_id}
+                initial_position = start_of_file
+                log_group_name = ${RangerLogGroup}
+          commands:
+            startawslogs:
+              command: !Sub |
+                sudo yum update -y
+                sudo yum install -y awslogs
+                sudo service awslogs restart
+                sudo chkconfig awslogs on
         RangerServer:
           commands:
             installrangerserver:
               command: !Join
                 - ''
-                - - 'bash /home/ec2-user/install-ranger-admin-server.sh '
+                - - 'bash /tmp/install-ranger-admin-server.sh '
                   - !Ref 'myDirectoryIPAddress'
                   - ' '
                   - !Ref 'myDirectoryBaseDN'
@@ -290,16 +375,21 @@ Resources:
                   - ' '
                   - !Ref 'rangerVersion'
                   - ' '
-                  - !Ref 's3artifactsRepoHttp'
+                  - !Join ['', ['s3://', !Ref s3artifactsRepo]]
+                  - ' '
+                  - !Ref 's3artifactsRepoVersion'
                   - ' '
                   - !Ref 'myDirectoryAdminPassword'
                   - ' '
                   - !Ref 'myDirectoryBindPassword'
                   - ' '
                   - !Ref 'myDirectoryDefaultUserPassword'
+                  - ' '
+                  - !Ref 'emrReleaseLabel'
                   - " > create-ranger-server-output.log \n"
     Properties:
       SubnetId: !Ref 'Subnet'
+      IamInstanceProfile: !Ref ManagedInstanceProfile
       SecurityGroupIds:
         - !Ref 'sgRangerAdminServer'
       ImageId: !FindInMap
@@ -314,25 +404,40 @@ Resources:
       UserData: !Base64
         Fn::Join:
           - ''
-          - - "#!/bin/bash\n"
-            - "cd /home/ec2-user/\n"
-            - 'wget '
-            - !Ref 's3artifactsRepoHttp'
-            - "/scripts/install-ranger-admin-server.sh\n"
-            - "yum update aws-cfn-bootstrap\n"
-            - "# Install the files and packages from the metadata\n"
+          - - '#!/bin/bash
+
+            '
+            - 'cd /tmp
+
+            '
+            - 'aws s3 cp '
+            - !Join ['', ['s3://', !Ref s3artifactsRepo, '/', !Ref s3artifactsRepoVersion]]
+            - '/scripts/install-ranger-admin-server.sh .
+
+            '
+            - 'yum update aws-cfn-bootstrap
+
+            '
+            - '# Install the files and packages from the metadata
+
+            '
             - '/opt/aws/bin/cfn-init '
             - '         --stack '
             - !Ref 'AWS::StackName'
             - '         --resource myEC2 '
-            - '         --configsets InstallRangerServer '
+            - '         --configsets ascending '
             - '         --region '
             - !Ref 'AWS::Region'
-            - "\n"
+            - '
+
+            '
       Tags:
         - Key: Name
           Value: RangerServer
 Outputs:
+  RangerCloudwatchLogGroupName:
+    Description: Name of the cloudwatch log group name with Ranger server logs are sent
+    Value: !Ref RangerLogGroup
   IPAddress:
     Description: IP address of the Ranger server
     Value: !GetAtt 'myEC2.PrivateIp'

@@ -8,24 +8,23 @@ export JAVA_HOME=/usr/lib/jvm/jre
 hostname=`hostname -I | xargs`
 installpath=/usr/lib/ranger
 ranger_version=$5
-s3bucket_http_url=$6
-ldap_admin_password=$7
-ldap_bind_password=$8
-ldap_default_user_password=$9
+s3path=$6
+project_version=${7-'1.0'}
+ldap_admin_password=$8
+ldap_bind_password=$9
+ldap_default_user_password=${10}
+emr_version=${11-'emr-5.30'}
 
-if [ "$ranger_version" == "2.0" ]; then
+emr_release_version_regex="^emr-6.*"
+if [[ ( "$emr_version" =~ $emr_release_version_regex ) ]]; then
+  ranger_download_version=2.2.0-SNAPSHOT
+elif [ "$ranger_version" == "2.0" ]; then
    ranger_download_version=2.1.0-SNAPSHOT
-elif [ "$ranger_version" == "1.0" ]; then
-   ranger_download_version=1.1.0
-elif [ "$ranger_version" == "0.7" ]; then
-   ranger_download_version=0.7.1
-elif [ "$ranger_version" == "0.6" ]; then
-   ranger_download_version=0.6.1
 else
-   ranger_download_version=0.5
+   ranger_download_version=1.1.0
 fi
 
-ranger_s3bucket=$s3bucket_http_url/ranger/ranger-$ranger_download_version
+ranger_s3path=$s3path/ranger/ranger-$ranger_download_version
 ranger_admin_server=ranger-$ranger_download_version-admin
 ranger_user_sync=ranger-$ranger_download_version-usersync
 
@@ -34,14 +33,14 @@ ldap_server_url=ldap://$ldap_ip_address
 ldap_base_dn=$2
 ldap_bind_user_dn=$3
 ldap_bind_password=$4
-mysql_jar_location=$s3bucket_http_url/ranger/ranger-$ranger_download_version/mysql-connector-java-5.1.39.jar
+mysql_jar_location=$s3path/ranger/ranger-$ranger_download_version/mysql-connector-java-5.1.39.jar
 mysql_jar=mysql-connector-java-5.1.39.jar
 # Setup
 yum install -y openldap openldap-clients openldap-servers
 # Setup LDAP users
-wget $s3bucket_http_url/inputdata/load-users-new.ldf
-wget $s3bucket_http_url/inputdata/modify-users-new.ldf
-wget $s3bucket_http_url/scripts/create-users-using-ldap.sh
+aws s3 cp $s3path/$project_version/inputdata/load-users-new.ldf .
+aws s3 cp $s3path/$project_version/inputdata/modify-users-new.ldf .
+aws s3 cp $s3path/$project_version/scripts/create-users-using-ldap.sh .
 chmod +x create-users-using-ldap.sh
 ./create-users-using-ldap.sh $ldap_ip_address $ldap_admin_password $ldap_bind_password $ldap_default_user_password || true
 #Install mySQL
@@ -56,10 +55,10 @@ mysql -u root -prangeradmin -e "FLUSH PRIVILEGES;" || true
 rm -rf $installpath
 mkdir -p $installpath/hadoop
 cd $installpath
-wget $ranger_s3bucket/$ranger_admin_server.tar.gz
-wget $ranger_s3bucket/$ranger_user_sync.tar.gz
-wget $mysql_jar_location
-wget $ranger_s3bucket/solr_for_audit_setup.tar.gz
+aws s3 cp $ranger_s3path/$ranger_admin_server.tar.gz .
+aws s3 cp $ranger_s3path/$ranger_user_sync.tar.gz .
+aws s3 cp $mysql_jar_location .
+aws s3 cp $ranger_s3path/solr_for_audit_setup.tar.gz .
 #Update ranger admin install.properties
 tar -xvf $ranger_admin_server.tar.gz
 cd $ranger_admin_server
@@ -91,6 +90,9 @@ tar -xvf $ranger_user_sync.tar.gz -C $ranger_user_sync --strip-components=1
 cp ./$ranger_admin_server/ews/webapp/WEB-INF/lib/jackson-* ./$ranger_user_sync/lib/
 chown ranger:ranger ./$ranger_user_sync/lib/*
 chmod 755 ./$ranger_user_sync/lib/*
+mkdir -p $installpath/logs/admin/
+sudo ln -sf $(pwd)/$ranger_admin_server/ews/logs $installpath/logs/admin || true
+
 
 cd $ranger_user_sync
 sudo sed -i "s|POLICY_MGR_URL =.*|POLICY_MGR_URL=http://$hostname:6080|g" install.properties

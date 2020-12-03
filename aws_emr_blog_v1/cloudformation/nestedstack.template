@@ -80,17 +80,14 @@ Parameters:
     Type: String
     NoEcho: true
   rangerVersion:
-    Description: 'RangerVersion. Expected values are : 0.6,0.7,1.0,2.0. NOTE: Use Ranger 0.6 if
-      EMR version is 5.0'
+    Description: 'RangerVersion. Expected values are : 1.0,2.0'
     AllowedValues:
-      - '0.6'
-      - '0.7'
       - '1.0'
       - '2.0'
     Type: String
     Default: '2.0'
   emrReleaseLabel:
-    Description: EMR Version. Pick Ranger 0.6 if EMR version is 5.0 or higher
+    Default: emr-5.29.0
     AllowedValues:
       - emr-5.0.0
       - emr-5.4.0
@@ -101,17 +98,28 @@ Parameters:
       - emr-5.28.0
       - emr-5.28.1
       - emr-5.29.0
-      - emr-5.30.1
+      - emr-5.30.0
+      - emr-5.31.0
+      - emr-5.32.0
+      - emr-6.1.0
+    Description: Release label for the EMR cluster
     Type: String
-    Default: emr-5.29.0
-  s3artifactsRepoHttp:
-    Default: https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/1.0
-    Description: HTTP location of the repo.
+  PrestoEngine:
+    Description: Presto Engine. PrestoSQL is only available with EMR 6.x
+    Default: Presto
     Type: String
+    AllowedValues: [Presto, PrestoSQL]
   s3artifactsRepo:
-    Default: s3://aws-bigdata-blog/artifacts/aws-blog-emr-ranger/1.0
+    Default: aws-bigdata-blog/artifacts/aws-blog-emr-ranger
     Description: S3 location of the repo.
     Type: String
+  s3artifactsRepoVersion:
+    Default: 1.0
+    Description: Project version
+    Type: String
+    AllowedValues:
+      - 1.0
+      - 1.1
   InstallPrestoRangerPlugin:
     Description: Install the Ranger Presto Plugin. NOTE - This needs Ranger 2.0 and has not been tested with all versions
     Default: false
@@ -123,8 +131,8 @@ Metadata:
       - Label:
           default: Artifacts repo
         Parameters:
-          - s3artifactsRepoHttp
           - s3artifactsRepo
+          - s3artifactsRepoVersion
       - Label:
           default: Network Configuration
         Parameters:
@@ -161,10 +169,7 @@ Resources:
   SimpleAD:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Join
-        - ''
-        - - !Ref 's3artifactsRepoHttp'
-          - /cloudformation/simple-ad-template.template
+      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 's3artifactsRepo', '/', !Ref 's3artifactsRepoVersion', '/cloudformation/', 'simple-ad-template.template']]
       Parameters:
         VPC: !Ref 'VPC'
         Subnet1SimpleAD: !Ref 'Subnet1SimpleAD'
@@ -176,10 +181,7 @@ Resources:
     DependsOn:
       - SimpleAD
     Properties:
-      TemplateURL: !Join
-        - ''
-        - - !Ref 's3artifactsRepoHttp'
-          - /cloudformation/ranger-server.template
+      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 's3artifactsRepo', '/', !Ref 's3artifactsRepoVersion', '/cloudformation/', 'ranger-server.template']]
       Parameters:
         VPC: !Ref 'VPC'
         VPCCidrBlock: !Ref 'VPCCidrBlock'
@@ -190,20 +192,19 @@ Resources:
         myDirectoryBaseDN: !Ref 'myDirectoryBaseDN'
         myDirectoryBindUser: !Ref 'myDirectoryBindUser'
         rangerVersion: !Ref 'rangerVersion'
-        s3artifactsRepoHttp: !Ref 's3artifactsRepoHttp'
+        s3artifactsRepo: !Ref s3artifactsRepo
+        s3artifactsRepoVersion: !Ref s3artifactsRepoVersion
         myDirectoryAdminPassword: !Ref 'myDirectoryAdminPassword'
         myDirectoryBindPassword: !Ref 'myDirectoryBindPassword'
         myDirectoryDefaultUserPassword: !Ref 'myDirectoryDefaultUserPassword'
+        emrReleaseLabel: !Ref 'emrReleaseLabel'
       TimeoutInMinutes: '60'
   EMRCluster:
     Type: AWS::CloudFormation::Stack
     DependsOn:
       - RangerServer
     Properties:
-      TemplateURL: !Join
-        - ''
-        - - !Ref 's3artifactsRepoHttp'
-          - /cloudformation/emr-template.template
+      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 's3artifactsRepo', '/', !Ref 's3artifactsRepoVersion', '/cloudformation/', 'emr-template.template']]
       Parameters:
         myDirectoryBindUser: !Ref 'myDirectoryBindUser'
         myDirectoryBindPassword: !Ref 'myDirectoryBindPassword'
@@ -219,8 +220,10 @@ Resources:
         VPC: !Ref 'VPC'
         KeyName: !Ref 'KeyName'
         Subnet: !Ref 'DefaultSubnet'
-        s3artifactsRepo: !Ref 's3artifactsRepo'
+        s3artifactsRepo: !Ref s3artifactsRepo
+        s3artifactsRepoVersion: !Ref s3artifactsRepoVersion
         InstallPrestoRangerPlugin: !Ref 'InstallPrestoRangerPlugin'
+        PrestoEngine: !Ref 'PrestoEngine'
       TimeoutInMinutes: '60'
 Outputs:
   RangerServerIP:

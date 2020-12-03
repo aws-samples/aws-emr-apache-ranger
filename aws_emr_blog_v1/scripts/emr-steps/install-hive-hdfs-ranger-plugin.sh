@@ -14,17 +14,16 @@ ranger_fqdn=$1
 mysql_jar=mysql-connector-java-5.1.39.jar
 ranger_version=$2
 s3bucket=$3
+emr_version=${4-'emr-5.30'}
 ranger_download_version=0.5
-if [ "$ranger_version" == "2.0" ]; then
+
+emr_release_version_regex="^emr-6.*"
+if [[ ( "$emr_version" =~ $emr_release_version_regex ) && ("$ranger_version" == "2.0") ]]; then
+  ranger_download_version=2.2.0-SNAPSHOT
+elif [ "$ranger_version" == "2.0" ]; then
    ranger_download_version=2.1.0-SNAPSHOT
-elif [ "$ranger_version" == "1.0" ]; then
-   ranger_download_version=1.1.0
-elif [ "$ranger_version" == "0.7" ]; then
-   ranger_download_version=0.7.1
-elif [ "$ranger_version" == "0.6" ]; then
-   ranger_download_version=0.6.1
 else
-   ranger_download_version=0.5
+   ranger_download_version=1.1.0
 fi
 
 ranger_s3bucket=$s3bucket/ranger/ranger-$ranger_download_version
