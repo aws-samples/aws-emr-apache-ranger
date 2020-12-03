@@ -27,7 +27,9 @@ The repo contains code tied to [AWS Big Data Blog](https://aws.amazon.com/blogs/
 > WARNING: The current V1 setup does not enable strong cluster level Auth (Kerberos) for EMR. Only LDAP enabled Hue UI. V2 will support Kerberos - refer to the [roadmap](https://github.com/aws-samples/aws-emr-apache-ranger/projects/1) for details.
 ### PrestoSQL Ranger plugin (EMR 6.1 & Ranger 2.2)
 Shows how the plugin can be used to enable column level access controls, column masking and row filter. Demo uses the [Presto Redshift connector](https://prestosql.io/docs/current/connector/redshift.html). The same functionality should work with other [Presto connectors](https://prestosql.io/docs/current/connector.html).
+
 ![](images/prestosql_ranger_plugin.gif)
+
 Please open Git Issues if you would like to see updates/other plugin integrations. 
 ### References:
 
