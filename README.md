@@ -38,7 +38,9 @@ Please open Git Issues if you would like to see updates/other plugin integration
  - Amazon EMR + Kerberos: https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-kerberos.html 
  - Apache Ranger: https://ranger.apache.org/
  - Apache Ranger + Amazon EMR Blog: https://aws.amazon.com/blogs/big-data/implementing-authorization-and-auditing-using-apache-ranger-on-amazon-emr/
- - Apache Ranger Presto Plugin: https://cwiki.apache.org/confluence/display/RANGER/Presto+Plugin
+ - Apache Ranger Presto Plugin: 
+   - Code for PrestoDB plugin - https://github.com/varunrao/ranger/tree/prestodb
+   - https://cwiki.apache.org/confluence/display/RANGER/Presto+Plugin
 
 
 # Reporting Bugs
