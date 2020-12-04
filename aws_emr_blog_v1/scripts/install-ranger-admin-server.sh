@@ -38,9 +38,9 @@ mysql_jar=mysql-connector-java-5.1.39.jar
 # Setup
 yum install -y openldap openldap-clients openldap-servers
 # Setup LDAP users
-aws s3 cp $s3path/$project_version/inputdata/load-users-new.ldf .
-aws s3 cp $s3path/$project_version/inputdata/modify-users-new.ldf .
-aws s3 cp $s3path/$project_version/scripts/create-users-using-ldap.sh .
+aws s3 cp $s3path/$project_version/inputdata/load-users-new.ldf . --region us-east-1
+aws s3 cp $s3path/$project_version/inputdata/modify-users-new.ldf . --region us-east-1
+aws s3 cp $s3path/$project_version/scripts/create-users-using-ldap.sh . --region us-east-1
 chmod +x create-users-using-ldap.sh
 ./create-users-using-ldap.sh $ldap_ip_address $ldap_admin_password $ldap_bind_password $ldap_default_user_password || true
 #Install mySQL
@@ -55,10 +55,10 @@ mysql -u root -prangeradmin -e "FLUSH PRIVILEGES;" || true
 rm -rf $installpath
 mkdir -p $installpath/hadoop
 cd $installpath
-aws s3 cp $ranger_s3path/$ranger_admin_server.tar.gz .
-aws s3 cp $ranger_s3path/$ranger_user_sync.tar.gz .
-aws s3 cp $mysql_jar_location .
-aws s3 cp $ranger_s3path/solr_for_audit_setup.tar.gz .
+aws s3 cp $ranger_s3path/$ranger_admin_server.tar.gz . --region us-east-1
+aws s3 cp $ranger_s3path/$ranger_user_sync.tar.gz . --region us-east-1
+aws s3 cp $mysql_jar_location . --region us-east-1
+aws s3 cp $ranger_s3path/solr_for_audit_setup.tar.gz . --region us-east-1
 #Update ranger admin install.properties
 tar -xvf $ranger_admin_server.tar.gz
 cd $ranger_admin_server

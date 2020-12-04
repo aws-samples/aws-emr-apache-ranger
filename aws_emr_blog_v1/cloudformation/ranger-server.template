@@ -124,7 +124,7 @@ Parameters:
       - emr-5.28.0
       - emr-5.28.1
       - emr-5.29.0
-      - emr-5.30.0
+      - emr-5.30.1
       - emr-5.31.0
       - emr-5.32.0
       - emr-6.1.0
@@ -412,7 +412,7 @@ Resources:
             '
             - 'aws s3 cp '
             - !Join ['', ['s3://', !Ref s3artifactsRepo, '/', !Ref s3artifactsRepoVersion]]
-            - '/scripts/install-ranger-admin-server.sh .
+            - '/scripts/install-ranger-admin-server.sh . --region us-east-1
 
             '
             - 'yum update aws-cfn-bootstrap

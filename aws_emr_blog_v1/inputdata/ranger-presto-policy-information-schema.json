@@ -65,10 +65,6 @@
      "isAllowed":true
     },
     {
-     "type":"admin",
-     "isAllowed":true
-    },
-    {
      "type":"all",
      "isAllowed":true
     }

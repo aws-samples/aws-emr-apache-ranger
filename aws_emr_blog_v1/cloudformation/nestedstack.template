@@ -87,22 +87,13 @@ Parameters:
     Type: String
     Default: '2.0'
   emrReleaseLabel:
-    Default: emr-5.29.0
+    Default: emr-6.1.0
     AllowedValues:
-      - emr-5.0.0
-      - emr-5.4.0
-      - emr-5.16.0
-      - emr-5.17.0
-      - emr-5.26.0
-      - emr-5.27.0
-      - emr-5.28.0
-      - emr-5.28.1
       - emr-5.29.0
-      - emr-5.30.0
+      - emr-5.30.1
       - emr-5.31.0
-      - emr-5.32.0
       - emr-6.1.0
-    Description: Release label for the EMR cluster
+    Description: Release label for the EMR clusterPrestoEngine
     Type: String
   PrestoEngine:
     Description: Presto Engine. PrestoSQL is only available with EMR 6.x
@@ -114,7 +105,7 @@ Parameters:
     Description: S3 location of the repo.
     Type: String
   s3artifactsRepoVersion:
-    Default: 1.0
+    Default: 1.1
     Description: Project version
     Type: String
     AllowedValues:
