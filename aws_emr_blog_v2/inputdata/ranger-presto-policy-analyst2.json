@@ -1,0 +1,100 @@
+{
+ "isEnabled":true,
+ "version":1,
+ "service":"prestodev",
+ "name":"Analyst2Policy",
+ "policyType":0,
+ "policyPriority":0,
+ "description":"Analyst2Policy",
+ "isAuditEnabled":true,
+ "resources": {
+  "schema": {
+   "values": [
+    "default"
+   ],
+   "isExcludes": false,
+   "isRecursive": false
+  },
+  "catalog": {
+   "values": [
+    "hive"
+   ],
+   "isExcludes": false,
+   "isRecursive": false
+  },
+  "column": {
+   "values": [
+    "*"
+   ],
+   "isExcludes": false,
+   "isRecursive": false
+  },
+  "table": {
+   "values": [
+    "tblanalyst2"
+   ],
+   "isExcludes": false,
+   "isRecursive": false
+  }
+ },
+ "policyItems": [
+  {
+   "accesses": [
+    {
+     "type": "select",
+     "isAllowed": true
+    },
+    {
+     "type": "insert",
+     "isAllowed": true
+    },
+    {
+     "type": "use",
+     "isAllowed": true
+    },
+    {
+     "type": "alter",
+     "isAllowed": true
+    },
+    {
+     "type": "all",
+     "isAllowed": true
+    }
+   ],
+   "users": [
+    "analyst2"
+   ],
+   "groups": [],
+   "roles": [],
+   "conditions": [],
+   "delegateAdmin": false
+  }
+ ],
+ "denyPolicyItems":[
+
+ ],
+ "allowExceptions":[
+
+ ],
+ "denyExceptions":[
+
+ ],
+ "dataMaskPolicyItems":[
+
+ ],
+ "rowFilterPolicyItems":[
+
+ ],
+ "serviceType":"presto",
+ "options":{
+
+ },
+ "validitySchedules":[
+
+ ],
+ "policyLabels":[
+
+ ],
+ "zoneName":"",
+ "isDenyAllElse":false
+}

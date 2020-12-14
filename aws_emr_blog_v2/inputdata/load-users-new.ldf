@@ -1,0 +1,192 @@
+dn: CN=hadoop_admin,CN=Users,DC=awsemr,DC=com
+changetype: add
+objectClass: top
+objectClass: group
+cn: hadoop_admin
+instanceType: 4
+uSNCreated: 3906
+name: hadoop_admin
+sAMAccountName: hadoop_admin
+objectCategory: CN=Group,CN=Schema,CN=Configuration,DC=awsemr,DC=com
+distinguishedName: CN=hadoop_admin,CN=Users,DC=awsemr,DC=com
+
+dn: CN=hadoop_analyst,CN=Users,DC=awsemr,DC=com
+changetype: add
+objectClass: top
+objectClass: group
+cn: hadoop_analyst
+instanceType: 4
+uSNCreated: 3906
+name: hadoop_analyst
+sAMAccountNamesAMAccountName: hadoop_analyst
+objectCategory: CN=Group,CN=Schema,CN=Configuration,DC=awsemr,DC=com
+distinguishedName: CN=hadoop_analyst,CN=Users,DC=awsemr,DC=com
+
+dn: CN=Bind User,CN=Users,DC=awsemr,DC=com
+changetype: add
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: user
+cn: Bind User
+sn: BindUser
+givenName: Hadoop
+instanceType: 4
+whenCreated: 20160621200503.0Z
+displayName: Bind User
+uSNCreated: 3854
+name: Bind User
+badPwdCount: 0
+codePage: 0
+countryCode: 0
+badPasswordTime: 0
+lastLogoff: 0
+accountExpires: 9223372036854775807
+logonCount: 0
+sAMAccountName: binduser
+userPrincipalName: binduser@awsemr.com
+objectCategory: CN=Person,CN=Schema,CN=Configuration,DC=awsemr,DC=com
+distinguishedName: CN=Bind User,CN=Users,DC=awsemr,DC=com
+
+dn: CN=Hadoop Analyst1,CN=Users,DC=awsemr,DC=com
+changetype: add
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: user
+cn: Hadoop Analyst1
+sn: Analyst1
+givenName: Hadoop
+instanceType: 4
+whenCreated: 20160621200503.0Z
+displayName: Hadoop Analyst1
+uSNCreated: 3854
+name: Hadoop Analyst1
+badPwdCount: 0
+codePage: 0
+countryCode: 0
+badPasswordTime: 0
+lastLogoff: 0
+accountExpires: 9223372036854775807
+logonCount: 0
+sAMAccountName: analyst1
+userPrincipalName: analyst1@awsemr.com
+objectCategory: CN=Person,CN=Schema,CN=Configuration,DC=awsemr,DC=com
+distinguishedName: CN=Hadoop Analyst1,CN=Users,DC=awsemr,DC=com
+
+dn: CN=Hadoop Analyst2,CN=Users,DC=awsemr,DC=com
+changetype: add
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: user
+cn: Hadoop Analyst2
+sn: Analyst2
+givenName: Hadoop
+instanceType: 4
+whenCreated: 20160621200503.0Z
+displayName: Hadoop Analyst2
+uSNCreated: 3854
+name: Hadoop Analyst2
+badPwdCount: 0
+codePage: 0
+countryCode: 0
+badPasswordTime: 0
+lastLogoff: 0
+accountExpires: 9223372036854775807
+logonCount: 0
+sAMAccountName: analyst2
+userPrincipalName: analyst2@awsemr.com
+objectCategory: CN=Person,CN=Schema,CN=Configuration,DC=awsemr,DC=com
+distinguishedName: CN=Hadoop Analyst2,CN=Users,DC=awsemr,DC=com
+
+dn: CN=Hadoop Engineer1,CN=Users,DC=awsemr,DC=com
+changetype: add
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: user
+cn: Hadoop Engineer1
+sn: Analyst3
+givenName: Hadoop
+instanceType: 4
+whenCreated: 20160621200503.0Z
+displayName: Hadoop Engineer1
+uSNCreated: 3854
+name: Hadoop Engineer1
+badPwdCount: 0
+codePage: 0
+countryCode: 0
+badPasswordTime: 0
+lastLogoff: 0
+accountExpires: 9223372036854775807
+logonCount: 0
+sAMAccountName: engineer1
+userPrincipalName: engineer1@awsemr.com
+objectCategory: CN=Person,CN=Schema,CN=Configuration,DC=awsemr,DC=com
+distinguishedName: CN=Hadoop Engineer1,CN=Users,DC=awsemr,DC=com
+
+dn: CN=Hadoop Engineer2,CN=Users,DC=corp,DC=awsemr,DC=com
+changetype: add
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: user
+cn: Hadoop Engineer2
+sn: Analyst3
+givenName: Hadoop
+instanceType: 4
+whenCreated: 20160621200503.0Z
+displayName: Hadoop Engineer2
+uSNCreated: 3854
+name: Hadoop Engineer2
+badPwdCount: 0
+codePage: 0
+countryCode: 0
+badPasswordTime: 0
+lastLogoff: 0
+accountExpires: 9223372036854775807
+logonCount: 0
+sAMAccountName: engineer2
+userPrincipalName: engineer2@awsemr.com
+objectCategory: CN=Person,CN=Schema,CN=Configuration,DC=awsemr,DC=com
+distinguishedName: CN=Hadoop Engineer2,CN=Users,DC=awsemr,DC=com
+
+dn: CN=Hadoop Admin1,CN=Users,DC=awsemr,DC=com
+changetype: add
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: user
+cn: Hadoop Admin1
+sn: Analyst2
+givenName: Hadoop
+instanceType: 4
+whenCreated: 20160621200503.0Z
+displayName: Hadoop Admin1
+uSNCreated: 3854
+name: Hadoop Admin1
+badPwdCount: 0
+codePage: 0
+countryCode: 0
+badPasswordTime: 0
+lastLogoff: 0
+accountExpires: 9223372036854775807
+logonCount: 0
+sAMAccountName: admin1
+userPrincipalName: admin1@awsemr.com
+objectCategory: CN=Person,CN=Schema,CN=Configuration,DC=awsemr,DC=com
+distinguishedName: CN=Hadoop Admin1,CN=Users,DC=awsemr,DC=com
+
+dn: CN=hadoop_analyst,CN=Users,DC=awsemr,DC=com
+changeType: Modify
+add: member
+member: CN=Hadoop Analyst1,CN=Users,DC=awsemr,DC=com
+member: CN=Hadoop Analyst2,CN=Users,DC=awsemr,DC=com
+-
+
+dn: CN=hadoop_admin,CN=Users,DC=awsemr,DC=com
+changeType: Modify
+add: member
+member: CN=Hadoop Admin1,CN=Users,DC=awsemr,DC=com
+-
