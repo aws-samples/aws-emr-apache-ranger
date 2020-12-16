@@ -19,10 +19,16 @@ def create(event, context):
     apps = event["ResourceProperties"]["AppsEMR"]
     s3Bucket = event["ResourceProperties"]["S3Bucket"]
     emrReleaseLabel = event["ResourceProperties"]["emrReleaseLabel"]
+    isPrestoAppRequested = False
+    isSparkAppRequested = False
     formatted_applist = apps.split(",")
     applist = []
     for app in formatted_applist:
         applist.append({"Name": app.strip()})
+        if app.strip() in ["Presto", "PrestoSQL"]:
+            isPrestoAppRequested = True
+        if app.strip() in ["Spark"]:
+            isSparkAppRequested = True
 
     try:
         emrVersion = emrReleaseLabel.split("-")[1].split(".")
@@ -35,7 +41,7 @@ def create(event, context):
                     "ScriptBootstrapAction": {
                         "Path": "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
                             "S3Key"] + "/" + event["ResourceProperties"][
-                            "ProjectVersion"] + "/scripts/install-required-packages.sh"
+                                    "ProjectVersion"] + "/scripts/install-required-packages.sh"
                     }
                 },
                 {
@@ -43,7 +49,7 @@ def create(event, context):
                     "ScriptBootstrapAction": {
                         "Path": "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
                             "S3Key"] + "/" + event["ResourceProperties"][
-                            "ProjectVersion"] + "/scripts/download-scripts.sh",
+                                    "ProjectVersion"] + "/scripts/download-scripts.sh",
                         "Args": [
                             "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
                                 "S3Key"] + "/" + event["ResourceProperties"][
@@ -57,7 +63,7 @@ def create(event, context):
                     "ScriptBootstrapAction": {
                         "Path": "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
                             "S3Key"] + "/" + event["ResourceProperties"][
-                            "ProjectVersion"] + "/scripts/create-hdfs-home-ba.sh"
+                                    "ProjectVersion"] + "/scripts/create-hdfs-home-ba.sh"
                     }
                 }
             ],
@@ -70,6 +76,17 @@ def create(event, context):
                                           "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
                                           "Args": [
                                               "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/createHiveTables.sh",
+                                              event["ResourceProperties"]["StackRegion"]
+                                          ]
+                                      }
+                                  },
+                                  {
+                                      "Name": "CreateExtendedHiveTables",
+                                      "ActionOnFailure": "CONTINUE",
+                                      "HadoopJarStep": {
+                                          "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                          "Args": [
+                                              "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/createdExtendedHiveTables.sh",
                                               event["ResourceProperties"]["StackRegion"]
                                           ]
                                       }
@@ -287,10 +304,9 @@ def create(event, context):
                     "ScriptBootstrapAction": {
                         "Path": "s3://" + s3Bucket + "/" + event["ResourceProperties"][
                             "S3Key"] + "/" + event["ResourceProperties"][
-                            "ProjectVersion"] + "/scripts/install-cloudwatch-agent.sh"
+                                    "ProjectVersion"] + "/scripts/install-cloudwatch-agent.sh"
                     }
                 })
-
         if event["ResourceProperties"]["EMRSecurityConfig"] != "false":
             cluster_parameters['SecurityConfiguration'] = event["ResourceProperties"]["EMRSecurityConfig"]
             cluster_parameters['KerberosAttributes'] = {
@@ -300,6 +316,21 @@ def create(event, context):
                 "ADDomainJoinUser": event["ResourceProperties"]["ADDomainUser"],
                 "ADDomainJoinPassword": event["ResourceProperties"]["ADDomainJoinPassword"]
             }
+
+        if event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "true":
+            cluster_parameters['Configurations'].append({
+                "Classification": "hive-site",
+                "Properties": {
+                    "hive.server2.thrift.http.port": "10001",
+                    "hive.server2.thrift.http.path": "cliservice",
+                    "hive.server2.transport.mode": "binary",
+                    "hive.server2.allow.user.substitution": "true",
+                    "hive.server2.authentication.kerberos.principal": "hive/_HOST@EC2.INTERNAL",
+                    "hive.server2.enable.doAs": "false",
+                    "hive.metastore.client.factory.class": "com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory"
+                }
+            })
+        else:
             cluster_parameters['Configurations'].append({
                 "Classification": "hive-site",
                 "Properties": {
@@ -314,33 +345,19 @@ def create(event, context):
                     "hive.server2.allow.user.substitution": "true",
                     "hive.server2.authentication.kerberos.principal": "hive/_HOST@EC2.INTERNAL",
                     "hive.server2.enable.doAs": "false"
-                    # "fs.s3.authorization.secretagent.enabled": "false"
-                    # "hive.metastore.client.factory.class": "com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory"
                 }
             })
-        else:
-            cluster_parameters['Configurations'].append({
-                "Classification": "hive-site",
-                "Properties": {
-                    "javax.jdo.option.ConnectionURL": "jdbc:mysql://" + event["ResourceProperties"][
-                        "DBHostName"] + ":3306/hive?createDatabaseIfNotExist=true",
-                    "javax.jdo.option.ConnectionDriverName": "org.mariadb.jdbc.Driver",
-                    "javax.jdo.option.ConnectionUserName": event["ResourceProperties"]["DBUserName"],
-                    "javax.jdo.option.ConnectionPassword": event["ResourceProperties"]["DBRootPassword"],
-                    "hive.server2.authentication": "LDAP",
-                    "hive.server2.authentication.ldap.url": "ldap://" + event["ResourceProperties"][
-                        "LDAPHostPrivateIP"],
-                    "hive.server2.authentication.ldap.baseDN": event["ResourceProperties"]["LDAPGroupSearchBase"],
-                    "hive.server2.thrift.http.port": "10001",
-                    "hive.server2.thrift.http.path": "cliservice",
-                    "hive.server2.transport.mode": "binary",
-                    "hive.server2.allow.user.substitution": "true",
-                    "hive.server2.enable.doAs": "false"
-                    # "hive.server2.authentication.kerberos.principal": "hive/_HOST@EC2.INTERNAL",
-                    # "hive.server2.enable.doAs": "false",
-                    # "hive.metastore.client.factory.class": "com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory"
-                }
-            })
+
+        # ## If Hive LDAP
+        #     cluster_parameters['Configurations'].append({
+        #         "Classification": "hive-site",
+        #         "Properties": {
+        #             "hive.server2.authentication": "LDAP",
+        #             "hive.server2.authentication.ldap.url": "ldap://" + event["ResourceProperties"][
+        #                 "LDAPHostPrivateIP"],
+        #             "hive.server2.authentication.ldap.baseDN": event["ResourceProperties"]["LDAPGroupSearchBase"]
+        #         }
+        #     })
         cluster_parameters['Configurations'].append({
             "Classification": "core-site",
             "Properties": {
@@ -362,7 +379,41 @@ def create(event, context):
                 "hadoop.proxyuser.hue_hive.groups": "*"
             }
         })
-        if event["ResourceProperties"]["InstallPrestoPlugin"] == "true":
+        if isPrestoAppRequested:
+            cluster_parameters['BootstrapActions'].append(
+                {
+                    "Name": "Setup Presto Kerberos",
+                    "ScriptBootstrapAction": {
+                        "Path": "s3://" + s3Bucket + "/" + event["ResourceProperties"][
+                            "S3Key"] + "/" + event["ResourceProperties"][
+                                    "ProjectVersion"] + "/scripts/configure_presto_kerberos_ba.sh",
+                        "Args": [
+                            "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
+                                "S3Key"] + "/" + event["ResourceProperties"][
+                                "ProjectVersion"],
+                            event["ResourceProperties"]["KdcAdminPassword"]
+                        ]
+                    }
+                })
+            if event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "true":
+                cluster_parameters['Configurations'].append(
+                    {
+                        "Classification": "presto-connector-hive",
+                        "Properties": {
+                            "hive.metastore": "glue"
+                        }
+                    });
+        if isSparkAppRequested and event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "true":
+            cluster_parameters['Configurations'].append(
+                {
+                    "Classification": "spark-hive-site",
+                    "Properties": {
+                        "hive.server2.enable.doAs": "true",
+                        "hive.metastore.client.factory.class": "com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory"
+                    }
+                });
+
+        if isPrestoAppRequested and event["ResourceProperties"]["InstallPrestoPlugin"] == "true":
             cluster_parameters['Steps'].append({
                 "Name": "InstallRangerPrestoPlugin",
                 "ActionOnFailure": "CONTINUE",

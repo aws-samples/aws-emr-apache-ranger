@@ -164,6 +164,12 @@ Parameters:
     Description: Password of the domain admin (joiner user) account
     NoEcho: 'true'
     Type: String
+  KdcAdminPassword:
+    Description: Password of your KDC Password
+    MaxLength: '32'
+    MinLength: '5'
+    NoEcho: 'true'
+    Type: String
   DomainAdminUser:
     AllowedPattern: '[a-zA-Z0-9]*'
     Default: awsadmin
@@ -179,6 +185,7 @@ Parameters:
     MaxLength: '25'
     MinLength: '3'
     Type: String
+    AllowedValues: ['EC2.INTERNAL']
   KerberosADdomain:
     AllowedPattern: '[a-zA-Z0-9\-]+\..+'
     Default: AWSEMR.COM
@@ -225,7 +232,6 @@ Parameters:
     AllowedValues:
       - emr-5.29.0
       - emr-5.30.1
-      - emr-5.31.0
       - emr-6.1.0
     Description: Release label for the EMR cluster
   AppsEMR:
@@ -236,6 +242,7 @@ Parameters:
     Description: Enable Kerberos on the Cluster
     Default: true
     Type: String
+    AllowedValues: [true, false]
   EnablePrestoKerberos:
     Description: Update to enable Kerberos for Presto
     Default: false
@@ -335,6 +342,11 @@ Parameters:
     Description: Password of the Ranger Admin server
     NoEcho: 'true'
     Type: String
+  UseAWSGlueForHiveMetastore:
+    Description: Install Ranger HDFS Beta
+    Default: false
+    Type: String
+    AllowedValues: [true, false]
 #  CreateNonEMRResources:
 #    Description: Only Install EMR cluster, Other resources are ignored as they might have been created with previous stacks
 #    Default: false
@@ -488,7 +500,7 @@ Resources:
       StackName: !Ref 'AWS::StackName'
       StackRegion: !Ref 'AWS::Region'
       CrossRealmTrustPrincipalPassword: !Ref 'CrossRealmTrustPrincipalPassword'
-      KdcAdminPassword: !Ref 'CrossRealmTrustPrincipalPassword'
+      KdcAdminPassword: !Ref 'KdcAdminPassword'
       ADDomainJoinPassword: !Ref 'ADDomainJoinPassword'
       ADDomainUser: !Ref 'DomainAdminUser'
       KerberosRealm: !Ref 'KerberosRealm'
@@ -520,6 +532,7 @@ Resources:
       DBRootPassword: !Ref DBRootPassword
       CertLocationPath: !Join ['', ["s3://", !Ref S3Bucket, "/", !Ref S3Key, "/", !Ref ProjectVersion]]
       RangerAdminPassword: !Ref RangerAdminPassword
+      UseAWSGlueForHiveMetastore: !Ref UseAWSGlueForHiveMetastore
 
   emrCreateWaitHandle:
     Type: AWS::CloudFormation::WaitConditionHandle
