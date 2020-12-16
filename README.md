@@ -17,12 +17,14 @@ The repo contains code tied to [AWS Big Data Blog](https://aws.amazon.com/blogs/
 | Module |  Architecture | Description |
 | ---------------- |  --- |-------------------------------------------------------- |
 | [Basic setup with LDAP](aws_emr_blog_v1) |  ![](images/simple-ad-setup.png) | Basic deployment using [AWS Simple AD](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_simple_ad.html), Hive and HDFS plugins and optional Presto Plugin|
+| [Kerberos enabled setup with AD/LDAP](aws_emr_blog_v1) |  ![](images/emr-ranger-v2.png) | Basic deployment using [AWS Simple AD](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_simple_ad.html), Hive and HDFS plugins and optional Presto Plugin|
 
 ### Compatibility/Supported plugins: 
 | Module|  Tag | Cloudformation stack | Apache Ranger Version | EMR Version | Supported Plugins|
 | -------| --- | --- | --- | --- |-------------------------------------------------------- |
 | V1 | [1.0](https://github.com/aws-samples/aws-emr-apache-ranger/tree/1.0) | [![Foo](images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/1.0/cloudformation/nestedstack.template) | Apache Ranger 1.0, 2.1 | emr-5.28.1, emr-5.29.0, emr-5.30.1| Hive 2.x, Hadoop 2.x, PrestoDB 0.227/0.232 (Presto plugin needs Ranger 2.0) | 
 | V1 | [1.1](https://github.com/aws-samples/aws-emr-apache-ranger/tree/1.1) | [![Foo](images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/1.1/cloudformation/nestedstack.template) | Apache Ranger 2.2 | emr-5.29.0, emr-5.30.1, emr-6.1.0 | Hive 3.x, Hadoop 3.x, PrestoSQL 338 OR PrestoDB 0.232 | 
+| V2 (Preview) | [2.0](https://github.com/aws-samples/aws-emr-apache-ranger/tree/emr-ranger-2.0) | [![Foo](images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/2.0/cloudformation/nestedstack.template) | Apache Ranger 2.1 | emr-5.30.1 | Hive 2.x, Hadoop 2.x, PrestoDB 0.227/0.232 (Presto plugin needs Ranger 2.0) | 
 
 > WARNING: The current V1 setup does not enable strong cluster level Auth (Kerberos) for EMR. Only LDAP enabled Hue UI. V2 will support Kerberos - refer to the [roadmap](https://github.com/aws-samples/aws-emr-apache-ranger/projects/1) for details.
 ### PrestoSQL Ranger plugin (EMR 6.1 & Ranger 2.2)
