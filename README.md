@@ -17,7 +17,7 @@ The repo contains code tied to [AWS Big Data Blog](https://aws.amazon.com/blogs/
 | Module |  Architecture | Description |
 | ---------------- |  --- |-------------------------------------------------------- |
 | [Basic setup with LDAP](aws_emr_blog_v1) |  ![](images/simple-ad-setup.png) | Basic deployment using [AWS Simple AD](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_simple_ad.html), Hive and HDFS plugins and optional Presto Plugin|
-| [Kerberos enabled setup with AD/LDAP](aws_emr_blog_v1) |  ![](images/emr-ranger-v2.png) | Basic deployment using [AWS Simple AD](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_simple_ad.html), Hive and HDFS plugins and optional Presto Plugin|
+| [Kerberos enabled setup with AD/LDAP](aws_emr_blog_v1) |  ![](images/emr-ranger-v2.png) | Deploy a Kerberos enabled EMR cluster using Windows AD, Hive and HDFS plugins and optional Presto Plugin|
 
 ### Compatibility/Supported plugins: 
 | Module|  Tag | Cloudformation stack | Apache Ranger Version | EMR Version | Supported Plugins|

@@ -10,3 +10,8 @@ This is V2 of the blog post with following updates
      * HDFS
      * Apache Hive
      * (Work in progress) Optional Apache PrestoDB/PrestoSQL plugin
+     
+     
+The stack needs to be deployed in 2 steps.
+ - Step 1 (step1_vpc-ec2-ad.template) - Setup VPC, Bastion Host and AD servers
+ - Step 2 (step2_ranger-rds-emr.template) - Setup RDS, Apache Ranger Server and EMR clsuter
