@@ -1,0 +1,13 @@
+/target/
+CloudFormationRunner.py
+cr_zip_upload_to_s3.sh
+cloudformations/cfparameters
+NOTES
+/cloudformation/cfparameters/
+/**/*.zip
+/scripts/emr-tls/emr-certs/
+/scripts/emr-tls/ranger-agents/*
+/scripts/emr-tls/solr-client/
+/scripts/emr-tls/ranger-plugin-keystore.jks
+/scripts/emr-tls/ranger-plugin-truststore.jks
+/scripts/emr-tls/ranger-server/
