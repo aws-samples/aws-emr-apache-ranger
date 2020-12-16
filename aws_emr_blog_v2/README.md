@@ -9,7 +9,7 @@ This is V2 of the blog post with following updates
    * Ranger Plugins
      * HDFS
      * Apache Hive
-     * (Work in progress) Optional Apache PrestoDB/PrestoSQL plugin
+     * Optional Apache PrestoDB/PrestoSQL plugin (Work in progress)
      
      
 The stack needs to be deployed in 2 steps.
