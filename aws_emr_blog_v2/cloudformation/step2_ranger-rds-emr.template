@@ -214,11 +214,6 @@ Parameters:
     Default: false
     Type: String
     AllowedValues: [true, false]
-  PrestoEngine:
-    Description: Presto Engine. PrestoSQL is only available with EMR 6.x
-    Default: Presto
-    Type: String
-    AllowedValues: [Presto, PrestoSQL]
   InstallCloudWatchAgentForAudit:
     Description: Install Cloudwatch Agent to capture Ranger AuditLogs
     Default: false
@@ -391,7 +386,6 @@ Resources:
         DBUserName: !Ref DBUserName
         DBRootPassword: !Ref DBRootPassword
         InstallPrestoPlugin: !Ref InstallPrestoPlugin
-        PrestoEngine: !Ref PrestoEngine
         InstallCloudWatchAgentForAudit: !Ref InstallCloudWatchAgentForAudit
         RangerAdminPassword: !Ref RangerAdminPassword
         AttachAdditionalSourcePrefixToSG: !Ref AttachAdditionalSourcePrefixToSG
