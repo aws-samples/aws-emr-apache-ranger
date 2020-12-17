@@ -19,6 +19,7 @@ def create(event, context):
     apps = event["ResourceProperties"]["AppsEMR"]
     s3Bucket = event["ResourceProperties"]["S3Bucket"]
     emrReleaseLabel = event["ResourceProperties"]["emrReleaseLabel"]
+    prestoEngineRequested = "Presto"
     isPrestoAppRequested = False
     isSparkAppRequested = False
     formatted_applist = apps.split(",")
@@ -27,6 +28,7 @@ def create(event, context):
         applist.append({"Name": app.strip()})
         if app.strip() in ["Presto", "PrestoSQL"]:
             isPrestoAppRequested = True
+            prestoEngineRequested = app.strip()
         if app.strip() in ["Spark"]:
             isSparkAppRequested = True
 
@@ -379,30 +381,41 @@ def create(event, context):
                 "hadoop.proxyuser.hue_hive.groups": "*"
             }
         })
+
         if isPrestoAppRequested:
-            cluster_parameters['BootstrapActions'].append(
-                {
-                    "Name": "Setup Presto Kerberos",
-                    "ScriptBootstrapAction": {
-                        "Path": "s3://" + s3Bucket + "/" + event["ResourceProperties"][
-                            "S3Key"] + "/" + event["ResourceProperties"][
-                                    "ProjectVersion"] + "/scripts/configure_presto_kerberos_ba.sh",
-                        "Args": [
-                            "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
-                                "S3Key"] + "/" + event["ResourceProperties"][
-                                "ProjectVersion"],
-                            event["ResourceProperties"]["KdcAdminPassword"]
-                        ]
-                    }
-                })
-            if event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "true":
-                cluster_parameters['Configurations'].append(
+            if event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "false":
+                cluster_parameters['BootstrapActions'].append(
                     {
-                        "Classification": "presto-connector-hive",
-                        "Properties": {
-                            "hive.metastore": "glue"
+                        "Name": "Setup Presto Kerberos",
+                        "ScriptBootstrapAction": {
+                            "Path": "s3://" + s3Bucket + "/" + event["ResourceProperties"][
+                                "S3Key"] + "/" + event["ResourceProperties"][
+                                        "ProjectVersion"] + "/scripts/configure_presto_kerberos_ba.sh",
+                            "Args": [
+                                "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
+                                    "S3Key"] + "/" + event["ResourceProperties"][
+                                    "ProjectVersion"],
+                                event["ResourceProperties"]["KdcAdminPassword"]
+                            ]
                         }
-                    });
+                    })
+            if event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "true":
+                if prestoEngineRequested == "PrestoSQL":
+                    cluster_parameters['Configurations'].append(
+                        {
+                            "Classification": "prestosql-connector-hive",
+                            "Properties": {
+                                "hive.metastore": "glue"
+                            }
+                        });
+                else:
+                    cluster_parameters['Configurations'].append(
+                        {
+                            "Classification": "presto-connector-hive",
+                            "Properties": {
+                                "hive.metastore": "glue"
+                            }
+                        });
         if isSparkAppRequested and event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "true":
             cluster_parameters['Configurations'].append(
                 {
@@ -427,7 +440,7 @@ def create(event, context):
                         event["ResourceProperties"][
                             "ProjectVersion"],
                         event["ResourceProperties"]["emrReleaseLabel"],
-                        event["ResourceProperties"]["PrestoEngine"],
+                        prestoEngineRequested,
                         event["ResourceProperties"]["RangerHttpProtocol"],
                         event["ResourceProperties"]["InstallCloudWatchAgentForAudit"]
                     ]

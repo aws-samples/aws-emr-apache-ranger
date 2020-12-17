@@ -238,6 +238,7 @@ Parameters:
     Description: 'Comma separated list of applications to install on the cluster e.g., '
     Type: String
     Default: Hadoop, Spark, Hive, Livy, Hue
+    AllowedValues: ["Hadoop, Spark, Hive, Livy, Hue", "Hadoop, Spark, Hive, Livy, Hue, Presto", "Hadoop, Spark, Hive, Livy, Hue, PrestoSQL"]
   EnableKerberos:
     Description: Enable Kerberos on the Cluster
     Default: true
@@ -253,11 +254,6 @@ Parameters:
     Default: false
     Type: String
     AllowedValues: [true, false]
-  PrestoEngine:
-    Description: Presto Engine. PrestoSQL is only available with EMR 6.x
-    Default: Presto
-    Type: String
-    AllowedValues: [Presto, PrestoSQL]
   InstallCloudWatchAgentForAudit:
     Description: Install Cloudwatch Agent to capture Ranger AuditLogs
     Default: false
@@ -525,7 +521,6 @@ Resources:
       RangerHttpProtocol: !Ref RangerHttpProtocol
       EnablePrestoKerberos: !Ref EnablePrestoKerberos
       InstallPrestoPlugin: !Ref InstallPrestoPlugin
-      PrestoEngine: !Ref PrestoEngine
       InstallCloudWatchAgentForAudit: !Ref InstallCloudWatchAgentForAudit
       DBHostName: !Ref DBHostName
       DBUserName: !Ref DBUserName
