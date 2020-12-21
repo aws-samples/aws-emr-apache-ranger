@@ -71,7 +71,6 @@ Resources:
   resSGBase:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: ora2pgblogsecuritygroup
       GroupDescription: Base Security Group
       VpcId: !Ref 'VPC'
       SecurityGroupEgress:
@@ -100,7 +99,6 @@ Resources:
     Type: AWS::RDS::DBInstance
     Properties:
       DBName: !Ref 'MySQLDBName'
-      DBInstanceIdentifier: !Ref 'MySQLDBInstanceIdentifier'
       AllocatedStorage: !Ref 'MySQLDBAllocatedStorage'
       DBInstanceClass: !Ref 'MySQLDBInstanceClass'
       Engine: mysql

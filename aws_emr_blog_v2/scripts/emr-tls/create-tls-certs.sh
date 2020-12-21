@@ -14,7 +14,7 @@ truststore_ranger_server_alias="rangeradmin"
 certs_subject="/C=US/ST=TX/L=Dallas/O=EMR/OU=EMR/CN=*.ec2.internal"
 
 generate_certs() {
-  rm -r $1
+  rm -rf $1
   mkdir -p $1
   pushd $1
   openssl req -x509 -newkey rsa:4096 -keyout privateKey.pem -out certificateChain.pem -days 365 -nodes -subj ${certs_subject}
