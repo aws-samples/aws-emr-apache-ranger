@@ -23,11 +23,15 @@ db_root_password=$9
 ldap_admin_user=${10}
 ldap_domain_dns=${11}
 ldap_admin_password=${12}
+emr_version=${13-'emr-5.30'}
 
-if [ "$ranger_version" == "2.0" ]; then
+emr_release_version_regex="^emr-6.*"
+if [[ ( "$emr_version" =~ $emr_release_version_regex ) ]]; then
+  ranger_download_version=2.2.0-SNAPSHOT
+elif [ "$ranger_version" == "2.0" ]; then
    ranger_download_version=2.1.0-SNAPSHOT
 else
-   ranger_download_version=1.0.1
+   ranger_download_version=1.1.0
 fi
 
 #sudo sed 's/awsemr.com/ec2.internal awsemr.com\nnameserver 10.0.0.2\n/g'

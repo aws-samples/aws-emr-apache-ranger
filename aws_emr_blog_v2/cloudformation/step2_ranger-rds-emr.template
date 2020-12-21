@@ -340,6 +340,7 @@ Resources:
         LDAPBindUserName: !Ref 'LDAPBindUserName'
         LDAPBindPassword: !Ref 'LDAPBindPassword'
         rangerVersion: !Ref RangerVersion
+        emrReleaseLabel: !Ref emrReleaseLabel
         KeyName: !Ref KeyName
         AttachAdditionalSourcePrefixToSG: !Ref AttachAdditionalSourcePrefixToSG
         AllowedCIDR: !Ref AllowedCIDR
