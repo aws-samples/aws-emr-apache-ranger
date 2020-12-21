@@ -204,7 +204,6 @@ Parameters:
     Description: 'Comma separated list of applications to install on the cluster e.g., '
     Type: String
     Default: Hadoop, Hive, Spark, Livy, Hue
-    AllowedValues: ["Hadoop, Spark, Hive, Livy, Hue", "Hadoop, Spark, Hive, Livy, Hue, Presto", "Hadoop, Spark, Hive, Livy, Hue, PrestoSQL"]
   EnableKerberos:
     Description: Enable Kerberos on the Cluster
     Default: true
