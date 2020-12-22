@@ -18,7 +18,7 @@ The code tied to this version deploys the following:
 
 ## Cloudformation Launch Steps:
 
- 1. Step1 - Use this script to Upload SSL key and certs to AWS Secrets Manager [Script](../aws_emr_blog_v3/emr-tls/create-tls-certs.sh) 
+ 1. Step1 - Use this script to Upload SSL key and certs to AWS Secrets Manager [Script](../aws_emr_blog_v3/scripts/emr-tls/create-tls-certs.sh) 
  2. Step2 - Create VPC/AD server [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/3.0/cloudformation/step1_vpc-ec2-ad.template)
  3. Step3 - Verify DHCPOptions to make sure Domain Name servers for the VPC are listed in the right order (AD server first followed by AmazonProvidedDNS) ![Foo](../images/dhcp-options.png)
  4. Step 4 -  Setup the Ranger Server/RDS Instance/EMR Cluster [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/3.0/cloudformation/step2_ranger-rds-emr.template) 
