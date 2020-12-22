@@ -1,0 +1,10 @@
+{
+  "name": "amazonemrs3",
+  "description": "Create EMR S3 Repo using CURL",
+  "type": "amazon-emr-s3",
+  "configs": {
+    "username": "emr_s3_user",
+    "commonNameForCertificate": "*.ec2.internal"
+  },
+  "isEnabled": true
+}

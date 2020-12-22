@@ -1,0 +1,13 @@
+{
+  "name": "amazonemrspark",
+  "description": "Create EMR Spark Repo using CURL",
+  "type": "amazon-emr-spark",
+  "configs": {
+    "username": "policymgr_hive",
+    "password": "policymgr_hive",
+    "jdbc.driverClassName": "org.apache.hive.jdbc.HiveDriver",
+    "jdbc.url": "jdbc:hive2://emr_masternode:10000/default",
+    "commonNameForCertificate": "*.ec2.internal"
+  },
+  "isEnabled": true
+}

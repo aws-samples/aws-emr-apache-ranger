@@ -1,0 +1,489 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template for launching and configuring an AD Domain controller
+  with a cross-realm trust
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Network Configuration
+        Parameters:
+          - VPC
+          - Subnet
+      - Label:
+          default: Active Directory Configuration
+        Parameters:
+          - ImageId
+          - ADServerNetBIOSName
+          - DomainDNSName
+          - DomainNetBIOSName
+          - DomainAdminUser
+          - DomainAdminPassword
+      - Label:
+          default: Amazon EC2 Configuration
+        Parameters:
+          - KeyPairName
+          - TypeOfInstance
+      - Label:
+          default: Cross-realm Trust Configuration
+        Parameters:
+          - KerberosRealm
+          - CrossRealmTrustPrincipalPassword
+    ParameterLabels:
+      VPC:
+        default: 'VPC ID: '
+      ImageId:
+        default: 'ImageId: '
+      Subnet:
+        default: 'Subnet ID: '
+      KeyPairName:
+        default: 'Key pair name: '
+      TypeOfInstance:
+        default: 'Instance type: '
+      ADServerNetBIOSName:
+        default: 'Domain Controller name: '
+      DomainDNSName:
+        default: 'Active Directory domain: '
+      DomainAdminUser:
+        default: 'Domain admin user: '
+      DomainAdminPassword:
+        default: 'Domain admin password: '
+      DomainNetBIOSName:
+        default: 'Domain NetBIOS name: '
+      KerberosRealm:
+        default: 'EMR Kerberos realm: '
+      CrossRealmTrustPrincipalPassword:
+        default: 'Cross-realm trust password: '
+Parameters:
+  KeyPairName:
+    Description: Name of an existing EC2 key pair to enable access to the domain controller
+      instance
+    Type: AWS::EC2::KeyPair::KeyName
+  ImageId:
+    Description: ID of a windows machine image that was created in the Step 0.
+    Type: AWS::EC2::Image::Id
+  Subnet:
+    Description: ID of an existing subnet for the domain controller
+    Type: AWS::EC2::Subnet::Id
+  VPC:
+    Description: 'Launch the domain controller on this VPC. NOTE: Use a new VPC that
+      you have created for this'
+    Type: AWS::EC2::VPC::Id
+  CIDRAccessToADAndBastion:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
+    Description: The CIDR IP range that is permitted to access the instances. We recommend
+      that you set this value to a trusted IP range.
+    Type: String
+    Default: 0.0.0.0/0
+  TypeOfInstance:
+    Description: Instance type for the domain controller EC2 instance
+    Type: String
+    Default: m5.2xlarge
+    AllowedValues:
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+  ADServerNetBIOSName:
+    AllowedPattern: '[a-zA-Z0-9\-]+'
+    Default: DC1
+    Description: NetBIOS (hostname) name of the Active Directory server (up to 15
+      characters) e.g., DC1
+    MaxLength: '15'
+    MinLength: '1'
+    Type: String
+  DomainDNSName:
+    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
+    Default: awsemr.com
+    Description: Fully qualified domain name (FQDN) of the forest root domain e.g.,
+      awsemr.com
+    MaxLength: '25'
+    MinLength: '3'
+    Type: String
+  DomainNetBIOSName:
+    AllowedPattern: '[a-zA-Z0-9\-]+'
+    Default: AWSEMR
+    Description: NetBIOS name of the domain (up to 15 characters) for users of earlier
+      versions of Windows e.g., AWSEMR
+    MaxLength: '15'
+    MinLength: '1'
+    Type: String
+  DomainAdminPassword:
+    AllowedPattern: (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+    Description: 'Password for the domain admin user. Must be at least 8 characters
+      containing letters, numbers and symbols - Eg: CheckSum123'
+    MaxLength: '32'
+    MinLength: '8'
+    NoEcho: 'true'
+    Type: String
+  DomainAdminUser:
+    AllowedPattern: '[a-zA-Z0-9]*'
+    Default: awsadmin
+    Description: User name for the account that will be added as Domain Administrator.
+      This is separate from the default "Administrator" account
+    MaxLength: '25'
+    MinLength: '5'
+    Type: String
+  KerberosRealm:
+    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
+    Default: EC2.INTERNAL
+    Description: EMR Kerberos realm name. This is usually the VPC's domain name in
+      uppercase letters e.g. EC2.INTERNAL
+    MaxLength: '25'
+    MinLength: '3'
+    Type: String
+  CrossRealmTrustPrincipalPassword:
+    Description: 'Password that you want to use for your cross-realm trust - Eg: CheckSum123'
+    MaxLength: '32'
+    MinLength: '5'
+    NoEcho: 'true'
+    Type: String
+  LDAPBindUserName:
+    Description: BindUser
+    Type: String
+    Default: binduser
+    AllowedValues:
+      - binduser
+  LDAPBindPassword:
+    Description: BindPassword AD server
+    Type: String
+    NoEcho: true
+  DefaultADUserPassword:
+    Description: Default Password for all users created in the AD server
+    Type: String
+    NoEcho: true
+Resources:
+  ManagedInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ssm.amazonaws.com
+            - ec2.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+      - arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess
+      - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+      Path: "/"
+  ManagedInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+        - !Ref ManagedInstanceRole
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: CloudFormationGroup
+      VpcId: !Ref 'VPC'
+      SecurityGroupIngress:
+        - IpProtocol: '-1'
+          CidrIp: 10.0.0.0/16
+      Tags:
+        - Key: Name
+          Value: SecurityGroup
+  InboundADSecurityGroup:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      FromPort: '3389'
+      ToPort: '3389'
+      CidrIp: !Ref 'CIDRAccessToADAndBastion'
+      GroupId: !Ref 'SecurityGroup'
+  DomainController:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          config:
+            - setup
+            - rename
+            - installADDS
+            - configureTrust
+            - finalize
+        setup:
+          files:
+            c:\cfn\scripts\ConvertTo-EnterpriseAdmin.ps1:
+              content: !Join
+                - ''
+                - - "[CmdletBinding()]\n"
+                  - "param(\n"
+                  - "    [string[]]\n"
+                  - "    [Parameter(Position=0)]\n"
+                  - "    $Groups = @('domain admins','schema admins','enterprise admins'),\n"
+                  - "\n"
+                  - "    [string[]]\n"
+                  - "    [Parameter(Mandatory=$true, Position=1)]\n"
+                  - "    $Members\n"
+                  - ")\n"
+                  - "\n"
+                  - "$Groups | ForEach-Object{\n"
+                  - "    Add-ADGroupMember -Identity 'domain admins' -Members $Members\n"
+                  - '}'
+                  - "\n"
+            c:\cfn\cfn-hup.conf:
+              content: !Join
+                - ''
+                - - "[main]\n"
+                  - stack=
+                  - !Ref 'AWS::StackName'
+                  - "\n"
+                  - region=
+                  - !Ref 'AWS::Region'
+                  - "\n"
+            c:\cfn\hooks.d\cfn-auto-reloader.conf:
+              content: !Join
+                - ''
+                - - "[cfn-auto-reloader-hook]\n"
+                  - "triggers=post.update\n"
+                  - "path=Resources.DomainController.Metadata.AWS::CloudFormation::Init\n"
+                  - 'action=cfn-init.exe -v -c config -s '
+                  - !Ref 'AWS::StackId'
+                  - ' -r DomainController'
+                  - ' --region '
+                  - !Ref 'AWS::Region'
+                  - "\n"
+            c:\cfn\scripts\Create-Users.ps1:
+              content: !Join
+                - ''
+                - - "New-ADUser -Name \""
+                  - !Ref 'LDAPBindUserName'
+                  - "\" -OtherAttributes @{'title'=\"bindaccount\";'mail'=\""
+                  - !Ref 'LDAPBindUserName'
+                  - "@"
+                  - !Ref 'DomainDNSName'
+                  - "\"}\n"
+                  - "Enable-ADAccount -Identity \""
+                  - !Ref 'LDAPBindUserName'
+                  - "\"\n"
+                  - "Set-ADAccountPassword -Identity '"
+                  - !Ref 'LDAPBindUserName'
+                  - "'-Reset -NewPassword (ConvertTo-SecureString -AsPlainText '"
+                  - !Ref 'LDAPBindPassword'
+                  - "' -Force)\n"
+                  - "Enable-ADAccount -Identity \""
+                  - !Ref 'LDAPBindUserName'
+                  - "\"\n"
+                  - "New-ADUser -Name \"analyst1\" -OtherAttributes @{'title'=\"analyst1\";'mail'=\"analyst1@"
+                  - !Ref 'DomainDNSName'
+                  - "\"}\n"
+                  - "Enable-ADAccount -Identity \"analyst1\"\n"
+                  - "Set-ADAccountPassword -Identity 'analyst1' -Reset -NewPassword (ConvertTo-SecureString -AsPlainText '"
+                  - !Ref 'DefaultADUserPassword'
+                  - "' -Force)\n"
+                  - "Enable-ADAccount -Identity \"analyst1\"\n"
+                  - "New-ADUser -Name \"analyst2\" -OtherAttributes @{'title'=\"analyst2\";'mail'=\"analyst2@"
+                  - !Ref 'DomainDNSName'
+                  - "\"}\n"
+                  - "Enable-ADAccount -Identity \"analyst2\"\n"
+                  - "Set-ADAccountPassword -Identity 'analyst2' -Reset -NewPassword (ConvertTo-SecureString -AsPlainText '"
+                  - !Ref 'DefaultADUserPassword'
+                  - "' -Force)\n"
+                  - "Enable-ADAccount -Identity \"analyst2\"\n"
+          services:
+            windows:
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                  - c:\cfn\cfn-hup.conf
+                  - c:\cfn\hooks.d\cfn-auto-reloader.conf
+        rename:
+          commands:
+            a-execute-powershell-script-RenameComputer:
+              command: !Join
+                - ''
+                - - 'powershell.exe Rename-Computer -NewName '
+                  - !Ref 'ADServerNetBIOSName'
+                  - ' -Restart'
+              waitAfterCompletion: forever
+        installADDS:
+          commands:
+            1-install-prereqs:
+              command: !Join
+                - ''
+                - - powershell.exe -Command "Install-windowsfeature -name AD-Domain-Services
+                    -IncludeManagementTools"
+              waitAfterCompletion: '0'
+            2-install-adds:
+              command: !Join
+                - ''
+                - - 'powershell.exe -Command '
+                  - '"Install-ADDSForest -DomainName '
+                  - !Ref 'DomainDNSName'
+                  - ' '
+                  - '-SafeModeAdministratorPassword (ConvertTo-SecureString '
+                  - ''''
+                  - !Ref 'DomainAdminPassword'
+                  - ''''
+                  - ' -AsPlainText -Force) '
+                  - '-DomainMode WinThreshold '
+                  - '-DomainNetbiosName '
+                  - !Ref 'DomainNetBIOSName'
+                  - ' '
+                  - '-ForestMode WinThreshold '
+                  - '-DatabasePath "C:\Windows\NTDS" '
+                  - '-LogPath "C:\Windows\NTDS" '
+                  - '-SysvolPath "C:\Windows\SYSVOL" '
+                  - '-CreateDnsDelegation:$false '
+                  - '-InstallDns:$true '
+                  - '-NoRebootOnCompletion:$false '
+                  - -Force:$true"
+              waitAfterCompletion: forever
+            3-restart-service:
+              command: !Join
+                - ''
+                - - powershell.exe -Command Restart-Service NetLogon -EA 0
+              waitAfterCompletion: '300'
+            4-restart-service:
+              command: !Join
+                - ''
+                - - powershell.exe -Command Restart-Service ADWS
+              waitAfterCompletion: '300'
+            5-create-adminuser:
+              command: !Join
+                - ''
+                - - 'powershell.exe -Command '
+                  - '"New-ADUser '
+                  - '-Name '
+                  - !Ref 'DomainAdminUser'
+                  - ' '
+                  - '-UserPrincipalName '
+                  - !Ref 'DomainAdminUser'
+                  - '@'
+                  - !Ref 'DomainDNSName'
+                  - ' '
+                  - '-AccountPassword (ConvertTo-SecureString '
+                  - ''''
+                  - !Ref 'DomainAdminPassword'
+                  - ''''
+                  - ' -AsPlainText -Force) '
+                  - '-Enabled $true '
+                  - -PasswordNeverExpires $true"
+              waitAfterCompletion: '0'
+            6-update-adminuser:
+              command: !Join
+                - ''
+                - - 'powershell.exe -Command c:\cfn\scripts\ConvertTo-EnterpriseAdmin.ps1
+                    -Members '
+                  - !Ref 'DomainAdminUser'
+              waitAfterCompletion: '0'
+            7-create-other-ad-users:
+              command: !Join
+                - ''
+                - - 'powershell.exe -Command c:\cfn\scripts\Create-Users.ps1'
+              waitAfterCompletion: '0'
+        configureTrust:
+          commands:
+            a-add-kdc:
+              command: !Join
+                - ''
+                - - 'powershell.exe -Command '
+                  - '"ksetup /addkdc '
+                  - !Ref 'KerberosRealm'
+                  - '"'
+              waitAfterCompletion: '0'
+            b-add-trust:
+              command: !Join
+                - ''
+                - - 'powershell.exe -Command '
+                  - '"netdom trust '
+                  - !Ref 'KerberosRealm'
+                  - ' '
+                  - '/Domain:'
+                  - !Ref 'DomainDNSName'
+                  - ' '
+                  - '/add /realm /passwordt:'
+                  - !Ref 'CrossRealmTrustPrincipalPassword'
+                  - '"'
+              waitAfterCompletion: '0'
+            c-add-enckeys:
+              command: !Join
+                - ''
+                - - 'powershell.exe -Command '
+                  - '"ksetup /SetEncTypeAttr '
+                  - !Ref 'KerberosRealm'
+                  - ' '
+                  - AES256-CTS-HMAC-SHA1-96"
+              waitAfterCompletion: '0'
+        finalize:
+          commands:
+            a-signal-success:
+              command: !Join
+                - ''
+                - - cfn-signal.exe -e 0 "
+                  - !Ref 'DomainControllerWaitHandle'
+                  - '"'
+    Properties:
+      ImageId: !Ref 'ImageId'
+      InstanceType: !Ref 'TypeOfInstance'
+      Tags:
+        - Key: Name
+          Value: !Ref 'ADServerNetBIOSName'
+      SubnetId: !Ref 'Subnet'
+      IamInstanceProfile: !Ref ManagedInstanceProfile
+      KeyName: !Ref 'KeyPairName'
+      SecurityGroupIds:
+        - !Ref 'SecurityGroup'
+      UserData: !Base64
+        Fn::Join:
+          - ''
+          - - "<script>\n"
+            - 'cfn-init.exe -v -c config -s '
+            - !Ref 'AWS::StackId'
+            - ' -r DomainController'
+            - ' --region '
+            - !Ref 'AWS::Region'
+            - "\n"
+            - "</script>\n"
+  DomainControllerWaitHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  DomainControllerWaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn: DomainController
+    Properties:
+      Handle: !Ref 'DomainControllerWaitHandle'
+      Timeout: '3600'
+  DHCPOptions:
+    Type: AWS::EC2::DHCPOptions
+    DependsOn:
+      - DomainControllerWaitCondition
+    Properties:
+      DomainName: ec2.internal
+      DomainNameServers:
+        - !GetAtt 'DomainController.PrivateIp'
+        - AmazonProvidedDNS
+      Tags:
+        - Key: Domain
+          Value: !Ref 'DomainDNSName'
+  VPCDHCPOptionsAssociation:
+    Type: AWS::EC2::VPCDHCPOptionsAssociation
+    Properties:
+      VpcId: !Ref 'VPC'
+      DhcpOptionsId: !Ref 'DHCPOptions'
+Outputs:
+  StackName:
+    Value: !Ref 'AWS::StackName'
+  LDAPHostPrivateIP:
+    Value: !GetAtt 'DomainController.PrivateIp'
+    Description: LDAP Host Private IP address
+  Domain:
+    Description: The DomainDNSName
+    Value: !Ref 'DomainDNSName'
+  Realm:
+    Description: The KerberosRealm
+    Value: !Ref 'KerberosRealm'
+  AdminServer:
+    Description: The DomainDNSName
+    Value: !Ref 'DomainDNSName'
+  KdcServer:
+    Description: The DomainDNSName
+    Value: !Ref 'DomainDNSName'
+  ADDomainJoinUser:
+    Description: The DomainAdminUser
+    Value: !Ref 'DomainAdminUser'

@@ -1,0 +1,24 @@
+{
+ "policyName": "Admin1Policy",
+ "databases": "default",
+ "tables": "*",
+ "columns": "*",
+ "udfs": "",
+ "description": "Hive Policy",
+ "repositoryName": "hivedev",
+ "repositoryType": "hive",
+ "tableType": "Inclusion",
+ "columnType": "Inclusion",
+ "isEnabled": true,
+ "isAuditEnabled": true,
+ "permMapList": [
+  {
+ "userList": [
+ "admin1"
+ ],
+ "permList": [
+ "all"
+ ]
+ }
+ ]
+}
