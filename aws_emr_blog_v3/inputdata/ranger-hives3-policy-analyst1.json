@@ -1,0 +1,42 @@
+{
+ "service": "hivedev",
+ "name": "Analyst1 S3",
+ "policyType": 0,
+ "policyPriority": 0,
+ "description": "",
+ "isAuditEnabled": true,
+ "resources": {
+  "url": {
+   "values": [
+    "s3://*"
+   ],
+   "isExcludes": false,
+   "isRecursive": true
+  }
+ },
+ "policyItems": [
+  {
+   "accesses": [
+    {
+     "type": "all",
+     "isAllowed": true
+    }
+   ],
+   "users": [
+    "analyst1"
+   ],
+   "groups": [],
+   "roles": [],
+   "conditions": [],
+   "delegateAdmin": false
+  }
+ ],
+ "denyPolicyItems": [],
+ "allowExceptions": [],
+ "denyExceptions": [],
+ "dataMaskPolicyItems": [],
+ "rowFilterPolicyItems": [],
+ "serviceType": "hive",
+ "isDenyAllElse": false,
+ "isEnabled": true
+}

@@ -1,0 +1,54 @@
+{
+ "service": "hivedev",
+ "name": "Analyst2Policy",
+ "policyType": 0,
+ "description": "Hive Policy",
+ "isAuditEnabled": true,
+ "resources": {
+  "column": {
+   "values": [
+    "*"
+   ],
+   "isExcludes": false,
+   "isRecursive": false
+  },
+  "table": {
+   "values": [
+    "tblanalyst2"
+   ],
+   "isExcludes": false,
+   "isRecursive": false
+  },
+  "database": {
+   "values": [
+    "default"
+   ],
+   "isExcludes": false,
+   "isRecursive": false
+  }
+ },
+ "policyItems": [
+  {
+   "accesses": [
+    {
+     "type": "all",
+     "isAllowed": true
+    }
+   ],
+   "users": [
+    "analyst2"
+   ],
+   "groups": [],
+   "conditions": [],
+   "delegateAdmin": false
+  }
+ ],
+ "denyPolicyItems": [],
+ "allowExceptions": [],
+ "denyExceptions": [],
+ "dataMaskPolicyItems": [],
+ "rowFilterPolicyItems": [],
+ "id": 6,
+ "isEnabled": true,
+ "version": 1
+}

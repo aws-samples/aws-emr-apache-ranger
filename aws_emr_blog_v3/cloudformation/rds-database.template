@@ -1,0 +1,120 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template for setting up a RDS instance to be used by the Apache Ranger server
+Parameters:
+  VPC:
+    Description: Select the Virtual Private Cloud (VPC) that was created
+    Type: AWS::EC2::VPC::Id
+  Subnet1:
+      Description: ID of an existing subnet for the domain controller
+      Type: AWS::EC2::Subnet::Id
+  Subnet2:
+      Description: ID of an existing subnet for the domain controller
+      Type: AWS::EC2::Subnet::Id
+  ClientIP:
+    Description: The IP address range that can be used to connect to the RDS instances
+      and EC2 instance from your local machine.It must be a valid IP CIDR range of
+      the form x.x.x.x/x.Pls get your address using checkip.amazonaws.com or whatsmyip.org
+    Type: String
+    MinLength: '9'
+    MaxLength: '18'
+    Default: 0.0.0.0/0
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: It must be a valid IP CIDR range of the form x.x.x.x/x.
+      Suggest to enable access to your IP address only. Pls get your address using
+      checkip.amazonaws.com or whatsmyip.org.
+  MySQLDBInstanceClass:
+    Description: ' The RDS MySQL database instance type'
+    Type: String
+    Default: db.m4.xlarge
+    AllowedValues:
+    - db.m4.xlarge
+    ConstraintDescription: For this Blog post we are using db.m4.xlarge instance type.
+  MySQLDBName:
+    Description: ' The RDS MySQL database instance identifier'
+    Type: String
+    Default: rangerdb
+    AllowedValues:
+    - rangerdb
+  MySQLDBUserName:
+    Description: ' The RDS MySQL database username'
+    Type: String
+    Default: root
+    AllowedValues:
+    - root
+  MySQLDBPassword:
+    Description: ' The RDS MySQL database password'
+    MaxLength: '41'
+    MinLength: '8'
+    NoEcho: 'true'
+    Type: String
+  MySQLDBAllocatedStorage:
+    Description: ' The RDS MySQL database size (Gb)'
+    Type: Number
+    Default: '100'
+    AllowedValues:
+    - '100'
+Resources:
+  resMySQLSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet available for the RDS DB Instance.
+      SubnetIds:
+      - !Ref 'Subnet1'
+      - !Ref 'Subnet2'
+      Tags:
+      - Key: Name
+        Value: cfn
+  resSGBase:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Base Security Group
+      VpcId: !Ref 'VPC'
+      SecurityGroupEgress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: '-1'
+        FromPort: -1
+        ToPort: -1
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        CidrIp: !Ref 'ClientIP'
+        FromPort: '22'
+        ToPort: '22'
+      - IpProtocol: tcp
+        CidrIp: !Ref 'ClientIP'
+        FromPort: '3306'
+        ToPort: '3306'
+  resSGBaseIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt [resSGBase, GroupId]
+      IpProtocol: '-1'
+      FromPort: '-1'
+      ToPort: '-1'
+      SourceSecurityGroupId: !GetAtt [resSGBase, GroupId]
+  resMySQLDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: !Ref 'MySQLDBName'
+      AllocatedStorage: !Ref 'MySQLDBAllocatedStorage'
+      DBInstanceClass: !Ref 'MySQLDBInstanceClass'
+      Engine: mysql
+      MasterUsername: !Ref 'MySQLDBUserName'
+      MasterUserPassword: !Ref 'MySQLDBPassword'
+      DBSubnetGroupName: !Ref 'resMySQLSubnetGroup'
+      VPCSecurityGroups:
+      - !Ref 'resSGBase'
+      StorageType: io1
+      Iops: '1000'
+      DBParameterGroupName: !Ref 'MyRDSParamGroup'
+      EngineVersion: 5.7
+  MyRDSParamGroup:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Family: MySQL5.7
+      Description: CloudFormation Sample Database Parameter Group
+      Parameters:
+        log_bin_trust_function_creators: '1'
+Outputs:
+  RDSInstanceAddress:
+    Description: IP Address of the RDS instance
+    Value: !GetAtt 'resMySQLDB.Endpoint.Address'
