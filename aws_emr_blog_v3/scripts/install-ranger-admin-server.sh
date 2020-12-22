@@ -16,7 +16,7 @@ set -x
 #================================================================
 #- IMPLEMENTATION
 #-    version         install-ranger-admin-server.sh 1.0
-#-    author          Varun Bhamidimarri
+#-    author          Varun Bhamidimarri, Stefano Sandonà
 #-    license         MIT license
 #-
 #

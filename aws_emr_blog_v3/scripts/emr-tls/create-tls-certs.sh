@@ -24,7 +24,7 @@ set -x
 #================================================================
 #- IMPLEMENTATION
 #-    version         create-tls-certs.sh 1.0
-#-    author          Varun Bhamidimarri
+#-    author          Varun Bhamidimarri, Stefano Sandonà
 #-    license         MIT license
 #-
 #
