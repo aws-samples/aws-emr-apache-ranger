@@ -5,13 +5,13 @@ set -x
 # Script to setup the Apache Ranger Server
 #================================================================
 #% SYNOPSIS
-#+    install-ranger-admin-server.sh args ...
+#+    install-ranger-admin-server.sh <ldap_ip_address> <ldap_base_dn> <ldap_bind_user_dn> <ldap_bind_password> <ranger_version> <s3bucket> <project_version> <db_host_name> <db_root_password>
 #%
 #% DESCRIPTION
 #%    Downloads the scripts used in EMR steps
 #%
 #% EXAMPLES
-#%    install-ranger-admin-server.sh args ..
+#%    install-ranger-admin-server.sh <ldap_ip_address> dc=awsemr,dc=com binduser@awsemr.com <ldap_bind_password> 2.0 s3://aws-bigdata-blog/artifacts/aws-blog-emr-ranger 3.0 <rds-database-name>.rds.amazonaws.com <db_root_password>
 #%
 #================================================================
 #- IMPLEMENTATION
@@ -33,7 +33,6 @@ hostname=`hostname -I | xargs`
 installpath=/usr/lib/ranger
 
 ldap_ip_address=$1
-ldap_server_url=ldap://$ldap_ip_address
 ldap_base_dn=$2
 ldap_bind_user_dn=$3
 ldap_bind_password=$4
@@ -42,10 +41,11 @@ s3bucket=$6
 project_version=${7-'2.0'}
 db_host_name=$8
 db_root_password=$9
-ldap_admin_user=${10}
-ldap_domain_dns=${11}
-ldap_admin_password=${12}
+ldap_server_url=ldap://$ldap_ip_address
 ranger_service_def_ver=2.0.0
+#ldap_admin_user=${10}
+#ldap_domain_dns=${11}
+#ldap_admin_password=${12}
 
 if [ "$ranger_version" == "2.0" ]; then
    ranger_download_version=2.1.0-SNAPSHOT
@@ -64,7 +64,7 @@ mysql_jar_location=$s3bucket/ranger/ranger-$ranger_download_version/mysql-connec
 mysql_jar=mysql-connector-java-5.1.39.jar
 
 
-certs_s3_location=${s3bucket}/${project_version}/emr-tls/
+#certs_s3_location=${s3bucket}/${project_version}/emr-tls/
 
 certs_path="/tmp/certs"
 
@@ -93,7 +93,7 @@ truststore_admin_alias="rangeradmin"
 #Download certs
 rm -rf ${certs_path}
 mkdir -p ${certs_path}
-aws s3 sync ${certs_s3_location} ${certs_path}
+#aws s3 sync ${certs_s3_location} ${certs_path}
 
 mkdir -p ${ranger_agents_certs_path}
 mkdir -p ${ranger_server_certs_path}
@@ -144,11 +144,11 @@ sudo keytool -importkeystore -deststorepass ${solr_keystore_password} -destkeyst
 # Setup
 yum install -y openldap openldap-clients openldap-servers
 # Setup LDAP users
-aws s3 cp $s3bucket/${project_version}/inputdata/load-users-new.ldf .
-aws s3 cp $s3bucket/${project_version}/inputdata/modify-users-new.ldf .
-aws s3 cp $s3bucket/${project_version}/scripts/create-users-using-ldap.sh .
-chmod +x create-users-using-ldap.sh
-./create-users-using-ldap.sh $ldap_ip_address $ldap_admin_user@$ldap_domain_dns $ldap_admin_password $ldap_base_dn || true
+#aws s3 cp $s3bucket/${project_version}/inputdata/load-users-new.ldf .
+#aws s3 cp $s3bucket/${project_version}/inputdata/modify-users-new.ldf .
+#aws s3 cp $s3bucket/${project_version}/scripts/create-users-using-ldap.sh .
+#chmod +x create-users-using-ldap.sh
+#./create-users-using-ldap.sh $ldap_ip_address $ldap_admin_user@$ldap_domain_dns $ldap_admin_password $ldap_base_dn || true
 #Install mySQL
 yum -y install mysql-server
 service mysqld start
