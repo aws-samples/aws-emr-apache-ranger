@@ -349,7 +349,7 @@ sudo mv /tmp/ranger-spark-plugin-2.x.jar /usr/lib/ranger/$ranger_admin_server/ew
 # Setup the EMRFS Ranger plugin definition
 sudo rm -rf /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/classes/ranger-plugins/amazon-emr-emrfs
 sudo mkdir -p /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/classes/ranger-plugins/amazon-emr-emrfs
-sudo wget -O /tmp/ranger-emrfs-s3-plugin-2.x.jar wget https://s3.amazonaws.com/elasticmapreduce/ranger/service-definitions/version-2.0/ranger-emr-emrfs-plugin-2.x.jar
+sudo wget -O /tmp/ranger-emrfs-s3-plugin-2.x.jar https://s3.amazonaws.com/elasticmapreduce/ranger/service-definitions/version-2.0/ranger-emr-emrfs-plugin-2.x.jar
 sudo mv /tmp/ranger-emrfs-s3-plugin-2.x.jar /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/classes/ranger-plugins/amazon-emr-emrfs/
 
 
