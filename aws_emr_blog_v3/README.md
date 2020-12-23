@@ -4,17 +4,17 @@ The repo contains code tied to the AWS Big Data Blog introducing native Apache R
 The code deploys the following:
 
 - Apache Ranger 2.0
-- Windows AD server on EC2
-- RDS MySQL database for Apache Ranger and Hive Metastore
-- Kerberos Enabled Amazon EMR cluster AWS Managed Ranger Plugins
+- Windows AD server on EC2 (Creates dummy users - binduser/analyst1/analyst2)
+- RDS MySQL database that is used for Apache Ranger and Hive Metastore on the EMR cluster
+- Kerberos Enabled Amazon EMR cluster (EMR 5.32) with AWS Managed Ranger Plugins
      * Amazon S3
      * Apache Spark
      * Apache Hive
 
-> **NOTE:** the code only run under US-EAST1. If you need to run in a different region you will need to copy it into a regional bucket. 
+> **NOTE:** the code only run under us-east-1 (N. Virginia). You can copy to your regional bucket to deploy in a different region. Also, create [Issue](https://github.com/aws-samples/aws-emr-apache-ranger/issues/new) if you would like support for additional regions using this repo. 
 >
 
-### NOTE: Apache Ranger plugins and Apache Ranger Admin Server SSL Keys and Certs have to be uploaded to AWS Secrets Manager for these Cloudformation scripts to work
+### NOTE: Apache Ranger plugins and Apache Ranger Admin Server SSL Keys and Certs have to be uploaded to AWS Secrets Manager for Cloudformation scripts to work
 
 ## Cloudformation Launch Steps:
 
@@ -22,9 +22,18 @@ The code deploys the following:
  
  2. Create VPC/AD server (takes ~10 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/3.0/cloudformation/step1_vpc-ec2-ad.template)
  
- 3. Verify DHCPOptions ([link](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_DHCP_Options.html)) to make sure Domain Name servers for the VPC ([link](https://console.aws.amazon.com/vpc/home?region=us-east-1#vpcs:)) are listed in the right order (AD server first followed by AmazonProvidedDNS) ![Foo](../images/dhcp-options.png)
+ 3. Verify DHCPOptions ([link](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_DHCP_Options.html)) to make sure Domain Name servers for the VPC ([link](https://console.aws.amazon.com/vpc/home?region=us-east-1#vpcs:)) are listed in the right order (AD server first followed by AmazonProvidedDNS) 
+    - ![Foo](../images/dhcp-options.png)
  
  4. Setup the Ranger Server/RDS Instance/EMR Cluster (takes ~15 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/3.0/cloudformation/step2_ranger-rds-emr.template) 
+
+## Test
+ - Login to the cluster (Apache Zeppelin, Hue, Livy or SSH)
+ - ``> pyspark``
+ - Spark access allowed by the policy: `spark.sql("select * from tblanalyst1 limit 10").show()`
+ - Spark access that will fail due to permission error: `spark.sql("select * from tblanalyst2 limit 10").show()`
+ - S3 access allowed by the policy: `productsFile = sqlContext.read.parquet("s3://aws-bigdata-blog/artifacts/aws-blog-emr-ranger/data/staging/products/")`
+ - S3 access that will fail due to permission error: `customersFile = sqlContext.read.parquet("s3://aws-bigdata-blog/artifacts/aws-blog-emr-ranger/data/staging/customers/")`
 
 ## Architecture
 
