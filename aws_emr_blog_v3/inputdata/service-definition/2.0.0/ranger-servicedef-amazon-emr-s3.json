@@ -1,8 +1,8 @@
 {
   "id": 157,
-  "name": "amazon-emr-s3",
-  "label": "S3 object storage",
-  "description": "Ranger plugin for AWS S3 object storage service",
+  "name": "amazon-emr-emrfs",
+  "label": "EMRFS S3 object storage",
+  "description": "EMRFS Ranger plugin for AWS S3 object storage service",
   "implClass": "com.amazonaws.emr.ranger.emrfs.RangerServiceS3",
   "version": 1,
   "options": {

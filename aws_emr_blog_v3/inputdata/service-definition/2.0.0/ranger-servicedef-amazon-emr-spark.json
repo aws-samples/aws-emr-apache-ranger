@@ -13,7 +13,7 @@
             "level": 10,
             "parent": "",
             "mandatory": true,
-            "lookupSupported": true,
+            "lookupSupported": false,
             "recursiveSupported": false,
             "excludesSupported": true,
             "matcher": "org.apache.ranger.plugin.resourcematcher.RangerDefaultResourceMatcher",
@@ -32,7 +32,7 @@
             "level": 20,
             "parent": "database",
             "mandatory": true,
-            "lookupSupported": true,
+            "lookupSupported": false,
             "recursiveSupported": false,
             "excludesSupported": true,
             "matcher": "org.apache.ranger.plugin.resourcematcher.RangerDefaultResourceMatcher",
@@ -46,31 +46,12 @@
 
         {
             "itemId": 3,
-            "name": "udf",
-            "type": "string",
-            "level": 20,
-            "parent": "database",
-            "mandatory": true,
-            "lookupSupported": true,
-            "recursiveSupported": false,
-            "excludesSupported": true,
-            "matcher": "org.apache.ranger.plugin.resourcematcher.RangerDefaultResourceMatcher",
-            "matcherOptions": { "wildCard":true, "ignoreCase":true },
-            "validationRegEx":"",
-            "validationMessage": "",
-            "uiHint":"",
-            "label": "EMR Spark UDF",
-            "description": "EMR Spark UDF"
-        },
-
-        {
-            "itemId": 4,
             "name": "column",
             "type": "string",
             "level": 30,
             "parent": "table",
             "mandatory": true,
-            "lookupSupported": true,
+            "lookupSupported": false,
             "recursiveSupported": false,
             "excludesSupported": true,
             "matcher": "org.apache.ranger.plugin.resourcematcher.RangerDefaultResourceMatcher",
@@ -80,25 +61,6 @@
             "uiHint":"",
             "label": "EMR Spark Column",
             "description": "EMR Spark Column"
-        },
-
-        {
-            "itemId": 5,
-            "name": "url",
-            "type": "string",
-            "level": 10,
-            "parent": "",
-            "mandatory": true,
-            "lookupSupported": false,
-            "recursiveSupported": true,
-            "excludesSupported": false,
-            "matcher": "org.apache.ranger.plugin.resourcematcher.RangerURLResourceMatcher",
-            "matcherOptions": { "wildCard":true, "ignoreCase":false },
-            "validationRegEx":"",
-            "validationMessage": "",
-            "uiHint":"",
-            "label": "EMR Spark",
-            "description": "EMR Spark"
         }
     ],
 
@@ -110,7 +72,6 @@
             "label": "select"
         }
     ],
-
     "configs":
     [
         {
