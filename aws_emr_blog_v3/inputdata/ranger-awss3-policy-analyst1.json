@@ -40,7 +40,7 @@
  "denyExceptions": [],
  "dataMaskPolicyItems": [],
  "rowFilterPolicyItems": [],
- "serviceType": "amazon-emr-s3",
+ "serviceType": "amazon-emr-emrfs",
  "options": {},
  "validitySchedules": [],
  "policyLabels": [],
