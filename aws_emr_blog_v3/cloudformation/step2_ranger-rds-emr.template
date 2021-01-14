@@ -142,6 +142,7 @@ Parameters:
     MaxLength: '25'
     MinLength: '3'
     Type: String
+    AllowedValues: ["awsemr.com"]
   CrossRealmTrustPrincipalPassword:
     Description: Password of your cross-realm trust (Should be the sames used in the previous Stack - Step1)
     MaxLength: '32'
@@ -262,6 +263,7 @@ Parameters:
     NoEcho: 'true'
     Default: admin
     Type: String
+    AllowedValues: ["admin"]
   CreateNonEMRResources:
     Description: Only Install EMR cluster, Other resources which might have been created with previous stacks will be ignored. Eg- CloudWatch Log Groups
                  Allows you to re-run the same stack multiple times.
