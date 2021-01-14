@@ -263,7 +263,7 @@ Parameters:
     Default: admin
     Type: String
   UseAWSGlueForHiveMetastore:
-    Description: Install Ranger HDFS Beta
+    Description: Allow customers to choose between RDS based Hive v/s Glue Catalog
     Default: false
     Type: String
     AllowedValues: [true, false]
@@ -340,6 +340,7 @@ Resources:
         LDAPBindUserName: !Ref 'LDAPBindUserName'
         LDAPBindPassword: !Ref 'LDAPBindPassword'
         rangerVersion: !Ref RangerVersion
+        emrReleaseLabel: !Ref emrReleaseLabel
         KeyName: !Ref KeyName
         AttachAdditionalSourcePrefixToSG: !Ref AttachAdditionalSourcePrefixToSG
         AllowedCIDR: !Ref AllowedCIDR
@@ -391,6 +392,7 @@ Resources:
         AttachAdditionalSourcePrefixToSG: !Ref AttachAdditionalSourcePrefixToSG
         AllowedCIDR: !Ref AllowedCIDR
         AdditionalSourcePrefixToSG: !Ref AdditionalSourcePrefixToSG
+        UseAWSGlueForHiveMetastore: !Ref UseAWSGlueForHiveMetastore
       TimeoutInMinutes: '60'
 Outputs:
   RDSInstanceAddress:
