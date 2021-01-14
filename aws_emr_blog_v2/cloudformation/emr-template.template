@@ -338,7 +338,7 @@ Parameters:
     NoEcho: 'true'
     Type: String
   UseAWSGlueForHiveMetastore:
-    Description: Install Ranger HDFS Beta
+    Description: Allow customers to choose between RDS based Hive v/s Glue Catalog
     Default: false
     Type: String
     AllowedValues: [true, false]
