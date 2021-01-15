@@ -1,6 +1,4 @@
 #!/bin/bash
-set -euo pipefail
-set -x
 
 #================================================================
 # Script to create SSL private keys/certs and upload to AWS Secretes Manager
@@ -31,6 +29,10 @@ set -x
 #================================================================
 #================================================================
 
+[ $# -eq 0 ] && { echo "Usage: $0 AWS_CLI_profile (To setup follow this link: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html)"; exit 1; }
+
+set -euo pipefail
+set -x
 
 AWS_PROFILE=$1
 #AWS_PROFILE=account4

@@ -22,8 +22,11 @@ The code deploys the following:
  
  2. Create VPC/AD server (takes ~10 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/3.0/cloudformation/step1_vpc-ec2-ad.template)
  
- 3. Verify DHCPOptions ([link](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_DHCP_Options.html)) to make sure Domain Name servers for the VPC ([link](https://console.aws.amazon.com/vpc/home?region=us-east-1#vpcs:)) are listed in the right order (AD server first followed by AmazonProvidedDNS) 
+ 3. Verify [DHCPOptions](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_DHCP_Options.html) to make sure Domain Name servers for the VPC are listed in the right order (AD server first followed by AmazonProvidedDNS) - ([link](https://console.aws.amazon.com/vpc/home?region=us-east-1#vpcs:))
     - ![Foo](../images/dhcp-options.png)
+    - `If the order in incorrect`, update VPC's DHCPOptions using the following steps
+      - Create a new DHCP option set - ([link](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_DHCP_Options.html#CreatingaDHCPOptionSet))
+      - Changing the set of DHCP options that a VPC uses - ([link](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_DHCP_Options.html#ChangingDHCPOptionsofaVPC)) 
  
  4. Setup the Ranger Server/RDS Instance/EMR Cluster (takes ~15 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/3.0/cloudformation/step2_ranger-rds-emr.template) 
 
