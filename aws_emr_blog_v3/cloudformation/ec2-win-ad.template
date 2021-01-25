@@ -456,8 +456,7 @@ Resources:
     Properties:
       DomainName: ec2.internal
       DomainNameServers:
-        - !GetAtt 'DomainController.PrivateIp'
-        - AmazonProvidedDNS
+        - !Join ['', [!GetAtt 'DomainController.PrivateIp', ',', AmazonProvidedDNS]]
       Tags:
         - Key: Domain
           Value: !Ref 'DomainDNSName'
