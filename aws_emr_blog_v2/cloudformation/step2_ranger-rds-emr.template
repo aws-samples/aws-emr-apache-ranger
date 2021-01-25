@@ -221,11 +221,12 @@ Parameters:
     AllowedValues: [true, false]
   emrReleaseLabel:
     Type: String
-    Default: emr-6.1.0
+    Default: emr-6.2.0
     AllowedValues:
       - emr-5.29.0
       - emr-5.31.0
       - emr-6.1.0
+      - emr-6.2.0
   S3Bucket:
     Description: S3Bucket where artifacts are stored
     Type: String

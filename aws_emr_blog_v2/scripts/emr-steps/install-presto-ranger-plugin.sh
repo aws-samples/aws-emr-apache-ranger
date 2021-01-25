@@ -7,6 +7,12 @@ if [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then
 else
   export JAVA_HOME=/usr/lib/jvm/java-openjdk
 fi
+if [ -f "/opt/aws/puppet/bin/puppet" ]; then
+  echo "Puppet found in path"
+  puppet_cmd='/opt/aws/puppet/bin/puppet'
+else
+  puppet_cmd='puppet'
+fi
 sudo -E bash -c 'echo $JAVA_HOME'
 #installpath=/usr/lib/ranger
 #installpath=/usr/lib/ranger
@@ -188,9 +194,9 @@ sudo sed -i "s|ranger_host|$ranger_server_fqdn|g" /usr/lib/presto/plugin/ranger/
 #sudo ln -s /etc/hive/conf.dist/ranger-hive-security.xml /usr/lib/presto/plugin/ranger/conf/ranger-hive-security.xml || true
 #sudo ln -s /etc/hive/conf.dist/ranger-hive-audit.xml /usr/lib/presto/plugin/ranger/conf/ranger-hive-audit.xml || true
 
-sudo puppet apply -e 'service { "presto-server": ensure => false, }'
-sudo puppet apply -e 'service { "presto-server": ensure => true, }'
+sudo ${puppet_cmd} apply -e 'service { "presto-server": ensure => false, }'
+sudo ${puppet_cmd} apply -e 'service { "presto-server": ensure => true, }'
 
 sudo sed -i "s|PrestoDriver\", \"user\":\"root\",\"password\":\"\"|PrestoDriver\", \"user\":\"\", \"password\":\"\"|g" /etc/hue/conf.empty/hue.ini
-sudo puppet apply -e 'service { "hue": ensure => false, }'
-sudo puppet apply -e 'service { "hue": ensure => true, }'
+sudo ${puppet_cmd} apply -e 'service { "hue": ensure => false, }'
+sudo ${puppet_cmd} apply -e 'service { "hue": ensure => true, }'

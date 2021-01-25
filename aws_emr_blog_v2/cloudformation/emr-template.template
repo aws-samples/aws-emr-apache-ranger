@@ -228,11 +228,12 @@ Parameters:
       - r5.2xlarge
   emrReleaseLabel:
     Type: String
-    Default: emr-6.1.0
+    Default: emr-6.2.0
     AllowedValues:
       - emr-5.29.0
       - emr-5.30.1
       - emr-6.1.0
+      - emr-6.2.0
     Description: Release label for the EMR cluster
   AppsEMR:
     Description: 'Comma separated list of applications to install on the cluster e.g., '

@@ -7,6 +7,12 @@ if [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then
 else
   export JAVA_HOME=/usr/lib/jvm/java-openjdk
 fi
+if [ -f "/opt/aws/puppet/bin/puppet" ]; then
+  echo "Puppet found in path"
+  puppet_cmd='/opt/aws/puppet/bin/puppet'
+else
+  puppet_cmd='puppet'
+fi
 sudo -E bash -c 'echo $JAVA_HOME'
 installpath=/usr/lib/ranger
 ranger_server_fqdn=$1
@@ -211,12 +217,12 @@ sudo cp $installpath/$ranger_hive_plugin/lib/ranger-hive-plugin-impl/*.jar /usr/
 sudo cp $installpath/$ranger_hive_plugin/lib/ranger-hive-plugin-impl/*.jar /usr/lib/hive/lib/
 
 #---- Restart Namenode
-sudo puppet apply -e 'service { "hadoop-hdfs-namenode": ensure => false, }'
-sudo puppet apply -e 'service { "hadoop-hdfs-namenode": ensure => true, }'
+sudo ${puppet_cmd} apply -e 'service { "hadoop-hdfs-namenode": ensure => false, }'
+sudo ${puppet_cmd} apply -e 'service { "hadoop-hdfs-namenode": ensure => true, }'
 
 #----- Restart HiveServer2
-sudo puppet apply -e 'service { "hive-server2": ensure => false, }'
-sudo puppet apply -e 'service { "hive-server2": ensure => true, }'
+sudo ${puppet_cmd} apply -e 'service { "hive-server2": ensure => false, }'
+sudo ${puppet_cmd} apply -e 'service { "hive-server2": ensure => true, }'
 sudo sed -i '/hive.server2.logging.operation.verbose/s/kwargs/#kwargs/g' /usr/lib/hue/apps/beeswax/src/beeswax/server/hive_server2_lib.py || true
-sudo puppet apply -e 'service { "hue": ensure => false, }'
-sudo puppet apply -e 'service { "hue": ensure => true, }'
+sudo ${puppet_cmd} apply -e 'service { "hue": ensure => false, }'
+sudo ${puppet_cmd} apply -e 'service { "hue": ensure => true, }'
