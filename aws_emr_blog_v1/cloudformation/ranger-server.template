@@ -173,6 +173,8 @@ Mappings:
       Arch: HVM64
     m4.10xlarge:
       Arch: HVM64
+    m5.xlarge:
+      Arch: HVM64
     c1.medium:
       Arch: PV64
     c1.xlarge:
