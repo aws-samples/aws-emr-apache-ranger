@@ -383,22 +383,48 @@ def create(event, context):
         })
 
         if isPrestoAppRequested:
+            if event["ResourceProperties"]["EnablePrestoKerberos"] == "true":
+                cluster_parameters['Steps'].append({
+                    "Name": "PrestoSSLUpdate",
+                    "ActionOnFailure": "CONTINUE",
+                    "HadoopJarStep": {
+                        "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                        "Args": [
+                            "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/presto-cli-kerberos_fix.sh",
+                            event["ResourceProperties"]["emrReleaseLabel"],
+                            prestoEngineRequested
+                        ]
+                    }
+                })
+            cluster_parameters['Steps'].append({
+                "Name": "UpdateHueConfigurationForPrestoSSL",
+                "ActionOnFailure": "CONTINUE",
+                "HadoopJarStep": {
+                    "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                    "Args": [
+                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/hue-update.sh",
+                        event["ResourceProperties"]["emrReleaseLabel"],
+                        prestoEngineRequested
+                    ]
+                }
+            })
             if event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "false":
-                cluster_parameters['BootstrapActions'].append(
-                    {
-                        "Name": "Setup Presto Kerberos",
-                        "ScriptBootstrapAction": {
-                            "Path": "s3://" + s3Bucket + "/" + event["ResourceProperties"][
-                                "S3Key"] + "/" + event["ResourceProperties"][
-                                        "ProjectVersion"] + "/scripts/configure_presto_kerberos_ba.sh",
-                            "Args": [
-                                "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
+                if event["ResourceProperties"]["EnablePrestoKerberos"] == "true":
+                    cluster_parameters['BootstrapActions'].append(
+                        {
+                            "Name": "Setup Presto Kerberos",
+                            "ScriptBootstrapAction": {
+                                "Path": "s3://" + s3Bucket + "/" + event["ResourceProperties"][
                                     "S3Key"] + "/" + event["ResourceProperties"][
-                                    "ProjectVersion"],
-                                event["ResourceProperties"]["KdcAdminPassword"]
-                            ]
-                        }
-                    })
+                                            "ProjectVersion"] + "/scripts/presto-kerberos-ba.sh",
+                                "Args": [
+                                    "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
+                                        "S3Key"] + "/" + event["ResourceProperties"][
+                                        "ProjectVersion"],
+                                    event["ResourceProperties"]["KdcAdminPassword"]
+                                ]
+                            }
+                        })
             if event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "true":
                 if prestoEngineRequested == "PrestoSQL":
                     cluster_parameters['Configurations'].append(
@@ -413,7 +439,7 @@ def create(event, context):
                         {
                             "Classification": "presto-connector-hive",
                             "Properties": {
-                                "hive.metastore": "glue"
+                                "hive.metastore": "glue"PrestoSSLUpdate
                             }
                         });
         if isSparkAppRequested and event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "true":

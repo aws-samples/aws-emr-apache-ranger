@@ -87,6 +87,7 @@ Parameters:
     Type: String
     AllowedValues:
       - 2.0
+      - beta
 Resources:
   SampleInstance:
     Type: AWS::EC2::Instance

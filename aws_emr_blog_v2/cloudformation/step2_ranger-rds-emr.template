@@ -209,6 +209,11 @@ Parameters:
     Default: true
     Type: String
     AllowedValues: [true, false]
+  EnablePrestoKerberos:
+    Description: Enable Kerberos for Presto
+    Default: false
+    Type: String
+    AllowedValues: [true, false]
   InstallPrestoPlugin:
     Description: Install Ranger HDFS Beta
     Default: false
@@ -243,6 +248,7 @@ Parameters:
     Type: String
     AllowedValues:
       - 2.0
+      - beta
   KeyName:
     Description: Name of an existing EC2 key pair to access the Amazon EMR cluster
     Type: AWS::EC2::KeyPair::KeyName
@@ -296,7 +302,6 @@ Metadata:
           - MasterInstanceType
           - CoreInstanceCount
 Conditions:
-  EnableKerberos: !Equals [true, !Ref EnableKerberos]
   3AZDeployment: !Equals [!Ref NumberOfAZs, "3"]
   2AZDeployment: !Or
     - !Equals [!Ref NumberOfAZs, "2"]
@@ -329,6 +334,7 @@ Resources:
       Parameters:
         S3Bucket: !Ref 'S3Bucket'
         S3Key: !Ref 'S3Key'
+        ProjectVersion: !Ref ProjectVersion
         VPC: !Ref VPC
         Subnet: !If [ InstallEMRRangerinPublicSubnet, !Ref PublicSubnet1AID, !Ref PrivateSubnet1AID ]
         DBHostName: !GetAtt 'RDSDatabase.Outputs.RDSInstanceAddress'
@@ -355,6 +361,7 @@ Resources:
       Parameters:
         S3Bucket: !Ref 'S3Bucket'
         S3Key: !Ref 'S3Key'
+        ProjectVersion: !Ref ProjectVersion
         AppsEMR: !Ref 'AppsEMR'
         VPC: !Ref VPC
         emrReleaseLabel: !Ref emrReleaseLabel
@@ -366,6 +373,8 @@ Resources:
         MasterInstanceType: !Ref 'MasterInstanceType'
         CoreInstanceType: !Ref 'CoreInstanceType'
         KeyName: !Ref 'KeyName'
+        EnableKerberos: !Ref EnableKerberos
+        EnablePrestoKerberos: !Ref EnablePrestoKerberos
         CrossRealmTrustPrincipalPassword: !Ref 'CrossRealmTrustPrincipalPassword'
         KdcAdminPassword: !Ref 'KdcAdminPassword'
         ADDomainJoinPassword: !Ref 'ADDomainJoinPassword'

@@ -103,6 +103,7 @@ Parameters:
     Type: String
     AllowedValues:
       - 2.0
+      - beta
   EMRLogDir:
     Description: Log directory for EMR. Eg - s3://xxx
     Type: String
@@ -328,12 +329,12 @@ Parameters:
     AllowedValues:
       - 'http'
       - 'https'
-#  RangerCloudWatchLogGroupName:
-#    Description: Log Group Name for Ranger Logs
-#    Type: String
-#    Default: '/aws/emr/rangeraudit/'
-#    AllowedValues:
-#      - '/aws/emr/rangeraudit/'
+  #  RangerCloudWatchLogGroupName:
+  #    Description: Log Group Name for Ranger Logs
+  #    Type: String
+  #    Default: '/aws/emr/rangeraudit/'
+  #    AllowedValues:
+  #      - '/aws/emr/rangeraudit/'
   RangerAdminPassword:
     Description: Password of the Ranger Admin server
     NoEcho: 'true'
@@ -350,15 +351,15 @@ Parameters:
 #    AllowedValues: [true, false]
 Conditions:
   EnableKerberos: !Equals [true, !Ref EnableKerberos]
-#  CreateNonEMRResources: !Equals [true, !Ref CreateNonEMRResources]
+  #  CreateNonEMRResources: !Equals [true, !Ref CreateNonEMRResources]
   AttachAdditionalSourcePrefixToSG: !Equals [true, !Ref AttachAdditionalSourcePrefixToSG]
 Resources:
-#  LogGroupRanger:
-#    Type: AWS::Logs::LogGroup
-#    Condition: CreateNonEMRResources
-#    Properties:
-#      LogGroupName: !Ref RangerCloudWatchLogGroupName
-#      RetentionInDays: 14
+  #  LogGroupRanger:
+  #    Type: AWS::Logs::LogGroup
+  #    Condition: CreateNonEMRResources
+  #    Properties:
+  #      LogGroupName: !Ref RangerCloudWatchLogGroupName
+  #      RetentionInDays: 14
   EMRMasterSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -440,14 +441,13 @@ Resources:
     Condition: EnableKerberos
     Properties:
       SecurityConfiguration:
-        #        EncryptionConfiguration:
-        #          EnableAtRestEncryption: false
-        #          EnableInTransitEncryption: true
-        #          InTransitEncryptionConfiguration:
-        #            TLSCertificateConfiguration:
-        #              CertificateProviderType: PEM
-        #              S3Object: !Join ['', ["s3://", !Ref S3Bucket, "/", !Ref S3Key,
-        #                                    '/emr-tls/emr-certs.zip']]
+        EncryptionConfiguration:
+          EnableAtRestEncryption: false
+          EnableInTransitEncryption: true
+          InTransitEncryptionConfiguration:
+            TLSCertificateConfiguration:
+              CertificateProviderType: PEM
+              S3Object: !Join ['', ["s3://", !Ref S3Bucket, "/", !Ref S3Key, "/", !Ref ProjectVersion, '/emr-tls/emr-certs-certs.zip']]
         AuthenticationConfiguration:
           KerberosConfiguration:
             Provider: ClusterDedicatedKdc
