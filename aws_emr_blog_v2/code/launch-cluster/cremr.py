@@ -439,7 +439,7 @@ def create(event, context):
                         {
                             "Classification": "presto-connector-hive",
                             "Properties": {
-                                "hive.metastore": "glue"PrestoSSLUpdate
+                                "hive.metastore": "glue"
                             }
                         });
         if isSparkAppRequested and event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "true":
