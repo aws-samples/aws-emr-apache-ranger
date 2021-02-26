@@ -215,7 +215,12 @@ Parameters:
     Type: String
     AllowedValues: [true, false]
   InstallPrestoPlugin:
-    Description: Install Ranger HDFS Beta
+    Description: Install Ranger Presto Plugin
+    Default: false
+    Type: String
+    AllowedValues: [true, false]
+  InstallHBasePlugin:
+    Description: Install Ranger HBase Plugin
     Default: false
     Type: String
     AllowedValues: [true, false]
@@ -397,6 +402,7 @@ Resources:
         DBUserName: !Ref DBUserName
         DBRootPassword: !Ref DBRootPassword
         InstallPrestoPlugin: !Ref InstallPrestoPlugin
+        InstallHBasePlugin: !Ref InstallHBasePlugin
         InstallCloudWatchAgentForAudit: !Ref InstallCloudWatchAgentForAudit
         RangerAdminPassword: !Ref RangerAdminPassword
         AttachAdditionalSourcePrefixToSG: !Ref AttachAdditionalSourcePrefixToSG

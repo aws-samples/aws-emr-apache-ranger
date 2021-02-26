@@ -255,6 +255,11 @@ Parameters:
     Default: false
     Type: String
     AllowedValues: [true, false]
+  InstallHBasePlugin:
+    Description: Install Ranger HBase Plugin
+    Default: false
+    Type: String
+    AllowedValues: [true, false]
   InstallCloudWatchAgentForAudit:
     Description: Install Cloudwatch Agent to capture Ranger AuditLogs
     Default: false
@@ -521,6 +526,7 @@ Resources:
       RangerHttpProtocol: !Ref RangerHttpProtocol
       EnablePrestoKerberos: !Ref EnablePrestoKerberos
       InstallPrestoPlugin: !Ref InstallPrestoPlugin
+      InstallHBasePlugin: !Ref InstallHBasePlugin
       InstallCloudWatchAgentForAudit: !Ref InstallCloudWatchAgentForAudit
       DBHostName: !Ref DBHostName
       DBUserName: !Ref DBUserName

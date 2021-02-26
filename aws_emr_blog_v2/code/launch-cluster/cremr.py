@@ -196,7 +196,9 @@ def create(event, context):
                                           "webhcat.proxyuser.livy.groups": "*",
                                           "webhcat.proxyuser.livy.hosts": "*",
                                           "webhcat.proxyuser.hive.groups": "*",
-                                          "webhcat.proxyuser.hive.hosts": "*"
+                                          "webhcat.proxyuser.hive.hosts": "*",
+                                          "webhcat.proxyuser.presto.hosts": "*",
+                                          "webhcat.proxyuser.presto.groups": "*"
                                       }
                                   },
                                   {
@@ -210,7 +212,9 @@ def create(event, context):
                                           "hadoop.kms.proxyuser.livy.hosts": "*",
                                           "hadoop.kms.proxyuser.hive.users": "*",
                                           "hadoop.kms.proxyuser.hive.groups": "*",
-                                          "hadoop.kms.proxyuser.hive.hosts": "*"
+                                          "hadoop.kms.proxyuser.hive.hosts": "*",
+                                          "hadoop.kms.proxyuser.presto.hosts": "*",
+                                          "hadoop.kms.proxyuser.presto.groups": "*"
                                       },
                                       "Configurations": []
                                   },
@@ -378,7 +382,9 @@ def create(event, context):
                 "hadoop.proxyuser.livy.hosts": "*",
                 "hadoop.proxyuser.hive.hosts": "*",
                 "hadoop.proxyuser.hive.groups": "*",
-                "hadoop.proxyuser.hue_hive.groups": "*"
+                "hadoop.proxyuser.hue_hive.groups": "*",
+                "hadoop.proxyuser.presto.hosts": "*",
+                "hadoop.proxyuser.presto.groups": "*"
             }
         })
 
@@ -451,6 +457,26 @@ def create(event, context):
                         "hive.metastore.client.factory.class": "com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory"
                     }
                 });
+
+        if event["ResourceProperties"]["InstallHBasePlugin"] == "true":
+            cluster_parameters['Steps'].append({
+                "Name": "InstallRangerHBasePlugin",
+                "ActionOnFailure": "CONTINUE",
+                "HadoopJarStep": {
+                    "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                    "Args": [
+                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-hbase-ranger-plugin.sh",
+                        event["ResourceProperties"]["RangerHostname"],
+                        event["ResourceProperties"]["RangerVersion"],
+                        "s3://" + s3Bucket + "/" + event["ResourceProperties"]["S3Key"],
+                        event["ResourceProperties"][
+                            "ProjectVersion"],
+                        event["ResourceProperties"]["emrReleaseLabel"],
+                        event["ResourceProperties"]["RangerHttpProtocol"],
+                        event["ResourceProperties"]["InstallCloudWatchAgentForAudit"]
+                    ]
+                }
+            })
 
         if isPrestoAppRequested and event["ResourceProperties"]["InstallPrestoPlugin"] == "true":
             cluster_parameters['Steps'].append({

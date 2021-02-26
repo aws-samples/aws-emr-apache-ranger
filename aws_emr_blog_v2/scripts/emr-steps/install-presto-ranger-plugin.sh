@@ -159,6 +159,20 @@ sudo sed -i "s|XAAUDIT.SOLR.ENABLE=.*|XAAUDIT.SOLR.ENABLE=true|g" install.proper
 sudo sed -i "s|XAAUDIT.SOLR.IS_ENABLED=.*|XAAUDIT.SOLR.IS_ENABLED=true|g" install.properties
 echo "XAAUDIT.SUMMARY.ENABLE=true" | sudo tee -a install.properties
 
+## HDFS Audit
+#current_hostname=$(hostname -f)
+#presto_log_dir=/tmp/ranger
+#
+#sudo sed -i "s|XAAUDIT.HDFS.ENABLE=.*|XAAUDIT.HDFS.ENABLE=true|g" install.properties
+#sudo sed -i "s|XAAUDIT.HDFS.HDFS_DIR=.*|XAAUDIT.HDFS.HDFS_DIR=hdfs://$current_hostname:8020/ranger/audit|g" install.properties
+#sudo sed -i "s|XAAUDIT.HDFS.FILE_SPOOL_DIR=.*|XAAUDIT.HDFS.FILE_SPOOL_DIR=$presto_log_dir/audit/hdfs/spool|g" install.properties
+#sudo sed -i "s|XAAUDIT.HDFS.IS_ENABLED=.*|XAAUDIT.HDFS.IS_ENABLED=true|g" install.properties
+#sudo sed -i "s|XAAUDIT.HDFS.DESTINATION_DIRECTORY=.*|XAAUDIT.HDFS.DESTINATION_DIRECTORY=hdfs://$current_hostname:8020/ranger/audit/%app-type%/%time:yyyyMMdd%|g" install.properties
+#sudo sed -i "s|XAAUDIT.HDFS.LOCAL_BUFFER_DIRECTORY=.*|XAAUDIT.HDFS.LOCAL_BUFFER_DIRECTORY=$presto_log_dir/audit/%app-type%|g" install.properties
+#sudo sed -i "s|XAAUDIT.HDFS.LOCAL_ARCHIVE_DIRECTORY=.*|XAAUDIT.HDFS.LOCAL_ARCHIVE_DIRECTORY=$presto_log_dir/audit/archive/%app-type%|g" install.properties
+#echo "XAAUDIT.SUMMARY.ENABLE=true" | sudo tee -a install.properties
+#sudo cp /usr/lib/hadoop-hdfs/hadoop-* /usr/lib/presto/plugin/ranger/ranger-$engine_name-plugin-impl/
+
 if [ "$install_cloudwatch_agent_for_audit" == "true" ]; then
   #Filecache to write to local file system
   sudo mkdir -p /var/log/ranger/audit/
@@ -171,10 +185,12 @@ fi
 
 
 sudo mkdir -p /usr/presto/etc/
-sudo ln -s /etc/presto/conf/ /usr/presto/conf/ || true
-sudo ln -s /usr/lib/presto/ /usr/presto/ || true
+sudo ln -sfn /etc/presto/conf/ /usr/presto/conf/ || true
+sudo ln -sfn /usr/lib/presto/ /usr/presto/ || true
 
 sudo sed -i 's|jceks://file|localjceks://file|g' enable-$engine_name-plugin.sh
+sudo ln -sfn /etc/hadoop/conf/core-site.xml /etc/presto/conf/
+sudo ln -sfn /etc/hadoop/conf/hdfs-site.xml /etc/presto/conf/
 
 sudo -E bash enable-$engine_name-plugin.sh
 
@@ -187,12 +203,14 @@ sudo aws s3 cp $ranger_s3bucket/jdom-1.1.3.jar /usr/lib/presto/plugin/ranger/ --
 sudo aws s3 cp $ranger_s3bucket/rome-0.9.jar /usr/lib/presto/plugin/ranger/ --region us-east-1
 sudo aws s3 cp $ranger_s3bucket/javax.mail-api-1.6.0.jar /usr/lib/presto/plugin/ranger/ --region us-east-1
 
-sudo ln -s /usr/lib/presto/plugin/ranger/ranger-$engine_name-plugin-impl/conf /usr/lib/presto/plugin/ranger/ || true
+sudo ln -sfn /usr/lib/presto/plugin/ranger/ranger-$engine_name-plugin-impl/conf /usr/lib/presto/plugin/ranger/ || true
+sudo ln -sfn /etc/hadoop/conf/core-site.xml /usr/lib/presto/plugin/ranger/ || true
+sudo ln -sfn /etc/hadoop/conf/hdfs-site.xml /usr/lib/presto/plugin/ranger/ || true
 
 ## Added for hive integration
 sudo sed -i "s|ranger_host|$ranger_server_fqdn|g" /usr/lib/presto/plugin/ranger/conf/ranger-hive-*.xml || true
-#sudo ln -s /etc/hive/conf.dist/ranger-hive-security.xml /usr/lib/presto/plugin/ranger/conf/ranger-hive-security.xml || true
-#sudo ln -s /etc/hive/conf.dist/ranger-hive-audit.xml /usr/lib/presto/plugin/ranger/conf/ranger-hive-audit.xml || true
+#sudo ln -sfn /etc/hive/conf.dist/ranger-hive-security.xml /usr/lib/presto/plugin/ranger/conf/ranger-hive-security.xml || true
+#sudo ln -sfn /etc/hive/conf.dist/ranger-hive-audit.xml /usr/lib/presto/plugin/ranger/conf/ranger-hive-audit.xml || true
 
 sudo ${puppet_cmd} apply -e 'service { "presto-server": ensure => false, }'
 sudo ${puppet_cmd} apply -e 'service { "presto-server": ensure => true, }'
