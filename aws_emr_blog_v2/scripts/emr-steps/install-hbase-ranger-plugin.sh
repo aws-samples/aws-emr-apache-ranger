@@ -151,5 +151,10 @@ fi
 
 sudo -E bash enable-hbase-plugin.sh
 
+touch -a /var/log/hbase/SecurityAuth.audit
+touch -a /var/log/hbase/hbase.log
+sudo chmod 777 /var/log/hbase/SecurityAuth.audit || true
+sudo chmod 777 /var/log/hbase/hbase.log || true
+
 sudo ${puppet_cmd} apply -e 'service { "hbase-master": ensure => false, }'
 sudo ${puppet_cmd} apply -e 'service { "hbase-master": ensure => true, }'
