@@ -1,5 +1,6 @@
 #!/bin/bash
 
+kdc_password=$1
 PRESTO_PUPPET_DIR='/var/aws/emr/bigtop-deploy/puppet/modules/presto'
 
 sudo sed -i "s/\$discovery_uri =.*/\$discovery_uri = \"https:\/\/\${discovery_host}:8446\"/" ${PRESTO_PUPPET_DIR}/manifests/init.pp

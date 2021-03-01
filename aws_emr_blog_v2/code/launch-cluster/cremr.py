@@ -414,23 +414,23 @@ def create(event, context):
                     ]
                 }
             })
-            if event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "false":
-                if event["ResourceProperties"]["EnablePrestoKerberos"] == "true":
-                    cluster_parameters['BootstrapActions'].append(
-                        {
-                            "Name": "Setup Presto Kerberos",
-                            "ScriptBootstrapAction": {
-                                "Path": "s3://" + s3Bucket + "/" + event["ResourceProperties"][
+            # if event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "false":
+            if event["ResourceProperties"]["EnablePrestoKerberos"] == "true":
+                cluster_parameters['BootstrapActions'].append(
+                    {
+                        "Name": "Setup Presto Kerberos",
+                        "ScriptBootstrapAction": {
+                            "Path": "s3://" + s3Bucket + "/" + event["ResourceProperties"][
+                                "S3Key"] + "/" + event["ResourceProperties"][
+                                        "ProjectVersion"] + "/scripts/presto-kerberos-ba.sh",
+                            "Args": [
+                                "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
                                     "S3Key"] + "/" + event["ResourceProperties"][
-                                            "ProjectVersion"] + "/scripts/presto-kerberos-ba.sh",
-                                "Args": [
-                                    "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
-                                        "S3Key"] + "/" + event["ResourceProperties"][
-                                        "ProjectVersion"],
-                                    event["ResourceProperties"]["KdcAdminPassword"]
-                                ]
-                            }
-                        })
+                                    "ProjectVersion"],
+                                event["ResourceProperties"]["KdcAdminPassword"]
+                            ]
+                        }
+                    })
             if event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "true":
                 if prestoEngineRequested == "PrestoSQL":
                     cluster_parameters['Configurations'].append(
