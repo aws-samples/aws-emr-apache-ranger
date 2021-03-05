@@ -28,13 +28,13 @@ emr_version=${13-'emr-5.30'}
 emr_release_version_regex="^emr-6.*"
 if [[ ( "$emr_version" =~ $emr_release_version_regex ) ]]; then
   ranger_download_version=2.2.0-SNAPSHOT
-  ranger_hbase_download_version=2.2.0-SNAPSHOT
+  ranger_hbase_download_version=1.2.1-SNAPSHOT
 elif [ "$ranger_version" == "2.0" ]; then
    ranger_download_version=2.1.0-SNAPSHOT
    ranger_hbase_download_version=1.2.1-SNAPSHOT
 else
-   ranger_download_version=1.2.1-SNAPSHOT
-   ranger_hbase_download_version=1.2.1-SNAPSHOT
+   ranger_download_version=1.1.0
+   ranger_hbase_download_version=1.1.0
 fi
 
 #sudo sed 's/awsemr.com/ec2.internal awsemr.com\nnameserver 10.0.0.2\n/g'
@@ -135,7 +135,7 @@ aws s3 cp $ranger_s3bucket/$ranger_user_sync.tar.gz .
 aws s3 cp $mysql_jar_location .
 aws s3 cp $ranger_s3bucket/solr_for_audit_setup.tar.gz .
 #Update ranger admin install.properties
-mkdir $ranger_admin_server
+mkdir -p $ranger_admin_server
 tar -xvf $ranger_admin_server.tar.gz -C $ranger_admin_server --strip-components=1
 
 cd $ranger_admin_server
@@ -229,6 +229,8 @@ sudo cp /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/lib/htrace-core*
 sudo cp /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/lib/commons-configuration* /usr/lib/ranger/$ranger_admin_server/cred/lib
 
 chmod +x setup.sh
+yum -y install dos2unix || true
+dos2unix setup.sh || true
 ./setup.sh
 
 #CHECKTHIS - FIX FOR Unable to get the Credential Provider from the Configuration when launching the server
@@ -273,7 +275,7 @@ ranger_hbase_plugin=ranger-$ranger_hbase_download_version-hbase-plugin
 pushd /tmp;
 sudo mkdir -p /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/classes/ranger-plugins/hbase
 aws s3 cp $ranger_hbase_s3bucket/$ranger_hbase_plugin.tar.gz .
-sudo mkdir $ranger_hbase_plugin
+sudo mkdir -p $ranger_hbase_plugin
 tar -xvf $ranger_hbase_plugin.tar.gz -C $ranger_hbase_plugin --strip-components=1
 sudo mv $ranger_hbase_plugin/lib/ranger-hbase-plugin-impl/* /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/classes/ranger-plugins/hbase/
 popd

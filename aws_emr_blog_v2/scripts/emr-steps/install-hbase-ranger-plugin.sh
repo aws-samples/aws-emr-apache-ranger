@@ -158,3 +158,5 @@ sudo chmod 777 /var/log/hbase/hbase.log || true
 
 sudo ${puppet_cmd} apply -e 'service { "hbase-master": ensure => false, }'
 sudo ${puppet_cmd} apply -e 'service { "hbase-master": ensure => true, }'
+sudo ${puppet_cmd} apply -e 'service { "hbase-regionserver": ensure => false, }'
+sudo ${puppet_cmd} apply -e 'service { "hbase-regionserver": ensure => true, }'

@@ -70,6 +70,7 @@ def create(event, context):
                 }
             ],
                               'Applications': applist,
+                              'EbsRootVolumeSize': 100,
                               'Steps': [
                                   {
                                       "Name": "CreateDefaultHiveTables",
@@ -364,7 +365,8 @@ def create(event, context):
         #             "hive.server2.authentication.ldap.baseDN": event["ResourceProperties"]["LDAPGroupSearchBase"]
         #         }
         #     })
-        cluster_parameters['Configurations'].append({
+        cluster_parameters['Configurations'].append(
+            {
             "Classification": "core-site",
             "Properties": {
                 # "hadoop.security.group.mapping": "org.apache.hadoop.security.LdapGroupsMapping",
@@ -384,7 +386,9 @@ def create(event, context):
                 "hadoop.proxyuser.hive.groups": "*",
                 "hadoop.proxyuser.hue_hive.groups": "*",
                 "hadoop.proxyuser.presto.hosts": "*",
-                "hadoop.proxyuser.presto.groups": "*"
+                "hadoop.proxyuser.presto.groups": "*",
+                "hadoop.proxyuser.hbase.hosts": "*",
+                "hadoop.proxyuser.hbase.groups": "*"
             }
         })
 
@@ -459,6 +463,13 @@ def create(event, context):
                 });
 
         if event["ResourceProperties"]["InstallHBasePlugin"] == "true":
+            cluster_parameters['Configurations'].append(
+                {
+                    "Classification": "hbase-site",
+                    "Properties": {
+                        "hbase.superuser": "hbase"
+                    }
+                });
             cluster_parameters['Steps'].append({
                 "Name": "InstallRangerHBasePlugin",
                 "ActionOnFailure": "CONTINUE",
