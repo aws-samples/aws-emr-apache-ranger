@@ -106,61 +106,6 @@ def create(event, context):
                                       }
                                   },
                                   {
-                                      "Name": "InstallHiveHDFSRangerPlugin",
-                                      "ActionOnFailure": "CONTINUE",
-                                      "HadoopJarStep": {
-                                          "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
-                                          "Args": [
-                                              "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-hive-hdfs-ranger-plugin.sh",
-                                              event["ResourceProperties"]["RangerHostname"],
-                                              event["ResourceProperties"]["RangerVersion"],
-                                              "s3://" + s3Bucket + "/" + event["ResourceProperties"]["S3Key"],
-                                              event["ResourceProperties"][
-                                                  "ProjectVersion"],
-                                              event["ResourceProperties"]["emrReleaseLabel"],
-                                              event["ResourceProperties"]["RangerHttpProtocol"],
-                                              event["ResourceProperties"]["InstallCloudWatchAgentForAudit"]
-                                          ]
-                                      }
-                                  },
-
-                                  {
-                                      "Name": "InstallRangerServiceDef",
-                                      "ActionOnFailure": "CONTINUE",
-                                      "HadoopJarStep": {
-                                          "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
-                                          "Args": [
-                                              "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-ranger-servicedef.sh",
-                                              event["ResourceProperties"]["RangerHostname"],
-                                              "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" +
-                                              event["ResourceProperties"][
-                                                  "S3Key"] + "/" + event["ResourceProperties"][
-                                                  "ProjectVersion"] + "/inputdata",
-                                              event["ResourceProperties"]["RangerHttpProtocol"],
-                                              event["ResourceProperties"]["RangerVersion"],
-                                              event["ResourceProperties"]["RangerAdminPassword"]
-                                          ]
-                                      }
-                                  },
-                                  {
-                                      "Name": "InstallRangerPolicies",
-                                      "ActionOnFailure": "CONTINUE",
-                                      "HadoopJarStep": {
-                                          "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
-                                          "Args": [
-                                              "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-ranger-policies.sh",
-                                              event["ResourceProperties"]["RangerHostname"],
-                                              "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" +
-                                              event["ResourceProperties"][
-                                                  "S3Key"] + "/" + event["ResourceProperties"][
-                                                  "ProjectVersion"] + "/inputdata",
-                                              event["ResourceProperties"]["RangerHttpProtocol"],
-                                              event["ResourceProperties"]["RangerVersion"],
-                                              event["ResourceProperties"]["RangerAdminPassword"]
-                                          ]
-                                      }
-                                  },
-                                  {
                                       "Name": "Cloudformation-Signal",
                                       "ActionOnFailure": "CONTINUE",
                                       "HadoopJarStep": {
@@ -304,6 +249,75 @@ def create(event, context):
                 }
             )
 
+        if event["ResourceProperties"]["InstallRangerPlugins"] == "true":
+            cluster_parameters['Steps'].append({
+                "Name": "InstallHiveHDFSRangerPlugin",
+                "ActionOnFailure": "CONTINUE",
+                "HadoopJarStep": {
+                    "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                    "Args": [
+                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-hive-hdfs-ranger-plugin.sh",
+                        event["ResourceProperties"]["RangerHostname"],
+                        event["ResourceProperties"]["RangerVersion"],
+                        "s3://" + s3Bucket + "/" + event["ResourceProperties"]["S3Key"],
+                        event["ResourceProperties"][
+                            "ProjectVersion"],
+                        event["ResourceProperties"]["emrReleaseLabel"],
+                        event["ResourceProperties"]["RangerHttpProtocol"],
+                        event["ResourceProperties"]["InstallCloudWatchAgentForAudit"]
+                    ]
+                }
+            })
+            cluster_parameters['Steps'].append({
+                "Name": "InstallRangerServiceDef",
+                "ActionOnFailure": "CONTINUE",
+                "HadoopJarStep": {
+                    "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                    "Args": [
+                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-ranger-servicedef.sh",
+                        event["ResourceProperties"]["RangerHostname"],
+                        "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" +
+                        event["ResourceProperties"][
+                            "S3Key"] + "/" + event["ResourceProperties"][
+                            "ProjectVersion"] + "/inputdata",
+                        event["ResourceProperties"]["RangerHttpProtocol"],
+                        event["ResourceProperties"]["RangerVersion"],
+                        event["ResourceProperties"]["RangerAdminPassword"]
+                    ]
+                }
+            })
+            cluster_parameters['Steps'].append({
+                "Name": "InstallRangerPolicies",
+                "ActionOnFailure": "CONTINUE",
+                "HadoopJarStep": {
+                    "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                    "Args": [
+                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-ranger-policies.sh",
+                        event["ResourceProperties"]["RangerHostname"],
+                        "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" +
+                        event["ResourceProperties"][
+                            "S3Key"] + "/" + event["ResourceProperties"][
+                            "ProjectVersion"] + "/inputdata",
+                        event["ResourceProperties"]["RangerHttpProtocol"],
+                        event["ResourceProperties"]["RangerVersion"],
+                        event["ResourceProperties"]["RangerAdminPassword"]
+                    ]
+                }
+            });
+
+        elif event["ResourceProperties"]["InstallPrivaceraPlugins"] == "true":
+            cluster_parameters['Steps'].append({
+                "Name": "InstallPrivaceraRangerPlugin",
+                "ActionOnFailure": "CONTINUE",
+                "HadoopJarStep": {
+                    "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                    "Args": [
+                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-privacera-plugins.sh",
+                        event["ResourceProperties"]["PrivaceraPluginURL"]
+                    ]
+                }
+            })
+
         if event["ResourceProperties"]["InstallCloudWatchAgentForAudit"] == "true":
             cluster_parameters['BootstrapActions'].append(
                 {
@@ -367,45 +381,45 @@ def create(event, context):
         #     })
         cluster_parameters['Configurations'].append(
             {
-            "Classification": "core-site",
-            "Properties": {
-                # "hadoop.security.group.mapping": "org.apache.hadoop.security.LdapGroupsMapping",
-                # "hadoop.security.group.mapping.ldap.bind.user": event["ResourceProperties"]["ADDomainUser"],
-                # "hadoop.security.group.mapping.ldap.bind.password": event["ResourceProperties"]["ADDomainJoinPassword"],
-                # "hadoop.security.group.mapping.ldap.url": "ldap://" + event["ResourceProperties"]["LDAPHostPrivateIP"],
-                # "hadoop.security.group.mapping.ldap.base": event["ResourceProperties"]["LDAPGroupSearchBase"],
-                # "hadoop.security.group.mapping.ldap.search.filter.user": "(objectclass=*)",
-                # "hadoop.security.group.mapping.ldap.search.filter.group": "(objectclass=*)",
-                # "hadoop.security.group.mapping.ldap.search.attr.member": "member",
-                # "hadoop.security.group.mapping.ldap.search.attr.group.name": "cn",
-                "hadoop.proxyuser.knox.groups": "*",
-                "hadoop.proxyuser.knox.hosts": "*",
-                "hadoop.proxyuser.livy.groups": "*",
-                "hadoop.proxyuser.livy.hosts": "*",
-                "hadoop.proxyuser.hive.hosts": "*",
-                "hadoop.proxyuser.hive.groups": "*",
-                "hadoop.proxyuser.hue_hive.groups": "*",
-                "hadoop.proxyuser.presto.hosts": "*",
-                "hadoop.proxyuser.presto.groups": "*",
-                "hadoop.proxyuser.hbase.hosts": "*",
-                "hadoop.proxyuser.hbase.groups": "*"
-            }
-        })
+                "Classification": "core-site",
+                "Properties": {
+                    # "hadoop.security.group.mapping": "org.apache.hadoop.security.LdapGroupsMapping",
+                    # "hadoop.security.group.mapping.ldap.bind.user": event["ResourceProperties"]["ADDomainUser"],
+                    # "hadoop.security.group.mapping.ldap.bind.password": event["ResourceProperties"]["ADDomainJoinPassword"],
+                    # "hadoop.security.group.mapping.ldap.url": "ldap://" + event["ResourceProperties"]["LDAPHostPrivateIP"],
+                    # "hadoop.security.group.mapping.ldap.base": event["ResourceProperties"]["LDAPGroupSearchBase"],
+                    # "hadoop.security.group.mapping.ldap.search.filter.user": "(objectclass=*)",
+                    # "hadoop.security.group.mapping.ldap.search.filter.group": "(objectclass=*)",
+                    # "hadoop.security.group.mapping.ldap.search.attr.member": "member",
+                    # "hadoop.security.group.mapping.ldap.search.attr.group.name": "cn",
+                    "hadoop.proxyuser.knox.groups": "*",
+                    "hadoop.proxyuser.knox.hosts": "*",
+                    "hadoop.proxyuser.livy.groups": "*",
+                    "hadoop.proxyuser.livy.hosts": "*",
+                    "hadoop.proxyuser.hive.hosts": "*",
+                    "hadoop.proxyuser.hive.groups": "*",
+                    "hadoop.proxyuser.hue_hive.groups": "*",
+                    "hadoop.proxyuser.presto.hosts": "*",
+                    "hadoop.proxyuser.presto.groups": "*",
+                    "hadoop.proxyuser.hbase.hosts": "*",
+                    "hadoop.proxyuser.hbase.groups": "*"
+                }
+            })
 
         if isPrestoAppRequested:
-            if event["ResourceProperties"]["EnablePrestoKerberos"] == "true":
-                cluster_parameters['Steps'].append({
-                    "Name": "PrestoSSLUpdate",
-                    "ActionOnFailure": "CONTINUE",
-                    "HadoopJarStep": {
-                        "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
-                        "Args": [
-                            "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/presto-cli-kerberos_fix.sh",
-                            event["ResourceProperties"]["emrReleaseLabel"],
-                            prestoEngineRequested
-                        ]
-                    }
-                })
+            # if event["ResourceProperties"]["EnablePrestoKerberos"] == "true":
+            cluster_parameters['Steps'].append({
+                "Name": "PrestoSSLUpdate",
+                "ActionOnFailure": "CONTINUE",
+                "HadoopJarStep": {
+                    "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                    "Args": [
+                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/presto-cli-kerberos_fix.sh",
+                        event["ResourceProperties"]["emrReleaseLabel"],
+                        prestoEngineRequested
+                    ]
+                }
+            })
             cluster_parameters['Steps'].append({
                 "Name": "UpdateHueConfigurationForPrestoSSL",
                 "ActionOnFailure": "CONTINUE",
@@ -470,24 +484,43 @@ def create(event, context):
                         "hbase.superuser": "hbase"
                     }
                 });
-            cluster_parameters['Steps'].append({
-                "Name": "InstallRangerHBasePlugin",
-                "ActionOnFailure": "CONTINUE",
-                "HadoopJarStep": {
-                    "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
-                    "Args": [
-                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-hbase-ranger-plugin.sh",
-                        event["ResourceProperties"]["RangerHostname"],
-                        event["ResourceProperties"]["RangerVersion"],
-                        "s3://" + s3Bucket + "/" + event["ResourceProperties"]["S3Key"],
-                        event["ResourceProperties"][
-                            "ProjectVersion"],
-                        event["ResourceProperties"]["emrReleaseLabel"],
-                        event["ResourceProperties"]["RangerHttpProtocol"],
-                        event["ResourceProperties"]["InstallCloudWatchAgentForAudit"]
-                    ]
-                }
-            })
+            cluster_parameters['BootstrapActions'].append(
+                {
+                    "Name": "Install Ranger HBase Plugin",
+                    "ScriptBootstrapAction": {
+                        "Path": "s3://" + s3Bucket + "/" + event["ResourceProperties"][
+                            "S3Key"] + "/" + event["ResourceProperties"][
+                                    "ProjectVersion"] + "/scripts/install-hbase-plugin-ba.sh",
+                        "Args": [
+                            event["ResourceProperties"]["RangerHostname"],
+                            event["ResourceProperties"]["RangerVersion"],
+                            "s3://" + s3Bucket + "/" + event["ResourceProperties"]["S3Key"],
+                            event["ResourceProperties"][
+                                "ProjectVersion"],
+                            event["ResourceProperties"]["emrReleaseLabel"],
+                            event["ResourceProperties"]["RangerHttpProtocol"],
+                            event["ResourceProperties"]["InstallCloudWatchAgentForAudit"]
+                        ]
+                    }
+                })
+            # cluster_parameters['Steps'].append({
+            #     "Name": "InstallRangerHBasePlugin",
+            #     "ActionOnFailure": "CONTINUE",
+            #     "HadoopJarStep": {
+            #         "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+            #         "Args": [
+            #             "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-hbase-ranger-plugin.sh",
+            #             event["ResourceProperties"]["RangerHostname"],
+            #             event["ResourceProperties"]["RangerVersion"],
+            #             "s3://" + s3Bucket + "/" + event["ResourceProperties"]["S3Key"],
+            #             event["ResourceProperties"][
+            #                 "ProjectVersion"],
+            #             event["ResourceProperties"]["emrReleaseLabel"],
+            #             event["ResourceProperties"]["RangerHttpProtocol"],
+            #             event["ResourceProperties"]["InstallCloudWatchAgentForAudit"]
+            #         ]
+            #     }
+            # })
 
         if isPrestoAppRequested and event["ResourceProperties"]["InstallPrestoPlugin"] == "true":
             cluster_parameters['Steps'].append({

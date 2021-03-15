@@ -109,7 +109,8 @@ if [ ! -f "$truststore_location" ] || [ ! -f "$keystore_location" ]; then
 fi
 
 #Setup
-sudo rm -rf $installpath
+sudo rm -rf $installpath/*hdfs*
+sudo rm -rf $installpath/*hive*
 sudo mkdir -p $installpath/hadoop
 sudo chmod -R 777 $installpath
 cd $installpath

@@ -240,6 +240,20 @@ Parameters:
     Description: 'Comma separated list of applications to install on the cluster e.g., '
     Type: String
     Default: Hadoop, Spark, Hive, Livy, Hue
+  InstallRangerPlugins:
+    Description: Install Ranger plugins on the cluster
+    Default: true
+    Type: String
+    AllowedValues: [true, false]
+  InstallPrivaceraPlugins:
+    Description: Install Ranger plugins provided by PrivaceraCloud
+    Default: false
+    Type: String
+    AllowedValues: [true, false]
+  PrivaceraPluginURL:
+    Description: URL where Privacera plugin scripts are hosted
+    Type: String
+    Default: '<empty>'
   EnableKerberos:
     Description: Enable Kerberos on the Cluster
     Default: true
@@ -525,6 +539,7 @@ Resources:
       RangerVersion: !Ref RangerVersion
       RangerHttpProtocol: !Ref RangerHttpProtocol
       EnablePrestoKerberos: !Ref EnablePrestoKerberos
+      InstallRangerPlugins: !Ref InstallRangerPlugins
       InstallPrestoPlugin: !Ref InstallPrestoPlugin
       InstallHBasePlugin: !Ref InstallHBasePlugin
       InstallCloudWatchAgentForAudit: !Ref InstallCloudWatchAgentForAudit
@@ -534,6 +549,8 @@ Resources:
       CertLocationPath: !Join ['', ["s3://", !Ref S3Bucket, "/", !Ref S3Key, "/", !Ref ProjectVersion]]
       RangerAdminPassword: !Ref RangerAdminPassword
       UseAWSGlueForHiveMetastore: !Ref UseAWSGlueForHiveMetastore
+      InstallPrivaceraPlugins: !Ref InstallPrivaceraPlugins
+      PrivaceraPluginURL: !Ref PrivaceraPluginURL
 
   emrCreateWaitHandle:
     Type: AWS::CloudFormation::WaitConditionHandle

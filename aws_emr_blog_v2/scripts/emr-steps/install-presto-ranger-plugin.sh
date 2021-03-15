@@ -19,10 +19,10 @@ sudo -E bash -c 'echo $JAVA_HOME'
 installpath=/usr/local
 #mysql_jar_location=http://central.maven.org/maven2/mysql/mysql-connector-java/5.1.39/mysql-connector-java-5.1.39.jar
 mysql_jar=mysql-connector-java-5.1.39.jar
+ranger_server_fqdn=$1
+ranger_version=$2
 s3bucket=$3
 project_version=${4-'2.0'}
-ranger_version=$2
-ranger_server_fqdn=$1
 emr_version=$5
 presto_engine=$6
 http_protocol=${7-'http'}
