@@ -91,11 +91,19 @@ Parameters:
     Description: Select the Virtual Private Cloud (VPC) that was created
     Type: AWS::EC2::VPC::Id
   S3Bucket:
+    Description: S3Bucket for the code [update this is you want to run this stack in a region other than US-EAST-1]
+    Type: String
+    Default: aws-bigdata-blog
+  S3Key:
+    Description: S3Key of the code [update this is you want to run this stack in a region other than US-EAST-1]
+    Type: String
+    Default: artifacts/aws-blog-emr-ranger
+  S3ArtifactBucket:
     Description: S3Bucket where artifacts are stored
     Type: String
     Default: aws-bigdata-blog
     AllowedValues: ["aws-bigdata-blog"]
-  S3Key:
+  S3ArtifactKey:
     Description: S3Key of the Lambda code
     Type: String
     Default: artifacts/aws-blog-emr-ranger
@@ -552,6 +560,8 @@ Resources:
       #      serviceSG: !Ref 'ServiceAccessSecurityGroup'
       S3Bucket: !Ref 'S3Bucket'
       S3Key: !Ref S3Key
+      S3ArtifactBucket: !Ref 'S3ArtifactBucket'
+      S3ArtifactKey: !Ref S3ArtifactKey
       ProjectVersion: !Ref ProjectVersion
       EMRSecurityConfig: !If
         - EnableKerberos
@@ -588,7 +598,7 @@ Resources:
       DBHostName: !Ref DBHostName
       DBUserName: !Ref DBUserName
       DBRootPassword: !Ref DBRootPassword
-      CertLocationPath: !Join ['', ["s3://", !Ref S3Bucket, "/", !Ref S3Key, "/", !Ref ProjectVersion]]
+      CertLocationPath: !Join ['', ["s3://", !Ref S3ArtifactBucket, "/", !Ref S3ArtifactKey, "/", !Ref ProjectVersion]]
       RangerAdminPassword: !Ref RangerAdminPassword
 
   emrCreateWaitHandle:

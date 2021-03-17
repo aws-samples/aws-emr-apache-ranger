@@ -98,11 +98,19 @@ Parameters:
     Default: "3"
     Description: Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.
   S3Bucket:
+    Description: S3Bucket for the code [update this is you want to run this stack in a region other than US-EAST-1]
+    Type: String
+    Default: aws-bigdata-blog
+  S3Key:
+    Description: S3Key of the code [update this is you want to run this stack in a region other than US-EAST-1]
+    Type: String
+    Default: artifacts/aws-blog-emr-ranger
+  S3ArtifactBucket:
     Description: S3Bucket where artifacts are stored
     Type: String
     Default: aws-bigdata-blog
     AllowedValues: ["aws-bigdata-blog"]
-  S3Key:
+  S3ArtifactKey:
     Description: S3Key of the Lambda code
     Type: String
     Default: artifacts/aws-blog-emr-ranger
@@ -150,7 +158,7 @@ Metadata:
 Mappings:
   DefaultConfiguration:
     MachineConfiguration:
-      BastionInstanceType: t2.small
+      BastionInstanceType: t3.small
     NetworkConfiguration:
       VPCCIDR: 10.0.0.0/16
       PublicSubnet1CIDR: 10.0.1.0/24
@@ -168,7 +176,7 @@ Resources:
   STEP0AMILookup:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3Bucket', '/', !Ref 'S3Key', '/', !Ref 'ProjectVersion', '/cloudformation/', 'lambda-amilookup-win.template']]
+      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion', '/cloudformation/', 'lambda-amilookup-win.template']]
       Parameters:
         S3Bucket: !Ref 'S3Bucket'
         S3Key: !Ref 'S3Key'
@@ -232,7 +240,7 @@ Resources:
     DependsOn: STEP1VPC
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3Bucket', '/', !Ref 'S3Key', '/', !Ref 'ProjectVersion', '/cloudformation/', 'ec2-win-ad.template']]
+      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion', '/cloudformation/', 'ec2-win-ad.template']]
       Parameters:
         KeyPairName: !Ref 'KeyPairName'
         ImageId: !GetAtt 'STEP0AMILookup.Outputs.AMIID'

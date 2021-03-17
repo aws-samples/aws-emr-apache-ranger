@@ -41,6 +41,7 @@ s3bucket=$6
 project_version=${7-'2.0'}
 db_host_name=$8
 db_root_password=$9
+default_region=${10-'us-east-1'}
 ldap_server_url=ldap://$ldap_ip_address
 ranger_service_def_ver=2.0.0
 #ldap_admin_user=${10}
@@ -68,7 +69,9 @@ mysql_jar=mysql-connector-java-5.1.39.jar
 
 certs_path="/tmp/certs"
 
-current_hostname=$(hostname -f)
+#current_hostname=$(hostname -f)
+current_hostname=$(TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-metadata-token: $TOKEN" -v http://169.254.169.254/latest/meta-data/local-hostname)
+sudo hostname $current_hostname
 
 HTTP_URL=https://localhost:6182
 ranger_agents_certs_path="${certs_path}/ranger-agents-certs"
@@ -106,12 +109,12 @@ mkdir -p ${solr_certs_path}
 ## Using Secrets Manager to get the private Key and certs
 sudo yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm || true
 sudo yum install jq -y
-aws secretsmanager get-secret-value --secret-id emr/rangerServerPrivateKey --version-stage AWSCURRENT --region us-east-1 | jq -r ".SecretString"  > ${ranger_server_certs_path}/privateKey.pem
-aws secretsmanager get-secret-value --secret-id emr/rangerGAservercert --version-stage AWSCURRENT --region us-east-1 | jq -r ".SecretString"  > ${ranger_server_certs_path}/trustedCertificates.pem
-aws secretsmanager get-secret-value --secret-id emr/rangerPluginCert --version-stage AWSCURRENT --region us-east-1 | jq -r ".SecretString"  > ${ranger_agents_certs_path}/trustedCertificates.pem
-aws secretsmanager get-secret-value --secret-id emr/rangerSolrCert --version-stage AWSCURRENT --region us-east-1 | jq -r ".SecretString"  > ${solr_certs_path}/certificateChain.pem
-aws secretsmanager get-secret-value --secret-id emr/rangerSolrPrivateKey --version-stage AWSCURRENT --region us-east-1 | jq -r ".SecretString"  > ${solr_certs_path}/privateKey.pem
-aws secretsmanager get-secret-value --secret-id emr/rangerSolrTrustedCert --version-stage AWSCURRENT --region us-east-1 | jq -r ".SecretString"  > ${solr_certs_path}/trustedCertificates.pem
+aws secretsmanager get-secret-value --secret-id emr/rangerServerPrivateKey --version-stage AWSCURRENT --region $default_region | jq -r ".SecretString"  > ${ranger_server_certs_path}/privateKey.pem
+aws secretsmanager get-secret-value --secret-id emr/rangerGAservercert --version-stage AWSCURRENT --region $default_region | jq -r ".SecretString"  > ${ranger_server_certs_path}/trustedCertificates.pem
+aws secretsmanager get-secret-value --secret-id emr/rangerPluginCert --version-stage AWSCURRENT --region $default_region | jq -r ".SecretString"  > ${ranger_agents_certs_path}/trustedCertificates.pem
+aws secretsmanager get-secret-value --secret-id emr/rangerSolrCert --version-stage AWSCURRENT --region $default_region | jq -r ".SecretString"  > ${solr_certs_path}/certificateChain.pem
+aws secretsmanager get-secret-value --secret-id emr/rangerSolrPrivateKey --version-stage AWSCURRENT --region $default_region | jq -r ".SecretString"  > ${solr_certs_path}/privateKey.pem
+aws secretsmanager get-secret-value --secret-id emr/rangerSolrTrustedCert --version-stage AWSCURRENT --region $default_region | jq -r ".SecretString"  > ${solr_certs_path}/trustedCertificates.pem
 
 sudo mkdir -p /etc/ranger/admin/conf
 
@@ -215,6 +218,7 @@ sudo sed -i "s|db_name=.*|db_name=${RDS_RANGER_SCHEMA_DBNAME}|g" install.propert
 sudo sed -i "s|db_user=.*|db_user=${RDS_RANGER_SCHEMA_DBUSER}|g" install.properties
 sudo sed -i "s|db_password=.*|db_password=${RDS_RANGER_SCHEMA_DBPASSWORD}|g" install.properties
 sudo sed -i "s|audit_db_password=.*|audit_db_password=rangerlogger|g" install.properties
+#sudo sed -i "s|rangerAdmin_password=.*|rangerAdmin_password=admin|g" install.properties
 
 ## Update log4j to debug
 sudo sed -i "s|info|debug|g" ews/webapp/WEB-INF/log4j.properties

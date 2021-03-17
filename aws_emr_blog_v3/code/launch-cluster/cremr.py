@@ -24,7 +24,6 @@ except Exception as e:
 
 def create(event, context):
     apps = event["ResourceProperties"]["AppsEMR"]
-    s3Bucket = event["ResourceProperties"]["S3Bucket"]
     emrReleaseLabel = event["ResourceProperties"]["emrReleaseLabel"]
     prestoEngineRequested = "Presto"
     isPrestoAppRequested = False
@@ -50,7 +49,7 @@ def create(event, context):
                 # {
                 #     "Name": "Install packages",
                 #     "ScriptBootstrapAction": {
-                #         "Path": "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
+                #         "Path": "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
                 #             "S3Key"] + "/" + event["ResourceProperties"][
                 #                     "ProjectVersion"] + "/scripts/install-required-packages.sh"
                 #     }
@@ -62,8 +61,8 @@ def create(event, context):
                             "S3Key"] + "/" + event["ResourceProperties"][
                                     "ProjectVersion"] + "/scripts/download-scripts.sh",
                         "Args": [
-                            "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
-                                "S3Key"] + "/" + event["ResourceProperties"][
+                            "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
+                                "S3ArtifactKey"] + "/" + event["ResourceProperties"][
                                 "ProjectVersion"]
                         ]
                     }
@@ -72,8 +71,8 @@ def create(event, context):
                 # {
                 #     "Name": "Setup HDFS home dir",
                 #     "ScriptBootstrapAction": {
-                #         "Path": "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
-                #             "S3Key"] + "/" + event["ResourceProperties"][
+                #         "Path": "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
+                #             "S3ArtifactKey"] + "/" + event["ResourceProperties"][
                 #                     "ProjectVersion"] + "/scripts/create-hdfs-home-ba.sh"
                 #     }
                 # }
@@ -122,7 +121,7 @@ def create(event, context):
                                   #             "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-hive-hdfs-ranger-plugin.sh",
                                   #             event["ResourceProperties"]["RangerHostname"],
                                   #             event["ResourceProperties"]["RangerVersion"],
-                                  #             "s3://" + s3Bucket + "/" + event["ResourceProperties"]["S3Key"],
+                                  #             "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"]["S3ArtifactKey"],
                                   #             event["ResourceProperties"][
                                   #                 "ProjectVersion"],
                                   #             event["ResourceProperties"]["emrReleaseLabel"],
@@ -140,9 +139,9 @@ def create(event, context):
                                           "Args": [
                                               "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-ranger-servicedef.sh",
                                               event["ResourceProperties"]["RangerHostname"],
-                                              "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" +
+                                              "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" +
                                               event["ResourceProperties"][
-                                                  "S3Key"] + "/" + event["ResourceProperties"][
+                                                  "S3ArtifactKey"] + "/" + event["ResourceProperties"][
                                                   "ProjectVersion"] + "/inputdata",
                                               event["ResourceProperties"]["RangerHttpProtocol"],
                                               event["ResourceProperties"]["RangerVersion"],
@@ -158,9 +157,9 @@ def create(event, context):
                                           "Args": [
                                               "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-ranger-policies.sh",
                                               event["ResourceProperties"]["RangerHostname"],
-                                              "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" +
+                                              "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" +
                                               event["ResourceProperties"][
-                                                  "S3Key"] + "/" + event["ResourceProperties"][
+                                                  "S3ArtifactKey"] + "/" + event["ResourceProperties"][
                                                   "ProjectVersion"] + "/inputdata",
                                               event["ResourceProperties"]["RangerHttpProtocol"],
                                               event["ResourceProperties"]["RangerVersion"],
@@ -323,8 +322,8 @@ def create(event, context):
         #         {
         #             "Name": "Install cloudwatch agent",
         #             "ScriptBootstrapAction": {
-        #                 "Path": "s3://" + s3Bucket + "/" + event["ResourceProperties"][
-        #                     "S3Key"] + "/" + event["ResourceProperties"][
+        #                 "Path": "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
+        #                     "S3ArtifactKey"] + "/" + event["ResourceProperties"][
         #                             "ProjectVersion"] + "/scripts/install-cloudwatch-agent.sh"
         #             }
         #         })
@@ -407,12 +406,12 @@ def create(event, context):
         #             {
         #                 "Name": "Setup Presto Kerberos",
         #                 "ScriptBootstrapAction": {
-        #                     "Path": "s3://" + s3Bucket + "/" + event["ResourceProperties"][
-        #                         "S3Key"] + "/" + event["ResourceProperties"][
+        #                     "Path": "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
+        #                         "S3ArtifactKey"] + "/" + event["ResourceProperties"][
         #                                 "ProjectVersion"] + "/scripts/configure_presto_kerberos_ba.sh",
         #                     "Args": [
-        #                         "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
-        #                             "S3Key"] + "/" + event["ResourceProperties"][
+        #                         "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
+        #                             "S3ArtifactKey"] + "/" + event["ResourceProperties"][
         #                             "ProjectVersion"],
         #                         event["ResourceProperties"]["KdcAdminPassword"]
         #                     ]
@@ -455,7 +454,7 @@ def create(event, context):
         #                 "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-presto-ranger-plugin.sh",
         #                 event["ResourceProperties"]["RangerHostname"],
         #                 event["ResourceProperties"]["RangerVersion"],
-        #                 "s3://" + s3Bucket + "/" + event["ResourceProperties"]["S3Key"],
+        #                 "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"]["S3ArtifactKey"],
         #                 event["ResourceProperties"][
         #                     "ProjectVersion"],
         #                 event["ResourceProperties"]["emrReleaseLabel"],
