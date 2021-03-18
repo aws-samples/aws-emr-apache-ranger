@@ -420,7 +420,8 @@ def create(event, context):
                                 "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
                                     "S3Key"] + "/" + event["ResourceProperties"][
                                     "ProjectVersion"],
-                                event["ResourceProperties"]["KdcAdminPassword"]
+                                event["ResourceProperties"]["KdcAdminPassword"],
+                                prestoEngineRequested
                             ]
                         }
                     })
