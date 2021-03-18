@@ -2,6 +2,7 @@
 
 kdc_password=$1
 emr_domain=EC2.INTERNAL
+presto_engine=$2
 
 isMasterInstance=$(cat /mnt/var/lib/info/instance.json | jq '.isMaster')
 
@@ -24,7 +25,11 @@ hive.hdfs.authentication.type = KERBEROS
 hive.hdfs.presto.principal = presto/_HOST@${emr_domain}
 hive.hdfs.presto.keytab = /etc/presto.keytab
 EOT
-
+if [ "$presto_engine" == "Presto" ]; then
+sudo tee -a /etc/presto/conf/catalog/hive.properties > /dev/null <<EOT
+hive.hdfs.wire-encryption.enabled = true
+EOT
+fi
 sudo stop presto-server
 sudo start presto-server
 
