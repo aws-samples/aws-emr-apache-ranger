@@ -1,0 +1,90 @@
+{
+ "isEnabled":true,
+ "version":1,
+ "service":"prestodev",
+ "name":"HiveCatalogTableAccess",
+ "policyType":0,
+ "policyPriority":0,
+ "description":"HiveCatalogTableAccess",
+ "isAuditEnabled":true,
+ "resources": {
+  "schema": {
+   "values": [
+    "information_schema"
+   ],
+   "isExcludes": false,
+   "isRecursive": false
+  },
+  "catalog": {
+   "values": [
+    "hive"
+   ],
+   "isExcludes": false,
+   "isRecursive": false
+  },
+  "column": {
+   "values": [
+    "*"
+   ],
+   "isExcludes": false,
+   "isRecursive": false
+  },
+  "table": {
+   "values": [
+    "tables",
+    "schemata"
+   ],
+   "isExcludes": false,
+   "isRecursive": false
+  }
+ },
+ "policyItems": [
+  {
+   "accesses": [
+    {
+     "type": "select",
+     "isAllowed": true
+    },
+    {
+     "type": "use",
+     "isAllowed": true
+    }
+   ],
+   "users": [
+    "analyst1",
+    "analyst2"
+   ],
+   "groups": [],
+   "roles": [],
+   "conditions": [],
+   "delegateAdmin": false
+  }
+ ],
+ "denyPolicyItems":[
+
+ ],
+ "allowExceptions":[
+
+ ],
+ "denyExceptions":[
+
+ ],
+ "dataMaskPolicyItems":[
+
+ ],
+ "rowFilterPolicyItems":[
+
+ ],
+ "serviceType":"presto",
+ "options":{
+
+ },
+ "validitySchedules":[
+
+ ],
+ "policyLabels":[
+
+ ],
+ "zoneName":"",
+ "isDenyAllElse":false
+}

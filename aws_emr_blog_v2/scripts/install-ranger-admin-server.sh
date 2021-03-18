@@ -28,10 +28,13 @@ emr_version=${13-'emr-5.30'}
 emr_release_version_regex="^emr-6.*"
 if [[ ( "$emr_version" =~ $emr_release_version_regex ) ]]; then
   ranger_download_version=2.2.0-SNAPSHOT
+  ranger_hbase_download_version=1.2.1-SNAPSHOT
 elif [ "$ranger_version" == "2.0" ]; then
    ranger_download_version=2.1.0-SNAPSHOT
+   ranger_hbase_download_version=1.2.1-SNAPSHOT
 else
    ranger_download_version=1.1.0
+   ranger_hbase_download_version=1.1.0
 fi
 
 #sudo sed 's/awsemr.com/ec2.internal awsemr.com\nnameserver 10.0.0.2\n/g'
@@ -132,7 +135,7 @@ aws s3 cp $ranger_s3bucket/$ranger_user_sync.tar.gz .
 aws s3 cp $mysql_jar_location .
 aws s3 cp $ranger_s3bucket/solr_for_audit_setup.tar.gz .
 #Update ranger admin install.properties
-mkdir $ranger_admin_server
+mkdir -p $ranger_admin_server
 tar -xvf $ranger_admin_server.tar.gz -C $ranger_admin_server --strip-components=1
 
 cd $ranger_admin_server
@@ -225,11 +228,9 @@ sudo sed -i "s|lookup_keytab=.*|lookup_keytab=/etc/awsadmin.keytab|g" install.pr
 sudo cp /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/lib/htrace-core* /usr/lib/ranger/$ranger_admin_server/cred/lib
 sudo cp /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/lib/commons-configuration* /usr/lib/ranger/$ranger_admin_server/cred/lib
 
-## Install the spark ranger plugin
-sudo mkdir -p /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/classes/ranger-plugins/amazon-emr-spark
-cp -r /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/classes/ranger-plugins/hive/* /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/classes/ranger-plugins/amazon-emr-spark/
-
 chmod +x setup.sh
+yum -y install dos2unix || true
+dos2unix setup.sh || true
 ./setup.sh
 
 #CHECKTHIS - FIX FOR Unable to get the Credential Provider from the Configuration when launching the server
@@ -266,6 +267,18 @@ sudo sed -i "s|AUTH_SSL_TRUSTSTORE_FILE=.*|AUTH_SSL_TRUSTSTORE_FILE=$ranger_admi
 sudo sed -i "s|AUTH_SSL_TRUSTSTORE_PASSWORD=.*|AUTH_SSL_TRUSTSTORE_PASSWORD=$ranger_admin_truststore_password|g" install.properties
 
 sudo cp /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/lib/commons-configuration* /usr/lib/ranger/$ranger_user_sync/lib/
+
+
+## Install HBase support
+ranger_hbase_s3bucket=$s3bucket/ranger/ranger-$ranger_hbase_download_version
+ranger_hbase_plugin=ranger-$ranger_hbase_download_version-hbase-plugin
+pushd /tmp;
+sudo mkdir -p /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/classes/ranger-plugins/hbase
+aws s3 cp $ranger_hbase_s3bucket/$ranger_hbase_plugin.tar.gz .
+sudo mkdir -p $ranger_hbase_plugin
+tar -xvf $ranger_hbase_plugin.tar.gz -C $ranger_hbase_plugin --strip-components=1
+sudo mv $ranger_hbase_plugin/lib/ranger-hbase-plugin-impl/* /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/classes/ranger-plugins/hbase/
+popd
 
 chmod +x setup.sh
 ./setup.sh
@@ -309,11 +322,6 @@ log4j.category.org.apache.ranger.rest.ServiceREST=debug,xa_log_policy_appender
 log4j.additivity.org.apache.ranger.rest.ServiceREST=false" >> /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/log4j.properties
 sudo ln -s /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/classes/ranger-plugins/hive/ranger-hive-plugin-$ranger_download_version* /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/lib/
 sudo ln -s /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/classes/ranger-plugins/hdfs/ranger-hdfs-plugin-$ranger_download_version* /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/lib/
-
-# Remove this as the folder has already been created
-# sudo mkdir -p /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/classes/ranger-plugins/amazon-emr-spark
-sudo wget -O /tmp/ranger-spark-plugin-2.0.0.jar https://aws-emr-bda-public.s3.amazonaws.com/ranger-private-beta/v4/service-definition/2.0.0/ranger-spark-plugin-2.0.0.jar
-sudo mv /tmp/ranger-spark-plugin-2.0.0.jar /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/classes/ranger-plugins/amazon-emr-spark/
 
 #CHECKTHIS - wrong path
 sudo cp /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/classes/ranger-plugins/hive/* /usr/lib/ranger/$ranger_admin_server/ews/webapp/WEB-INF/lib/ || true

@@ -1,0 +1,16 @@
+{
+  "name": "hbasedev",
+  "description": "Create HBase Repo using CURL",
+  "type": "hbase",
+  "configs": {
+    "username": "policymgr_hive",
+    "password": "policymgr_hive",
+    "hadoop.security.authentication": "simple",
+    "hbase.security.authentication": "simple",
+    "hbase.zookeeper.property.clientPort": "2181",
+    "zookeeper.znode.parent": "/hbase",
+    "hbase.zookeeper.quorum": "emr_masternode",
+    "commonNameForCertificate": "*.ec2.internal"
+  },
+  "isEnabled": true
+}
