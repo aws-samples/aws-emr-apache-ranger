@@ -3,8 +3,8 @@
 scripts_repo_path=$1
 
 kdc_password=$2
-#file_name=configure_presto_kerberos_for_hive.sh
-file_name=presto-kerberos-ba.sh
+file_name=configure_presto_kerberos_for_hive.sh
+#file_name=presto-kerberos-ba.sh
 presto_script_setup_location=/tmp/$file_name
 
 aws s3 cp ${scripts_repo_path}/scripts/$file_name ${presto_script_setup_location}
