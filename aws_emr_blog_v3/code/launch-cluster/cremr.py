@@ -41,6 +41,7 @@ def create(event, context):
     try:
         emrVersion = emrReleaseLabel.split("-")[1].split(".")
         client = boto3.client("emr", region_name=event["ResourceProperties"]["StackRegion"])
+        scriptRunnerJar = "s3://"+event["ResourceProperties"]["StackRegion"]+".elasticmapreduce/libs/script-runner/script-runner.jar"
         cluster_name = "EMR-" + event["ResourceProperties"]["StackName"]
         cluster_parameters = {'Name': cluster_name, 'ReleaseLabel': emrReleaseLabel,
                               'LogUri': event["ResourceProperties"]["LogFolder"],
@@ -83,7 +84,7 @@ def create(event, context):
                                       "Name": "CreateDefaultHiveTables",
                                       "ActionOnFailure": "CONTINUE",
                                       "HadoopJarStep": {
-                                          "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                          "Jar": scriptRunnerJar,
                                           "Args": [
                                               "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/createHiveTables.sh",
                                               event["ResourceProperties"]["StackRegion"]
@@ -94,7 +95,7 @@ def create(event, context):
                                   #     "Name": "CreateExtendedHiveTables",
                                   #     "ActionOnFailure": "CONTINUE",
                                   #     "HadoopJarStep": {
-                                  #         "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                  #         "Jar": scriptRunnerJar,
                                   #         "Args": [
                                   #             "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/createdExtendedHiveTables.sh",
                                   #             event["ResourceProperties"]["StackRegion"]
@@ -105,7 +106,7 @@ def create(event, context):
                                       "Name": "LoadHDFSData",
                                       "ActionOnFailure": "CONTINUE",
                                       "HadoopJarStep": {
-                                          "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                          "Jar": scriptRunnerJar,
                                           "Args": [
                                               "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/loadDataIntoHDFS.sh",
                                               event["ResourceProperties"]["StackRegion"]
@@ -116,7 +117,7 @@ def create(event, context):
                                   #     "Name": "InstallHiveHDFSRangerPlugin",
                                   #     "ActionOnFailure": "CONTINUE",
                                   #     "HadoopJarStep": {
-                                  #         "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                  #         "Jar": scriptRunnerJar,
                                   #         "Args": [
                                   #             "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-hive-hdfs-ranger-plugin.sh",
                                   #             event["ResourceProperties"]["RangerHostname"],
@@ -135,7 +136,7 @@ def create(event, context):
                                       "Name": "InstallRangerServiceDef",
                                       "ActionOnFailure": "CONTINUE",
                                       "HadoopJarStep": {
-                                          "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                          "Jar": scriptRunnerJar,
                                           "Args": [
                                               "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-ranger-servicedef.sh",
                                               event["ResourceProperties"]["RangerHostname"],
@@ -153,7 +154,7 @@ def create(event, context):
                                       "Name": "InstallRangerPolicies",
                                       "ActionOnFailure": "CONTINUE",
                                       "HadoopJarStep": {
-                                          "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                          "Jar": scriptRunnerJar,
                                           "Args": [
                                               "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-ranger-policies.sh",
                                               event["ResourceProperties"]["RangerHostname"],
@@ -171,7 +172,7 @@ def create(event, context):
                                       "Name": "Hue-Permission-Update",
                                       "ActionOnFailure": "CONTINUE",
                                       "HadoopJarStep": {
-                                          "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                          "Jar": scriptRunnerJar,
                                           "Args": [
                                               "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/hue-update.sh"
                                           ]
@@ -181,7 +182,7 @@ def create(event, context):
                                       "Name": "Cloudformation-Signal",
                                       "ActionOnFailure": "CONTINUE",
                                       "HadoopJarStep": {
-                                          "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                          "Jar": scriptRunnerJar,
                                           "Args": [
                                               "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/send-cf-signal.sh",
                                               event["ResourceProperties"]["SignalURL"]
@@ -449,7 +450,7 @@ def create(event, context):
         #         "Name": "InstallRangerPrestoPlugin",
         #         "ActionOnFailure": "CONTINUE",
         #         "HadoopJarStep": {
-        #             "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+        #             "Jar": scriptRunnerJar,
         #             "Args": [
         #                 "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-presto-ranger-plugin.sh",
         #                 event["ResourceProperties"]["RangerHostname"],
