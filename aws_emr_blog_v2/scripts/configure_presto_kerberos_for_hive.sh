@@ -3,6 +3,8 @@
 kdc_password=$1
 emr_domain=EC2.INTERNAL
 presto_engine=$2
+#Hive metastore can be 'glue' or 'database'
+hive_metastore=${3-'database'}
 
 isMasterInstance=$(cat /mnt/var/lib/info/instance.json | jq '.isMaster')
 
@@ -15,7 +17,8 @@ sudo kadmin -w "$kdc_password" -p kadmin/admin -q "xst -k /etc/presto.keytab pre
 sudo chown presto:presto /etc/presto.keytab
 
 #Append to /etc/presto/conf/catalog/hive.properties
-
+if [ "${hive_metastore}" == "database" ];
+then
 sudo tee -a /etc/presto/conf/catalog/hive.properties > /dev/null <<EOT
 hive.metastore.authentication.type = KERBEROS
 hive.metastore.client.principal = presto/_HOST@${emr_domain}
@@ -32,7 +35,7 @@ EOT
 fi
 sudo stop presto-server
 sudo start presto-server
-
+fi
 #else
 #  echo "Slave instance. Doing nothing..."
 #fi
