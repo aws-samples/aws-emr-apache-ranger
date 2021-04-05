@@ -2,16 +2,21 @@
 The repo contains code tied to [AWS Big Data Blog](https://aws.amazon.com/blogs/big-data/implementing-authorization-and-auditing-using-apache-ranger-on-amazon-emr/) on Implementing Authorization and Auditing on Amazon EMR Using Apache Ranger
 This is V2 of the blog post with following updates
 
+### Architecture:
+
+![](../images/emr-ranger-v2.png)
+
+###Updates:
 - Apache Ranger 2.0 with RDS backed MySQL Database
-- Windows AD server on EC2
+- Windows AD server on EC2 (not SimpleAD)
 - Choice of Hive Metastore [Choose one]:
-    - RDS MySQL database
+    - RDS MySQL database (Default)
     - Glue Catalog
 - Kerberos Enabled Amazon EMR cluster with
    * Ranger Plugins
      * HDFS
      * Apache Hive
-     * Optional Apache PrestoDB/PrestoSQL plugin
+     * Apache PrestoDB/PrestoSQL plugin (Optional)
 
 
 The stack needs to be deployed in 2 steps.
