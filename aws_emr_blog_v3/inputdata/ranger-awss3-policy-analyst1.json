@@ -1,0 +1,50 @@
+{
+ "service": "amazonemrs3",
+ "name": "Analyst1 S3",
+ "policyType": 0,
+ "policyPriority": 0,
+ "description": "",
+ "isAuditEnabled": true,
+ "resources": {
+  "sthreeresource": {
+   "values": [
+    "aws-bigdata-blog/artifacts/aws-blog-emr-ranger/data/staging/products"
+   ],
+   "isExcludes": false,
+   "isRecursive": true
+  }
+ },
+ "policyItems": [
+  {
+   "accesses": [
+    {
+     "type": "GetObject",
+     "isAllowed": true
+    },
+    {
+     "type": "ListObjects",
+     "isAllowed": true
+    }
+   ],
+   "users": [
+    "analyst1"
+   ],
+   "groups": [],
+   "roles": [],
+   "conditions": [],
+   "delegateAdmin": false
+  }
+ ],
+ "denyPolicyItems": [],
+ "allowExceptions": [],
+ "denyExceptions": [],
+ "dataMaskPolicyItems": [],
+ "rowFilterPolicyItems": [],
+ "serviceType": "amazon-emr-emrfs",
+ "options": {},
+ "validitySchedules": [],
+ "policyLabels": [],
+ "zoneName": "",
+ "isDenyAllElse": false,
+ "isEnabled": true
+}

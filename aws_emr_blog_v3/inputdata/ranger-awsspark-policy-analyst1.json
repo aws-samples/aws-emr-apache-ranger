@@ -1,0 +1,62 @@
+{
+ "service": "amazonemrspark",
+ "name": "Analyst1 Spark Policy",
+ "policyType": 0,
+ "policyPriority": 0,
+ "description": "",
+ "isAuditEnabled": true,
+ "resources": {
+  "database": {
+   "values": [
+    "default"
+   ],
+   "isExcludes": false,
+   "isRecursive": false
+  },
+  "column": {
+   "values": [
+    "request_begin_time",
+    "day",
+    "hour"
+   ],
+   "isExcludes": false,
+   "isRecursive": false
+  },
+  "table": {
+   "values": [
+    "tblanalyst1"
+   ],
+   "isExcludes": false,
+   "isRecursive": false
+  }
+ },
+ "policyItems": [
+  {
+   "accesses": [
+    {
+     "type": "select",
+     "isAllowed": true
+    }
+   ],
+   "users": [
+    "analyst1"
+   ],
+   "groups": [],
+   "roles": [],
+   "conditions": [],
+   "delegateAdmin": false
+  }
+ ],
+ "denyPolicyItems": [],
+ "allowExceptions": [],
+ "denyExceptions": [],
+ "dataMaskPolicyItems": [],
+ "rowFilterPolicyItems": [],
+ "serviceType": "hive",
+ "options": {},
+ "validitySchedules": [],
+ "policyLabels": [],
+ "zoneName": "",
+ "isDenyAllElse": false,
+ "isEnabled": true
+}
