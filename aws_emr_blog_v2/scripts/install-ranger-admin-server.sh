@@ -310,6 +310,9 @@ sed -i 's/+90DAYS/+2DAYS/g' conf/solrconfig.xml
 chmod +x setup.sh
 ./setup.sh
 
+sudo mkdir -p /usr/lib/ranger/logs/admin/
+sudo ln -sfn /usr/lib/ranger/$ranger_admin_server/ews/logs /usr/lib/ranger/logs/admin/logs
+
 #Start Ranger Admin
 sudo echo "log4j.appender.xa_log_policy_appender=org.apache.log4j.DailyRollingFileAppender
 log4j.appender.xa_log_policy_appender.file=\${logdir}/ranger_admin_policy_updates.log

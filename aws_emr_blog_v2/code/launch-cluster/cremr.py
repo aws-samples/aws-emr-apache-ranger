@@ -421,7 +421,8 @@ def create(event, context):
                                     "S3Key"] + "/" + event["ResourceProperties"][
                                     "ProjectVersion"],
                                 event["ResourceProperties"]["KdcAdminPassword"],
-                                prestoEngineRequested
+                                prestoEngineRequested,
+                                'glue' if event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == 'true' else 'database'
                             ]
                         }
                     })
