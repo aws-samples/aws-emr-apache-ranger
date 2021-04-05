@@ -6,7 +6,7 @@ This is V2 of the blog post with following updates
 
 ![](../images/emr-ranger-v2.png)
 
-###Updates:
+### Updates:
 - Apache Ranger 2.0 with RDS backed MySQL Database
 - Windows AD server on EC2 (not SimpleAD)
 - Choice of Hive Metastore [Choose one]:
