@@ -436,8 +436,7 @@ Resources:
               command: !Sub |
                 sudo yum update -y
                 sudo yum install -y awslogs
-                #updated for amazon linux 2
-                #----------------------------
+                #update for amazon linux 2
                 #sudo service awslogs restart
                 #sudo chkconfig awslogs on
                 sudo systemctl start awslogsd
