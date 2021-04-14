@@ -167,15 +167,15 @@ Parameters:
     MaxLength: '25'
     MinLength: '5'
     Type: String
-  KerberosRealm:
-    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
-    Default: EC2.INTERNAL
-    AllowedValues: ["EC2.INTERNAL"]
-    Description: Cluster's Kerberos realm name. This is usually the VPC's domain name
-      in uppercase letters e.g. EC2.INTERNAL
-    MaxLength: '25'
-    MinLength: '3'
-    Type: String
+#  KerberosRealm:
+#    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
+#    Default: COMPUTE.INTERNAL
+#    AllowedValues: ["COMPUTE.INTERNAL"]
+#    Description: Cluster's Kerberos realm name. This is usually the VPC's domain name
+#      in uppercase letters e.g. COMPUTE.INTERNAL
+#    MaxLength: '25'
+#    MinLength: '3'
+#    Type: String
   KerberosADdomain:
     AllowedPattern: '[a-zA-Z0-9\-]+\..+'
     Default: AWSEMR.COM
@@ -251,6 +251,7 @@ Parameters:
     Type: String
     AllowedValues:
       - 3.0
+      - beta
   KeyPairName:
     Description: Name of an existing EC2 key pair to access the Amazon EMR cluster
     Type: AWS::EC2::KeyPair::KeyName
@@ -309,6 +310,7 @@ Metadata:
           - PublicSubnet1AID
           - PublicSubnet2AID
 Conditions:
+  USEastRegion: !Equals [ !Ref 'AWS::Region', "us-east-1" ]
   EnableKerberos: !Equals [true, !Ref EnableKerberos]
   3AZDeployment: !Equals [!Ref NumberOfAZs, "3"]
   2AZDeployment: !Or
@@ -384,7 +386,7 @@ Resources:
         KdcAdminPassword: !Ref 'KdcAdminPassword'
         ADDomainJoinPassword: !Ref 'ADDomainJoinPassword'
         DomainAdminUser: !Ref 'DomainAdminUser'
-        KerberosRealm: !Ref 'KerberosRealm'
+#        KerberosRealm: !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
         DomainDNSName: !Ref 'DomainDNSName'
         LDAPHostPrivateIP: !Ref 'LDAPHostPrivateIP'
         LDAPBindUserName: !Ref 'LDAPBindUserName'

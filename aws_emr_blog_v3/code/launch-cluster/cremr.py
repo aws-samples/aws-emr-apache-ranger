@@ -146,7 +146,8 @@ def create(event, context):
                                                   "ProjectVersion"] + "/inputdata",
                                               event["ResourceProperties"]["RangerHttpProtocol"],
                                               event["ResourceProperties"]["RangerVersion"],
-                                              event["ResourceProperties"]["RangerAdminPassword"]
+                                              event["ResourceProperties"]["RangerAdminPassword"],
+                                              str(event["ResourceProperties"]["DefaultDomain"]).lower()
                                           ]
                                       }
                                   },
@@ -164,7 +165,8 @@ def create(event, context):
                                                   "ProjectVersion"] + "/inputdata",
                                               event["ResourceProperties"]["RangerHttpProtocol"],
                                               event["ResourceProperties"]["RangerVersion"],
-                                              event["ResourceProperties"]["RangerAdminPassword"]
+                                              event["ResourceProperties"]["RangerAdminPassword"],
+                                              str(event["ResourceProperties"]["DefaultDomain"]).lower()
                                           ]
                                       }
                                   },
@@ -346,7 +348,7 @@ def create(event, context):
         #             "hive.server2.thrift.http.path": "cliservice",
         #             "hive.server2.transport.mode": "binary",
         #             "hive.server2.allow.user.substitution": "true",
-        #             "hive.server2.authentication.kerberos.principal": "hive/_HOST@EC2.INTERNAL",
+        #             "hive.server2.authentication.kerberos.principal": "hive/_HOST@"+event["ResourceProperties"]["DefaultDomain"],
         #             "hive.server2.enable.doAs": "false",
         #             "hive.metastore.client.factory.class": "com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory"
         #         }
@@ -364,7 +366,7 @@ def create(event, context):
                 "hive.server2.thrift.http.path": "cliservice",
                 "hive.server2.transport.mode": "binary",
                 "hive.server2.allow.user.substitution": "true",
-                "hive.server2.authentication.kerberos.principal": "hive/_HOST@EC2.INTERNAL",
+                "hive.server2.authentication.kerberos.principal": "hive/_HOST@"+event["ResourceProperties"]["DefaultDomain"],
                 "hive.server2.enable.doAs": "false"
             }
         })

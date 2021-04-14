@@ -15,13 +15,16 @@
 #%    arg1                          Pass the AWS profile to use -
 #                                   You can configure this using the documentation below
 #                                   https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html
+#%    arg2                          default ec2 realm (eg: ec2.internal for US-East-1 and compute.internal for all other regions)
+#%    arg3                          AWS_REGION (AWS region where you want to install the secrets)
+
 
 #% EXAMPLES
-#%    create-tls-certs.sh ranger_demo
+#%    create-tls-certs.sh ranger_demo ec2.internal
 #%
 #================================================================
 #- IMPLEMENTATION
-#-    version         create-tls-certs.sh 1.0
+#-    version         create-tls-certs.sh 2.0
 #-    author          Varun Bhamidimarri, Stefano Sandonà
 #-    license         MIT license
 #-
@@ -29,12 +32,14 @@
 #================================================================
 #================================================================
 
-[ $# -eq 0 ] && { echo "Usage: $0 AWS_CLI_profile (To setup follow this link: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html)"; exit 1; }
+[ $# -lt 3 ] && { echo "Usage: $0 AWS_CLI_profile DEFAULT_EC2_REALM AWS_REGION (To setup follow this link: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html)"; exit 1; }
 
 set -euo pipefail
 set -x
 
 AWS_PROFILE=$1
+DEFAULT_EC2_REALM=$2
+AWS_REGION=$3
 #AWS_PROFILE=account4
 ranger_agents_certs_path="./ranger-agents"
 solr_certs_path="./solr-client"
@@ -48,8 +53,7 @@ truststore_ranger_server_alias="rangeradmin"
 secret_mgr_ranger_private_key="emr/rangerGAagentkey"
 secret_mgr_ranger_admin_cert="emr/rangerGAservercert"
 
-
-certs_subject="/C=US/ST=TX/L=Dallas/O=EMR/OU=EMR/CN=*.ec2.internal"
+certs_subject="/C=US/ST=TX/L=Dallas/O=EMR/OU=EMR/CN=*.$DEFAULT_EC2_REALM"
 
 generate_certs() {
   rm -rf $1
@@ -80,8 +84,8 @@ rm -rf ${truststore_location}
 keytool -import -file ${ranger_server_certs_path}/certificateChain.pem -alias ${truststore_ranger_server_alias} -keystore ${truststore_location} -storepass ${truststore_password} -noprompt
 
 # Delete existing secrets
-aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_private_key} --force-delete-without-recovery --profile $AWS_PROFILE --cli-read-timeout 10 --cli-connect-timeout 10
-aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_admin_cert} --force-delete-without-recovery --profile $AWS_PROFILE --cli-read-timeout 10 --cli-connect-timeout 10
+aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_private_key} --force-delete-without-recovery --profile $AWS_PROFILE --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_admin_cert} --force-delete-without-recovery --profile $AWS_PROFILE --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
 
 ## Basic wait for delete to be complete
 sleep 30
@@ -89,24 +93,24 @@ sleep 30
 cat ${ranger_agents_certs_path}/privateKey.pem ${ranger_agents_certs_path}/certificateChain.pem > ${ranger_agents_certs_path}/rangerGAagentKeyChain.pem
 
 aws secretsmanager create-secret --name ${secret_mgr_ranger_private_key} \
-          --description "X509 Ranger Agent Private Key to be used by EMR Security Config" --secret-string file://${ranger_agents_certs_path}/rangerGAagentKeyChain.pem --profile $AWS_PROFILE
+          --description "X509 Ranger Agent Private Key to be used by EMR Security Config" --secret-string file://${ranger_agents_certs_path}/rangerGAagentKeyChain.pem --profile $AWS_PROFILE --region $AWS_REGION
 
 
 aws secretsmanager create-secret --name ${secret_mgr_ranger_admin_cert} \
-          --description "Ranger Server Cert" --secret-string file://${ranger_server_certs_path}/certificateChain.pem --profile $AWS_PROFILE
+          --description "Ranger Server Cert" --secret-string file://${ranger_server_certs_path}/certificateChain.pem --profile $AWS_PROFILE --region $AWS_REGION
 
 
 ## Others that will be used by the Ranger Admin Server
 
-aws secretsmanager delete-secret --secret-id emr/rangerServerPrivateKey --force-delete-without-recovery --profile $AWS_PROFILE --cli-read-timeout 10 --cli-connect-timeout 10
-aws secretsmanager delete-secret --secret-id emr/rangerPluginCert --force-delete-without-recovery --profile $AWS_PROFILE --cli-read-timeout 10 --cli-connect-timeout 10
-aws secretsmanager delete-secret --secret-id emr/rangerSolrCert --force-delete-without-recovery --profile $AWS_PROFILE --cli-read-timeout 10 --cli-connect-timeout 10
-aws secretsmanager delete-secret --secret-id emr/rangerSolrPrivateKey --force-delete-without-recovery --profile $AWS_PROFILE --cli-read-timeout 10 --cli-connect-timeout 10
-aws secretsmanager delete-secret --secret-id emr/rangerSolrTrustedCert --force-delete-without-recovery --profile $AWS_PROFILE --cli-read-timeout 10 --cli-connect-timeout 10
+aws secretsmanager delete-secret --secret-id emr/rangerServerPrivateKey --force-delete-without-recovery --profile $AWS_PROFILE --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+aws secretsmanager delete-secret --secret-id emr/rangerPluginCert --force-delete-without-recovery --profile $AWS_PROFILE --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+aws secretsmanager delete-secret --secret-id emr/rangerSolrCert --force-delete-without-recovery --profile $AWS_PROFILE --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+aws secretsmanager delete-secret --secret-id emr/rangerSolrPrivateKey --force-delete-without-recovery --profile $AWS_PROFILE --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+aws secretsmanager delete-secret --secret-id emr/rangerSolrTrustedCert --force-delete-without-recovery --profile $AWS_PROFILE --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
 
 sleep 30
-aws secretsmanager create-secret --name emr/rangerServerPrivateKey --description "Ranger Server Private Key" --secret-string file://${ranger_server_certs_path}/privateKey.pem --profile $AWS_PROFILE
-aws secretsmanager create-secret --name emr/rangerPluginCert --description "Ranger Plugin Cert" --secret-string file://${ranger_agents_certs_path}/certificateChain.pem --profile $AWS_PROFILE
-aws secretsmanager create-secret --name emr/rangerSolrCert --description "Ranger Solr Cert" --secret-string file://${solr_certs_path}/trustedCertificates.pem --profile $AWS_PROFILE
-aws secretsmanager create-secret --name emr/rangerSolrPrivateKey --description "Ranger Solr Private Key" --secret-string file://${solr_certs_path}/privateKey.pem --profile $AWS_PROFILE
-aws secretsmanager create-secret --name emr/rangerSolrTrustedCert --description "Ranger Solr Cert Chain" --secret-string file://${solr_certs_path}/certificateChain.pem --profile $AWS_PROFILE
+aws secretsmanager create-secret --name emr/rangerServerPrivateKey --description "Ranger Server Private Key" --secret-string file://${ranger_server_certs_path}/privateKey.pem --profile $AWS_PROFILE --region $AWS_REGION
+aws secretsmanager create-secret --name emr/rangerPluginCert --description "Ranger Plugin Cert" --secret-string file://${ranger_agents_certs_path}/certificateChain.pem --profile $AWS_PROFILE --region $AWS_REGION
+aws secretsmanager create-secret --name emr/rangerSolrCert --description "Ranger Solr Cert" --secret-string file://${solr_certs_path}/trustedCertificates.pem --profile $AWS_PROFILE --region $AWS_REGION
+aws secretsmanager create-secret --name emr/rangerSolrPrivateKey --description "Ranger Solr Private Key" --secret-string file://${solr_certs_path}/privateKey.pem --profile $AWS_PROFILE --region $AWS_REGION
+aws secretsmanager create-secret --name emr/rangerSolrTrustedCert --description "Ranger Solr Cert Chain" --secret-string file://${solr_certs_path}/certificateChain.pem --profile $AWS_PROFILE --region $AWS_REGION

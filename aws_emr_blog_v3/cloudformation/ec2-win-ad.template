@@ -26,7 +26,7 @@ Metadata:
       - Label:
           default: Cross-realm Trust Configuration
         Parameters:
-          - KerberosRealm
+#          - KerberosRealm
           - CrossRealmTrustPrincipalPassword
     ParameterLabels:
       VPC:
@@ -49,8 +49,8 @@ Metadata:
         default: 'Domain admin password: '
       DomainNetBIOSName:
         default: 'Domain NetBIOS name: '
-      KerberosRealm:
-        default: 'EMR Kerberos realm: '
+#      KerberosRealm:
+#        default: 'EMR Kerberos realm: '
       CrossRealmTrustPrincipalPassword:
         default: 'Cross-realm trust password: '
 Parameters:
@@ -124,14 +124,16 @@ Parameters:
     MaxLength: '25'
     MinLength: '5'
     Type: String
-  KerberosRealm:
-    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
-    Default: EC2.INTERNAL
-    Description: EMR Kerberos realm name. This is usually the VPC's domain name in
-      uppercase letters e.g. EC2.INTERNAL
-    MaxLength: '25'
-    MinLength: '3'
-    Type: String
+#  KerberosRealm:
+#    AllowedValues:
+#      - COMPUTE.INTERNAL
+#      - EC2.INTERNAL
+#    Default: EC2.INTERNAL
+#    Description: EMR Kerberos realm name. This is usually the VPC's domain name in
+#      uppercase letters e.g. EC2.INTERNAL
+#    MaxLength: '25'
+#    MinLength: '3'
+#    Type: String
   CrossRealmTrustPrincipalPassword:
     Description: 'Password that you want to use for your cross-realm trust - Eg: CheckSum123'
     MaxLength: '32'
@@ -152,6 +154,9 @@ Parameters:
     Description: Default Password for all users created in the AD server
     Type: String
     NoEcho: true
+
+Conditions:
+  USEastRegion: !Equals [!Ref 'AWS::Region', "us-east-1"]
 Resources:
   ManagedInstanceRole:
     Type: AWS::IAM::Role
@@ -385,7 +390,7 @@ Resources:
                 - ''
                 - - 'powershell.exe -Command '
                   - '"ksetup /addkdc '
-                  - !Ref 'KerberosRealm'
+                  - !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
                   - '"'
               waitAfterCompletion: '0'
             b-add-trust:
@@ -393,7 +398,7 @@ Resources:
                 - ''
                 - - 'powershell.exe -Command '
                   - '"netdom trust '
-                  - !Ref 'KerberosRealm'
+                  - !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
                   - ' '
                   - '/Domain:'
                   - !Ref 'DomainDNSName'
@@ -407,7 +412,7 @@ Resources:
                 - ''
                 - - 'powershell.exe -Command '
                   - '"ksetup /SetEncTypeAttr '
-                  - !Ref 'KerberosRealm'
+                  - !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
                   - ' '
                   - AES256-CTS-HMAC-SHA1-96"
               waitAfterCompletion: '0'
@@ -454,7 +459,7 @@ Resources:
     DependsOn:
       - DomainControllerWaitCondition
     Properties:
-      DomainName: ec2.internal
+      DomainName: !Join ['', [!If [ USEastRegion, 'ec2.internal', !Sub '${AWS::Region}.compute.internal']]]
       DomainNameServers:
         - !Join ['', [!GetAtt 'DomainController.PrivateIp', ',', AmazonProvidedDNS]]
       Tags:
@@ -476,7 +481,7 @@ Outputs:
     Value: !Ref 'DomainDNSName'
   Realm:
     Description: The KerberosRealm
-    Value: !Ref 'KerberosRealm'
+    Value: !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
   AdminServer:
     Description: The DomainDNSName
     Value: !Ref 'DomainDNSName'

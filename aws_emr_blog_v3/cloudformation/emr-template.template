@@ -114,6 +114,7 @@ Parameters:
     Type: String
     AllowedValues:
       - 3.0
+      - beta
   EMRLogDir:
     Description: Log directory for EMR. Eg - s3://xxx
     Type: String
@@ -188,15 +189,15 @@ Parameters:
     MaxLength: '25'
     MinLength: '5'
     Type: String
-  KerberosRealm:
-    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
-    Default: EC2.INTERNAL
-    Description: Cluster's Kerberos realm name. This is usually the VPC's domain name
-      in uppercase letters e.g. EC2.INTERNAL
-    MaxLength: '25'
-    MinLength: '3'
-    Type: String
-    AllowedValues: ['EC2.INTERNAL']
+#  KerberosRealm:
+#    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
+#    Default: COMPUTE.INTERNAL
+#    Description: Cluster's Kerberos realm name. This is usually the VPC's domain name
+#      in uppercase letters e.g. COMPUTE.INTERNAL
+#    MaxLength: '25'
+#    MinLength: '3'
+#    Type: String
+#    AllowedValues: ['COMPUTE.INTERNAL']
   KerberosADdomain:
     AllowedPattern: '[a-zA-Z0-9\-]+\..+'
     Default: AWSEMR.COM
@@ -350,6 +351,7 @@ Parameters:
     Default: emr/rangerGAservercert
     AllowedValues: ["emr/rangerGAservercert"]
 Conditions:
+  USEastRegion: !Equals [ !Ref 'AWS::Region', "us-east-1" ]
   EnableKerberos: !Equals [true, !Ref EnableKerberos]
   CreateNonEMRResources: !Equals [true, !Ref CreateNonEMRResources]
   AttachAdditionalSourcePrefixToSG: !Equals [true, !Ref AttachAdditionalSourcePrefixToSG]
@@ -577,7 +579,7 @@ Resources:
       KdcAdminPassword: !Ref 'KdcAdminPassword'
       ADDomainJoinPassword: !Ref 'ADDomainJoinPassword'
       ADDomainUser: !Ref 'DomainAdminUser'
-      KerberosRealm: !Ref 'KerberosRealm'
+      KerberosRealm: !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
       MasterInstanceCount: !Ref 'MasterInstanceCount'
       CoreInstanceCount: !Ref 'CoreInstanceCount'
       MasterInstanceType: !Ref 'MasterInstanceType'
@@ -602,6 +604,7 @@ Resources:
       DBRootPassword: !Ref DBRootPassword
       CertLocationPath: !Join ['', ["s3://", !Ref S3ArtifactBucket, "/", !Ref S3ArtifactKey, "/", !Ref ProjectVersion]]
       RangerAdminPassword: !Ref RangerAdminPassword
+      DefaultDomain: !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
 
   emrCreateWaitHandle:
     Type: AWS::CloudFormation::WaitConditionHandle

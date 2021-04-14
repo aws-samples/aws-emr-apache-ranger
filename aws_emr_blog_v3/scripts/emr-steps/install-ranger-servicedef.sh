@@ -37,7 +37,7 @@ ranger_policybucket=$2
 http_protocol=$3
 ranger_version=$4
 ranger_admin_password=$5
-default_domain=ec2.internal
+default_domain=${6-'ec2.internal'}
 hostname=`hostname -I | xargs`
 hdfs_namenode_fqdn=$hostname
 hive_server2_fqdn=$hostname
@@ -68,6 +68,7 @@ for i in `find . -name "*-repo.json" -type f`; do
     file_name=`echo "$i" | cut -c 3-`
     echo "$file_name"
     sudo sed -i "s|emr_masternode|$hdfs_namenode_fqdn|g" $i
+    sudo sed -i "s|default_domain|$default_domain|g" $i
     curl -iv --insecure -u admin:$ranger_admin_password -d @$file_name -H "Content-Type: application/json" -X POST $RANGER_HTTP_URL/service/public/v2/api/service/ || true
 done
 
