@@ -18,22 +18,16 @@ The code deploys the following:
 
 ## Cloudformation Launch Steps:
 
- - NOTE: If you need to run this stack in a region `outside US-East-1`, run the following steps, else skip to the next step.
+ - NOTE: If you need to launch this stack in a region `outside US-East-1`, run the following steps, else skip to the next step.
    - Create a regional S3 bucket in your account in the target region : eg: S3Bucket: test-emr-eu-north-1
    - Run the Script [setup-regional-ranger-automation.sh](../aws_emr_blog_v3/scripts/setup-regional-ranger-automation.sh) to copy the required for to this regional bucket
  - Use this script to Upload SSL key and certs to AWS Secrets Manager [Script](../aws_emr_blog_v3/scripts/emr-tls/create-tls-certs.sh) 
     - NOTE: This needs the DEFAULT_EC2_REALM (ec2.internal if US-EAST-1 and compute.internal for other regions) and AWS_REGION (eg: eu-north-1) information
  
  - Create VPC/AD server (takes ~10 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/3.0/cloudformation/step1_vpc-ec2-ad.template)
- 
-  [Not required as #25 was fixed] ~~Verify [DHCPOptions](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_DHCP_Options.html) to make sure Domain Name servers for the VPC are listed in the right order (AD server first followed by AmazonProvidedDNS) - ([link](https://console.aws.amazon.com/vpc/home?region=us-east-1#vpcs:))
-    - ![Foo](../images/dhcp-options.png)
-    - `If the order in incorrect`, update VPC's DHCPOptions using the following steps
-      - Create a new DHCP option set - ([link](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_DHCP_Options.html#CreatingaDHCPOptionSet))
-      - Changing the set of DHCP options that a VPC uses - ([link](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_DHCP_Options.html#ChangingDHCPOptionsofaVPC))~~
-
+   - NOTE: If you are launching this `outside US-East-1`, the `S3Bucket parameter` should be the new regional bucket you had to create : eg: test-emr-eu-north-1
  - Setup the Ranger Server/RDS Instance/EMR Cluster (takes ~15 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/3.0/cloudformation/step2_ranger-rds-emr.template) 
-
+  - - NOTE: If you are launching this `outside US-East-1`, the `S3Bucket parameter` should be the new regional bucket you had to create : eg: test-emr-eu-north-1
 ## Test
  - Login to the cluster (Apache Zeppelin, Hue, Livy or SSH)
  - ``> pyspark``
