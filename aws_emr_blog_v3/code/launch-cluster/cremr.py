@@ -24,7 +24,6 @@ except Exception as e:
 
 def create(event, context):
     apps = event["ResourceProperties"]["AppsEMR"]
-    s3Bucket = event["ResourceProperties"]["S3Bucket"]
     emrReleaseLabel = event["ResourceProperties"]["emrReleaseLabel"]
     prestoEngineRequested = "Presto"
     isPrestoAppRequested = False
@@ -42,6 +41,7 @@ def create(event, context):
     try:
         emrVersion = emrReleaseLabel.split("-")[1].split(".")
         client = boto3.client("emr", region_name=event["ResourceProperties"]["StackRegion"])
+        scriptRunnerJar = "s3://"+event["ResourceProperties"]["StackRegion"]+".elasticmapreduce/libs/script-runner/script-runner.jar"
         cluster_name = "EMR-" + event["ResourceProperties"]["StackName"]
         cluster_parameters = {'Name': cluster_name, 'ReleaseLabel': emrReleaseLabel,
                               'LogUri': event["ResourceProperties"]["LogFolder"],
@@ -50,7 +50,7 @@ def create(event, context):
                 # {
                 #     "Name": "Install packages",
                 #     "ScriptBootstrapAction": {
-                #         "Path": "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
+                #         "Path": "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
                 #             "S3Key"] + "/" + event["ResourceProperties"][
                 #                     "ProjectVersion"] + "/scripts/install-required-packages.sh"
                 #     }
@@ -62,8 +62,8 @@ def create(event, context):
                             "S3Key"] + "/" + event["ResourceProperties"][
                                     "ProjectVersion"] + "/scripts/download-scripts.sh",
                         "Args": [
-                            "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
-                                "S3Key"] + "/" + event["ResourceProperties"][
+                            "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
+                                "S3ArtifactKey"] + "/" + event["ResourceProperties"][
                                 "ProjectVersion"]
                         ]
                     }
@@ -72,8 +72,8 @@ def create(event, context):
                 # {
                 #     "Name": "Setup HDFS home dir",
                 #     "ScriptBootstrapAction": {
-                #         "Path": "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
-                #             "S3Key"] + "/" + event["ResourceProperties"][
+                #         "Path": "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
+                #             "S3ArtifactKey"] + "/" + event["ResourceProperties"][
                 #                     "ProjectVersion"] + "/scripts/create-hdfs-home-ba.sh"
                 #     }
                 # }
@@ -84,7 +84,7 @@ def create(event, context):
                                       "Name": "CreateDefaultHiveTables",
                                       "ActionOnFailure": "CONTINUE",
                                       "HadoopJarStep": {
-                                          "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                          "Jar": scriptRunnerJar,
                                           "Args": [
                                               "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/createHiveTables.sh",
                                               event["ResourceProperties"]["StackRegion"]
@@ -95,7 +95,7 @@ def create(event, context):
                                   #     "Name": "CreateExtendedHiveTables",
                                   #     "ActionOnFailure": "CONTINUE",
                                   #     "HadoopJarStep": {
-                                  #         "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                  #         "Jar": scriptRunnerJar,
                                   #         "Args": [
                                   #             "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/createdExtendedHiveTables.sh",
                                   #             event["ResourceProperties"]["StackRegion"]
@@ -106,7 +106,7 @@ def create(event, context):
                                       "Name": "LoadHDFSData",
                                       "ActionOnFailure": "CONTINUE",
                                       "HadoopJarStep": {
-                                          "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                          "Jar": scriptRunnerJar,
                                           "Args": [
                                               "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/loadDataIntoHDFS.sh",
                                               event["ResourceProperties"]["StackRegion"]
@@ -117,12 +117,12 @@ def create(event, context):
                                   #     "Name": "InstallHiveHDFSRangerPlugin",
                                   #     "ActionOnFailure": "CONTINUE",
                                   #     "HadoopJarStep": {
-                                  #         "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                  #         "Jar": scriptRunnerJar,
                                   #         "Args": [
                                   #             "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-hive-hdfs-ranger-plugin.sh",
                                   #             event["ResourceProperties"]["RangerHostname"],
                                   #             event["ResourceProperties"]["RangerVersion"],
-                                  #             "s3://" + s3Bucket + "/" + event["ResourceProperties"]["S3Key"],
+                                  #             "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"]["S3ArtifactKey"],
                                   #             event["ResourceProperties"][
                                   #                 "ProjectVersion"],
                                   #             event["ResourceProperties"]["emrReleaseLabel"],
@@ -136,17 +136,18 @@ def create(event, context):
                                       "Name": "InstallRangerServiceDef",
                                       "ActionOnFailure": "CONTINUE",
                                       "HadoopJarStep": {
-                                          "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                          "Jar": scriptRunnerJar,
                                           "Args": [
                                               "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-ranger-servicedef.sh",
                                               event["ResourceProperties"]["RangerHostname"],
-                                              "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" +
+                                              "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" +
                                               event["ResourceProperties"][
-                                                  "S3Key"] + "/" + event["ResourceProperties"][
+                                                  "S3ArtifactKey"] + "/" + event["ResourceProperties"][
                                                   "ProjectVersion"] + "/inputdata",
                                               event["ResourceProperties"]["RangerHttpProtocol"],
                                               event["ResourceProperties"]["RangerVersion"],
-                                              event["ResourceProperties"]["RangerAdminPassword"]
+                                              event["ResourceProperties"]["RangerAdminPassword"],
+                                              str(event["ResourceProperties"]["DefaultDomain"]).lower()
                                           ]
                                       }
                                   },
@@ -154,17 +155,18 @@ def create(event, context):
                                       "Name": "InstallRangerPolicies",
                                       "ActionOnFailure": "CONTINUE",
                                       "HadoopJarStep": {
-                                          "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                          "Jar": scriptRunnerJar,
                                           "Args": [
                                               "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-ranger-policies.sh",
                                               event["ResourceProperties"]["RangerHostname"],
-                                              "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" +
+                                              "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" +
                                               event["ResourceProperties"][
-                                                  "S3Key"] + "/" + event["ResourceProperties"][
+                                                  "S3ArtifactKey"] + "/" + event["ResourceProperties"][
                                                   "ProjectVersion"] + "/inputdata",
                                               event["ResourceProperties"]["RangerHttpProtocol"],
                                               event["ResourceProperties"]["RangerVersion"],
-                                              event["ResourceProperties"]["RangerAdminPassword"]
+                                              event["ResourceProperties"]["RangerAdminPassword"],
+                                              str(event["ResourceProperties"]["DefaultDomain"]).lower()
                                           ]
                                       }
                                   },
@@ -172,7 +174,7 @@ def create(event, context):
                                       "Name": "Hue-Permission-Update",
                                       "ActionOnFailure": "CONTINUE",
                                       "HadoopJarStep": {
-                                          "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                          "Jar": scriptRunnerJar,
                                           "Args": [
                                               "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/hue-update.sh"
                                           ]
@@ -182,7 +184,7 @@ def create(event, context):
                                       "Name": "Cloudformation-Signal",
                                       "ActionOnFailure": "CONTINUE",
                                       "HadoopJarStep": {
-                                          "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+                                          "Jar": scriptRunnerJar,
                                           "Args": [
                                               "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/send-cf-signal.sh",
                                               event["ResourceProperties"]["SignalURL"]
@@ -323,8 +325,8 @@ def create(event, context):
         #         {
         #             "Name": "Install cloudwatch agent",
         #             "ScriptBootstrapAction": {
-        #                 "Path": "s3://" + s3Bucket + "/" + event["ResourceProperties"][
-        #                     "S3Key"] + "/" + event["ResourceProperties"][
+        #                 "Path": "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
+        #                     "S3ArtifactKey"] + "/" + event["ResourceProperties"][
         #                             "ProjectVersion"] + "/scripts/install-cloudwatch-agent.sh"
         #             }
         #         })
@@ -346,7 +348,7 @@ def create(event, context):
         #             "hive.server2.thrift.http.path": "cliservice",
         #             "hive.server2.transport.mode": "binary",
         #             "hive.server2.allow.user.substitution": "true",
-        #             "hive.server2.authentication.kerberos.principal": "hive/_HOST@EC2.INTERNAL",
+        #             "hive.server2.authentication.kerberos.principal": "hive/_HOST@"+event["ResourceProperties"]["DefaultDomain"],
         #             "hive.server2.enable.doAs": "false",
         #             "hive.metastore.client.factory.class": "com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory"
         #         }
@@ -364,7 +366,7 @@ def create(event, context):
                 "hive.server2.thrift.http.path": "cliservice",
                 "hive.server2.transport.mode": "binary",
                 "hive.server2.allow.user.substitution": "true",
-                "hive.server2.authentication.kerberos.principal": "hive/_HOST@EC2.INTERNAL",
+                "hive.server2.authentication.kerberos.principal": "hive/_HOST@"+event["ResourceProperties"]["DefaultDomain"],
                 "hive.server2.enable.doAs": "false"
             }
         })
@@ -407,12 +409,12 @@ def create(event, context):
         #             {
         #                 "Name": "Setup Presto Kerberos",
         #                 "ScriptBootstrapAction": {
-        #                     "Path": "s3://" + s3Bucket + "/" + event["ResourceProperties"][
-        #                         "S3Key"] + "/" + event["ResourceProperties"][
+        #                     "Path": "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
+        #                         "S3ArtifactKey"] + "/" + event["ResourceProperties"][
         #                                 "ProjectVersion"] + "/scripts/configure_presto_kerberos_ba.sh",
         #                     "Args": [
-        #                         "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
-        #                             "S3Key"] + "/" + event["ResourceProperties"][
+        #                         "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
+        #                             "S3ArtifactKey"] + "/" + event["ResourceProperties"][
         #                             "ProjectVersion"],
         #                         event["ResourceProperties"]["KdcAdminPassword"]
         #                     ]
@@ -450,12 +452,12 @@ def create(event, context):
         #         "Name": "InstallRangerPrestoPlugin",
         #         "ActionOnFailure": "CONTINUE",
         #         "HadoopJarStep": {
-        #             "Jar": "s3://elasticmapreduce/libs/script-runner/script-runner.jar",
+        #             "Jar": scriptRunnerJar,
         #             "Args": [
         #                 "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-presto-ranger-plugin.sh",
         #                 event["ResourceProperties"]["RangerHostname"],
         #                 event["ResourceProperties"]["RangerVersion"],
-        #                 "s3://" + s3Bucket + "/" + event["ResourceProperties"]["S3Key"],
+        #                 "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"]["S3ArtifactKey"],
         #                 event["ResourceProperties"][
         #                     "ProjectVersion"],
         #                 event["ResourceProperties"]["emrReleaseLabel"],

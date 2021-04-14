@@ -25,9 +25,9 @@ Parameters:
   MySQLDBInstanceClass:
     Description: ' The RDS MySQL database instance type'
     Type: String
-    Default: db.m4.xlarge
+    Default: db.m5.xlarge
     AllowedValues:
-    - db.m4.xlarge
+    - db.m5.xlarge
     ConstraintDescription: For this Blog post we are using db.m4.xlarge instance type.
   MySQLDBName:
     Description: ' The RDS MySQL database instance identifier'
