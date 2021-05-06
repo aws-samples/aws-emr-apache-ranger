@@ -16,9 +16,9 @@ The repo contains code tied to [AWS Big Data Blog](https://aws.amazon.com/blogs/
 
 | Module | Description| Architecture | Details |
 | ------ | -------| --- |-------------------------------------------------------- |
-| V1 | [Basic setup with LDAP](aws_emr_blog_v1) |  ![](images/simple-ad-setup.png) | Basic deployment using [AWS Simple AD](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_simple_ad.html), Hive and HDFS plugins and optional Presto Plugin|
-| V2 | [Kerberos enabled setup with AD/LDAP](aws_emr_blog_v1) |  ![](images/emr-ranger-v2.png) | Deploy a Kerberos enabled EMR cluster using Windows AD, Hive and HDFS plugins and optional Presto Plugin|
-| V3 | [EMR Native support for Apache Ranger](aws_emr_blog_v3) |  ![](images/emr-ranger-v3.png) | Deploy a Kerberos enabled EMR cluster with the Amazon EMR native integration of Apache Ranger - Supports Hive, Spark and Amazon S3|
+| V1 | [Open Source Ranger Plugins with LDAP](aws_emr_blog_v1) |  ![](images/simple-ad-setup.png) | Basic deployment using [AWS Simple AD](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_simple_ad.html), Hive and HDFS plugins and optional Presto Plugin|
+| V2 | [Open Source Ranger Plugins with Kerberos enabled cluster and AD](aws_emr_blog_v1) |  ![](images/emr-ranger-v2.png) | Deploy a Kerberos enabled EMR cluster using Windows AD, Hive and HDFS plugins and optional Presto and HBase Plugin|
+| V3 | [EMR Native plugins for Spark/S3 with Kerberos enabled cluster and AD](aws_emr_blog_v3) |  ![](images/emr-ranger-v3.png) | Deploy a Kerberos enabled EMR cluster with the Amazon EMR native integration of Apache Ranger - Supports Hive, Spark and Amazon S3|
 
 ### Compatibility/Supported plugins: 
 | Module|  Tag | Region| Region Code | Cloudformation stack | Apache Ranger Version | EMR Version | Supported Plugins|
