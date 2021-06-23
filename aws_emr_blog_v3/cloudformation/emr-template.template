@@ -91,11 +91,19 @@ Parameters:
     Description: Select the Virtual Private Cloud (VPC) that was created
     Type: AWS::EC2::VPC::Id
   S3Bucket:
+    Description: S3Bucket for the code [update this is you want to run this stack in a region other than US-EAST-1]
+    Type: String
+    Default: aws-bigdata-blog
+  S3Key:
+    Description: S3Key of the code [update this is you want to run this stack in a region other than US-EAST-1]
+    Type: String
+    Default: artifacts/aws-blog-emr-ranger
+  S3ArtifactBucket:
     Description: S3Bucket where artifacts are stored
     Type: String
     Default: aws-bigdata-blog
     AllowedValues: ["aws-bigdata-blog"]
-  S3Key:
+  S3ArtifactKey:
     Description: S3Key of the Lambda code
     Type: String
     Default: artifacts/aws-blog-emr-ranger
@@ -106,6 +114,7 @@ Parameters:
     Type: String
     AllowedValues:
       - 3.0
+      - beta
   EMRLogDir:
     Description: Log directory for EMR. Eg - s3://xxx
     Type: String
@@ -180,15 +189,15 @@ Parameters:
     MaxLength: '25'
     MinLength: '5'
     Type: String
-  KerberosRealm:
-    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
-    Default: EC2.INTERNAL
-    Description: Cluster's Kerberos realm name. This is usually the VPC's domain name
-      in uppercase letters e.g. EC2.INTERNAL
-    MaxLength: '25'
-    MinLength: '3'
-    Type: String
-    AllowedValues: ['EC2.INTERNAL']
+#  KerberosRealm:
+#    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
+#    Default: COMPUTE.INTERNAL
+#    Description: Cluster's Kerberos realm name. This is usually the VPC's domain name
+#      in uppercase letters e.g. COMPUTE.INTERNAL
+#    MaxLength: '25'
+#    MinLength: '3'
+#    Type: String
+#    AllowedValues: ['COMPUTE.INTERNAL']
   KerberosADdomain:
     AllowedPattern: '[a-zA-Z0-9\-]+\..+'
     Default: AWSEMR.COM
@@ -239,7 +248,9 @@ Parameters:
     Description: 'Comma separated list of applications to install on the cluster e.g., '
     Type: String
     Default: Hadoop, Spark, Hive, Livy, Hue
-    AllowedValues: ["Hadoop, Spark, Hive, Livy, Hue"]
+    AllowedValues:
+      - "Hadoop, Spark, Hive, Livy, Hue"
+      - "Hadoop, Spark, Hive, Livy"
   EnableKerberos:
     Description: Enable Kerberos on the Cluster. This is Required for Ranger EMR support
     Default: true
@@ -340,6 +351,7 @@ Parameters:
     Default: emr/rangerGAservercert
     AllowedValues: ["emr/rangerGAservercert"]
 Conditions:
+  USEastRegion: !Equals [ !Ref 'AWS::Region', "us-east-1" ]
   EnableKerberos: !Equals [true, !Ref EnableKerberos]
   CreateNonEMRResources: !Equals [true, !Ref CreateNonEMRResources]
   AttachAdditionalSourcePrefixToSG: !Equals [true, !Ref AttachAdditionalSourcePrefixToSG]
@@ -552,6 +564,8 @@ Resources:
       #      serviceSG: !Ref 'ServiceAccessSecurityGroup'
       S3Bucket: !Ref 'S3Bucket'
       S3Key: !Ref S3Key
+      S3ArtifactBucket: !Ref 'S3ArtifactBucket'
+      S3ArtifactKey: !Ref S3ArtifactKey
       ProjectVersion: !Ref ProjectVersion
       EMRSecurityConfig: !If
         - EnableKerberos
@@ -565,7 +579,7 @@ Resources:
       KdcAdminPassword: !Ref 'KdcAdminPassword'
       ADDomainJoinPassword: !Ref 'ADDomainJoinPassword'
       ADDomainUser: !Ref 'DomainAdminUser'
-      KerberosRealm: !Ref 'KerberosRealm'
+      KerberosRealm: !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
       MasterInstanceCount: !Ref 'MasterInstanceCount'
       CoreInstanceCount: !Ref 'CoreInstanceCount'
       MasterInstanceType: !Ref 'MasterInstanceType'
@@ -588,8 +602,9 @@ Resources:
       DBHostName: !Ref DBHostName
       DBUserName: !Ref DBUserName
       DBRootPassword: !Ref DBRootPassword
-      CertLocationPath: !Join ['', ["s3://", !Ref S3Bucket, "/", !Ref S3Key, "/", !Ref ProjectVersion]]
+      CertLocationPath: !Join ['', ["s3://", !Ref S3ArtifactBucket, "/", !Ref S3ArtifactKey, "/", !Ref ProjectVersion]]
       RangerAdminPassword: !Ref RangerAdminPassword
+      DefaultDomain: !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
 
   emrCreateWaitHandle:
     Type: AWS::CloudFormation::WaitConditionHandle

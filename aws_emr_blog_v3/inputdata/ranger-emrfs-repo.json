@@ -4,7 +4,7 @@
   "type": "amazon-emr-emrfs",
   "configs": {
     "username": "emr_s3_user",
-    "commonNameForCertificate": "*.ec2.internal"
+    "commonNameForCertificate": "*.default_domain"
   },
   "isEnabled": true
 }

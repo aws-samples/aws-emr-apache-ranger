@@ -167,15 +167,15 @@ Parameters:
     MaxLength: '25'
     MinLength: '5'
     Type: String
-  KerberosRealm:
-    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
-    Default: EC2.INTERNAL
-    AllowedValues: ["EC2.INTERNAL"]
-    Description: Cluster's Kerberos realm name. This is usually the VPC's domain name
-      in uppercase letters e.g. EC2.INTERNAL
-    MaxLength: '25'
-    MinLength: '3'
-    Type: String
+#  KerberosRealm:
+#    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
+#    Default: COMPUTE.INTERNAL
+#    AllowedValues: ["COMPUTE.INTERNAL"]
+#    Description: Cluster's Kerberos realm name. This is usually the VPC's domain name
+#      in uppercase letters e.g. COMPUTE.INTERNAL
+#    MaxLength: '25'
+#    MinLength: '3'
+#    Type: String
   KerberosADdomain:
     AllowedPattern: '[a-zA-Z0-9\-]+\..+'
     Default: AWSEMR.COM
@@ -228,11 +228,19 @@ Parameters:
     AllowedValues:
       - emr-5.32.0
   S3Bucket:
+    Description: S3Bucket for the code [update this is you want to run this stack in a region other than US-EAST-1]
+    Type: String
+    Default: aws-bigdata-blog
+  S3Key:
+    Description: S3Key of the code [update this is you want to run this stack in a region other than US-EAST-1]
+    Type: String
+    Default: artifacts/aws-blog-emr-ranger
+  S3ArtifactBucket:
     Description: S3Bucket where artifacts are stored
     Type: String
     Default: aws-bigdata-blog
     AllowedValues: ["aws-bigdata-blog"]
-  S3Key:
+  S3ArtifactKey:
     Description: S3Key of the Lambda code
     Type: String
     Default: artifacts/aws-blog-emr-ranger
@@ -243,6 +251,7 @@ Parameters:
     Type: String
     AllowedValues:
       - 3.0
+      - beta
   KeyPairName:
     Description: Name of an existing EC2 key pair to access the Amazon EMR cluster
     Type: AWS::EC2::KeyPair::KeyName
@@ -301,6 +310,7 @@ Metadata:
           - PublicSubnet1AID
           - PublicSubnet2AID
 Conditions:
+  USEastRegion: !Equals [ !Ref 'AWS::Region', "us-east-1" ]
   EnableKerberos: !Equals [true, !Ref EnableKerberos]
   3AZDeployment: !Equals [!Ref NumberOfAZs, "3"]
   2AZDeployment: !Or
@@ -315,7 +325,7 @@ Resources:
   RDSDatabase:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3Bucket', '/', !Ref 'S3Key', '/', !Ref 'ProjectVersion', '/cloudformation/', 'rds-database.template']]
+      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion', '/cloudformation/', 'rds-database.template']]
       Parameters:
         Subnet1: !Ref 'PrivateSubnet1AID'
         Subnet2: !If
@@ -330,10 +340,10 @@ Resources:
       - RDSDatabase
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3Bucket', '/', !Ref 'S3Key', '/', !Ref 'ProjectVersion','/cloudformation/', 'ranger-server.template']]
+      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion','/cloudformation/', 'ranger-server.template']]
       Parameters:
-        S3Bucket: !Ref 'S3Bucket'
-        S3Key: !Ref 'S3Key'
+        S3Bucket: !Ref 'S3ArtifactBucket'
+        S3Key: !Ref 'S3ArtifactKey'
         VPC: !Ref VPC
         Subnet: !If [ InstallEMRRangerinPublicSubnet, !Ref PublicSubnet1AID, !Ref PrivateSubnet1AID ]
         DBHostName: !GetAtt 'RDSDatabase.Outputs.RDSInstanceAddress'
@@ -355,10 +365,12 @@ Resources:
     DependsOn:
       - RangerServer
     Properties:
-      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3Bucket', '/', !Ref 'S3Key', '/', !Ref 'ProjectVersion', '/cloudformation/', 'emr-template.template']]
+      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion', '/cloudformation/', 'emr-template.template']]
       Parameters:
         S3Bucket: !Ref 'S3Bucket'
         S3Key: !Ref 'S3Key'
+        S3ArtifactBucket: !Ref 'S3ArtifactBucket'
+        S3ArtifactKey: !Ref 'S3ArtifactKey'
         AppsEMR: !Ref 'AppsEMR'
         VPC: !Ref VPC
         emrReleaseLabel: !Ref emrReleaseLabel
@@ -374,7 +386,7 @@ Resources:
         KdcAdminPassword: !Ref 'KdcAdminPassword'
         ADDomainJoinPassword: !Ref 'ADDomainJoinPassword'
         DomainAdminUser: !Ref 'DomainAdminUser'
-        KerberosRealm: !Ref 'KerberosRealm'
+#        KerberosRealm: !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
         DomainDNSName: !Ref 'DomainDNSName'
         LDAPHostPrivateIP: !Ref 'LDAPHostPrivateIP'
         LDAPBindUserName: !Ref 'LDAPBindUserName'

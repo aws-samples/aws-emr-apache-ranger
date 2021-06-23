@@ -7,7 +7,7 @@
     "password": "policymgr_hive",
     "jdbc.driverClassName": "org.apache.hive.jdbc.HiveDriver",
     "jdbc.url": "jdbc:hive2://emr_masternode:10000/default",
-    "commonNameForCertificate": "*.ec2.internal"
+    "commonNameForCertificate": "*.default_domain"
   },
   "isEnabled": true
 }
