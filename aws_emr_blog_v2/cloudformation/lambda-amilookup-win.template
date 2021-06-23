@@ -89,11 +89,11 @@ Parameters:
       - 2.0
       - beta
 Resources:
-  SampleInstance:
-    Type: AWS::EC2::Instance
-    Properties:
-      InstanceType: !Ref 'InstanceType'
-      ImageId: !GetAtt 'AMIInfo.Id'
+#  SampleInstance:
+#    Type: AWS::EC2::Instance
+#    Properties:
+#      InstanceType: !Ref 'InstanceType'
+#      ImageId: !GetAtt 'AMIInfo.Id'
   AMIInfo:
     Type: Custom::AMIInfo
     Properties:
