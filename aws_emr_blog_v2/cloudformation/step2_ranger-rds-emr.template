@@ -243,6 +243,7 @@ Parameters:
       - emr-5.31.0
       - emr-6.1.0
       - emr-6.2.0
+      - emr-6.3.0
   S3Bucket:
     Description: S3Bucket where artifacts are stored
     Type: String
