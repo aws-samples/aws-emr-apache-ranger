@@ -243,6 +243,7 @@ Parameters:
     Default: emr-5.32.0
     AllowedValues:
       - emr-5.32.0
+      - emr-6.3.0
     Description: Release label for the EMR cluster
   AppsEMR:
     Description: 'Comma separated list of applications to install on the cluster e.g., '
