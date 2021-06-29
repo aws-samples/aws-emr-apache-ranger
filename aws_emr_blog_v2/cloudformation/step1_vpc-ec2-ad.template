@@ -305,3 +305,18 @@ Outputs:
   LDAPHostPrivateIP:
     Value: !GetAtt [STEP2WinAD, Outputs.LDAPHostPrivateIP]
     Description: LDAP Host Private IP address
+  VPC:
+    Value: !GetAtt [STEP1VPC, Outputs.VPCID]
+    Description: VPC ID
+  PrivateSubnet1AID:
+    Value: !GetAtt [STEP1VPC, Outputs.PrivateSubnet1AID]
+    Description: PrivateSubnet1AID
+  PrivateSubnet2AID:
+    Value: !GetAtt [STEP1VPC, Outputs.PrivateSubnet2AID]
+    Description: PrivateSubnet2AID
+  PublicSubnet1AID:
+    Value: !GetAtt [STEP1VPC, Outputs.PublicSubnet1ID]
+    Description: PublicSubnet1AID
+  PublicSubnet2AID:
+    Value: !GetAtt [STEP1VPC, Outputs.PublicSubnet2ID]
+    Description: PublicSubnet2AID

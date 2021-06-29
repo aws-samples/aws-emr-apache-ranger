@@ -204,6 +204,12 @@ Parameters:
     Description: 'Comma separated list of applications to install on the cluster e.g., '
     Type: String
     Default: Hadoop, Hive, Spark, Livy, Hue
+    AllowedValues:
+      - "Hadoop, Hive, Spark, Livy, Hue"
+      - "Hadoop, Hive, Spark, Livy, Hue, Presto"
+      - "Hadoop, Hive, Hue, Presto"
+      - "Hadoop, Hive, Hue, HBase"
+      - "Hadoop, Hive, Hue, Presto, HBase"
   EnableKerberos:
     Description: Enable Kerberos on the Cluster
     Default: true
@@ -237,6 +243,7 @@ Parameters:
       - emr-5.31.0
       - emr-6.1.0
       - emr-6.2.0
+      - emr-6.3.0
   S3Bucket:
     Description: S3Bucket where artifacts are stored
     Type: String
