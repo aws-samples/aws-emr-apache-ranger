@@ -9,7 +9,7 @@ Parameters:
     Type: String
   DomainShortName:
     Default: EmrSimpleAD
-    Description: Subnet ID2 for creating the SimpleAD
+    Description: Short name for AWS SimpleAD
     Type: String
   DefaultSubnet:
     Description: Subnet for EMR cluster and Ranger Server
