@@ -111,7 +111,7 @@ Parameters:
     Default: aws-bigdata-blog
     AllowedValues: ["aws-bigdata-blog"]
   S3ArtifactKey:
-    Description: S3Key of the Lambda code
+    Description: S3Key of the code
     Type: String
     Default: artifacts/aws-blog-emr-ranger
     AllowedValues: ["artifacts/aws-blog-emr-ranger"]
@@ -144,6 +144,12 @@ Parameters:
     Description: Default Password for all users created in the AD server. Eg - analyst1, analyst2
     Type: String
     NoEcho: true
+  ADServerAMI:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-windows-latest/Windows_Server-2016-English-Full-Base'
+    Description: SSM Parameter alias of a Windows Server AMI
+
+
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -174,17 +180,7 @@ Conditions:
     - !Equals [!Ref NumberOfAZs, "2"]
     - !Equals [!Ref NumberOfAZs, "3"]
 Resources:
-  STEP0AMILookup:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion', '/cloudformation/', 'lambda-amilookup-win.template']]
-      Parameters:
-        S3Bucket: !Ref 'S3Bucket'
-        S3Key: !Ref 'S3Key'
   STEP1VPC:
-    DependsOn:
-      - STEP0AMILookup
-    #      - STEP0LogParser
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template'
@@ -244,10 +240,9 @@ Resources:
       TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion', '/cloudformation/', 'ec2-win-ad.template']]
       Parameters:
         KeyPairName: !Ref 'KeyPairName'
-        ImageId: !GetAtt 'STEP0AMILookup.Outputs.AMIID'
+        ImageId: !Ref ADServerAMI
         Subnet: !GetAtt 'STEP1VPC.Outputs.PublicSubnet1ID'
         VPC: !GetAtt 'STEP1VPC.Outputs.VPCID'
-        #        SecurityGroup: !GetAtt 'STEP1VPC.Outputs.SecurityGroup'
         CIDRAccessToADAndBastion: !Ref 'CIDRAccessToADAndBastion'
         DomainAdminPassword: !Ref 'DomainAdminPassword'
         LDAPBindPassword: !Ref 'LDAPBindPassword'
