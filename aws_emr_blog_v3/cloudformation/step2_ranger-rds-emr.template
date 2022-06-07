@@ -517,8 +517,6 @@ Resources:
     Properties:
       TemplateURL: !Sub 'https://s3.amazonaws.com/${S3ArtifactBucket}/${S3ArtifactKey}/${ProjectVersion}/cloudformation/emr-template.template'
       Parameters:
-        S3Bucket: !Ref 'S3Bucket'
-        S3Key: !Ref 'S3Key'
         S3ArtifactBucket: !Ref 'S3ArtifactBucket'
         S3ArtifactKey: !Ref 'S3ArtifactKey'
         AppsEMR: !Ref 'AppsEMR'
@@ -541,11 +539,7 @@ Resources:
         LDAPBindUserName: !Ref 'LDAPBindUserName'
         LDAPBindPassword: !Ref 'LDAPBindPassword'
         LDAPSearchBase: !Ref 'LDAPSearchBase'
-        LDAPUserSearchAttribute: !Ref 'LDAPUserSearchAttribute'
-        LDAPUserObjectClass: !Ref 'LDAPUserObjectClass'
         LDAPGroupSearchBase: !Ref 'LDAPGroupSearchBase'
-        LDAPGroupObjectClass: !Ref 'LDAPGroupObjectClass'
-        LDAPMemberAttribute: !Ref 'LDAPMemberAttribute'
         RangerHostname: !GetAtt 'RangerServer.Outputs.RangerAdminHost'
         RangerVersion: !Ref RangerVersion
         RangerHttpProtocol: !Ref RangerHttpProtocol
