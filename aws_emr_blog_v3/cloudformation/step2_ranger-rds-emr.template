@@ -1,65 +1,45 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Creates an RDS instance
+Description: 'AWS CloudFormation Sample Template:
+  This template creates a security configuration and launches a kerberized
+  Amazon EMR cluster with Apache Ranger integration for authorization.
+  **WARNING** You will be billed for the AWS resources used if you create a
+  stack from this template.'
 Parameters:
   VPC:
-    Description: Select the Virtual Private Cloud (VPC) that was created
+    Description: Select the Virtual Private Cloud (VPC) previously created
     Type: AWS::EC2::VPC::Id
   PrivateSubnet1AID:
-    Description: ID of an existing subnet for the domain controller
+    Description: ID of an existing private subnet
     Type: AWS::EC2::Subnet::Id
   PrivateSubnet2AID:
-    Description: ID of an existing subnet for the domain controller
+    Description: ID of an existing private subnet
     Type: AWS::EC2::Subnet::Id
   PublicSubnet1AID:
-    Description: Public Subnet1.
+    Description: ID of an existing public subnet
     Type: AWS::EC2::Subnet::Id
   PublicSubnet2AID:
-    Description: Public Subnet1.
+    Description: ID of an existing public subnet
     Type: AWS::EC2::Subnet::Id
-  InstallEMRRangerinPublicSubnet:
-    Description: Flag to indicate if Ranger and EMR servers should be run in the Public subnet
-    Default: false
+
+  KeyPairName:
+    Description: Name of an existing EC2 key pair to access the Amazon EMR cluster and the Ranger Admin server
+    Type: AWS::EC2::KeyPair::KeyName
+
+  LDAPHostPrivateIP:
+    Description: IP Address or hostname of the LDAP server
     Type: String
-    AllowedValues: [true, false]
-  AttachAdditionalSourcePrefixToSG:
-    Description: (Optional) Attaches additional sources prefix lists to EMR Master Security Group
-    Default: false
+  LDAPBindUserName:
+    Description: LDAP Bind user used by Ranger to perfom search queries on the LDAP
     Type: String
-    AllowedValues: [true, false]
-  CIDRAccessToPrivateSubnetResources:
-    Description: IP address range (in CIDR notation) of the client that will be allowed
-      to connect to the cluster using SSH e.g., 203.0.113.5/32
-    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
-    Type: String
-    MinLength: '9'
-    MaxLength: '18'
-    Default: 10.0.0.0/16
-    ConstraintDescription: must be a valid CIDR range of the form x.x.x.x/x
-  AdditionalSourcePrefixToSG:
-    Description: (Optional) Sources that are allowd to access the Ranger Instance. Should be a source prefix
-      e.g., pl-xxx
-    Type: String
-  NumberOfAZs:
-    Type: String
-    AllowedValues: ["2", "3"]
-    Default: "3"
-    Description: Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.
-  DomainAdminPassword:
-    AllowedPattern: (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
-    Description: Password for the domain admin user. Must be at least 8 characters
-      containing letters, numbers and symbols
-    MaxLength: '32'
-    MinLength: '8'
-    NoEcho: 'true'
-    Type: String
+    Default: binduser
+    AllowedValues:
+      - binduser
   LDAPBindPassword:
     Description: Ldap Bind user password that was used in the previous cloud formation
       template
     Type: String
     NoEcho: 'true'
-  LDAPHostPrivateIP:
-    Description: IP Address of the AD server
-    Type: String
+
   LDAPSearchBase:
     Description: Ldap search base
     Type: String
@@ -96,6 +76,91 @@ Parameters:
     Default: member
     AllowedValues:
       - member
+
+  DomainDNSName:
+    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
+    Default: awsemr.com
+    Description: The Active Directory domain that you want to establish the cross-realm
+      trust with e.g., awsemr.com
+    MaxLength: '25'
+    MinLength: '3'
+    Type: String
+    AllowedValues: ["awsemr.com"]
+  DomainAdminUser:
+    AllowedPattern: '[a-zA-Z0-9]*'
+    Default: awsadmin
+    AllowedValues: ["awsadmin"]
+    Description: User name of an Active Directory account with computer join privileges
+    MaxLength: '25'
+    MinLength: '5'
+    Type: String
+  DomainAdminPassword:
+    AllowedPattern: (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+    Description: Password for the domain admin user. Must be at least 8 characters
+      containing letters, numbers and symbols
+    MaxLength: '32'
+    MinLength: '8'
+    NoEcho: 'true'
+    Type: String
+  CrossRealmTrustPrincipalPassword:
+    Description: Password of your cross-realm trust (Should be the sames used in the previous Stack - Step1)
+    MaxLength: '32'
+    MinLength: '5'
+    NoEcho: 'true'
+    Type: String
+  ADDomainJoinPassword:
+    Description: Password of the domain admin (joiner user) account (Should be the sames used in the previous Stack - Step1)
+    NoEcho: 'true'
+    Type: String
+  KdcAdminPassword:
+    Description: Password of your KDC Server runing on the EMR Master Node
+    MaxLength: '32'
+    MinLength: '5'
+    NoEcho: 'true'
+    Type: String
+
+  DBUserName:
+    Description: The RDS MySQL database username
+    Type: String
+    Default: root
+    AllowedValues:
+      - root
+  DBRootPassword:
+    Description: The RDS MySQL database password (Should be the sames used in the previous Stack - Step1)
+    MaxLength: '41'
+    MinLength: '8'
+    NoEcho: 'true'
+    Type: String
+
+  InstallEMRRangerinPublicSubnet:
+    Description: Flag to indicate if Ranger and EMR servers should be run in the Public subnet
+    Default: false
+    Type: String
+    AllowedValues: [true, false]
+  AttachAdditionalSourcePrefixToSG:
+    Description: (Optional) Attaches additional sources prefix lists to EMR Master Security Group
+    Default: false
+    Type: String
+    AllowedValues: [true, false]
+  CIDRAccessToPrivateSubnetResources:
+    Description: IP address range (in CIDR notation) of the client that will be allowed
+      to connect to the cluster using SSH e.g., 203.0.113.5/32
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    Type: String
+    MinLength: '9'
+    MaxLength: '18'
+    Default: 10.0.0.0/16
+    ConstraintDescription: must be a valid CIDR range of the form x.x.x.x/x
+  AdditionalSourcePrefixToSG:
+    Description: (Optional) Sources that are allowd to access the Ranger Instance. Should be a source prefix
+      e.g., pl-xxx
+    Type: String
+  NumberOfAZs:
+    Type: String
+    AllowedValues: ["2", "3"]
+    Default: "3"
+    Description: Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.
+
   MasterInstanceType:
     Description: Instance type for the cluster nodes
     Type: String
@@ -117,15 +182,16 @@ Parameters:
       - m4.4xlarge
       - r5.2xlarge
   RangerInstanceType:
-    Default: m4.xlarge
+    Default: m5.xlarge
     Description: Instance Type of the core node
     Type: String
     AllowedValues:
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - r5.xlarge
       - r5.2xlarge
+      - r5.4xlarge
   EMRClusterName:
     Default: EMR-EMRSecurityWithRangerGA
     Description: Cluster name for the EMR
@@ -134,48 +200,8 @@ Parameters:
     Description: 'Log Dir for the EMR cluster. Eg: s3://xxx'
     Type: String
     AllowedPattern: ^s3://.*
-  DomainDNSName:
-    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
-    Default: awsemr.com
-    Description: The Active Directory domain that you want to establish the cross-realm
-      trust with e.g., awsemr.com
-    MaxLength: '25'
-    MinLength: '3'
-    Type: String
-    AllowedValues: ["awsemr.com"]
-  CrossRealmTrustPrincipalPassword:
-    Description: Password of your cross-realm trust (Should be the sames used in the previous Stack - Step1)
-    MaxLength: '32'
-    MinLength: '5'
-    NoEcho: 'true'
-    Type: String
-  ADDomainJoinPassword:
-    Description: Password of the domain admin (joiner user) account (Should be the sames used in the previous Stack - Step1)
-    NoEcho: 'true'
-    Type: String
-  KdcAdminPassword:
-    Description: Password of your KDC Server runing on the EMR Master Node
-    MaxLength: '32'
-    MinLength: '5'
-    NoEcho: 'true'
-    Type: String
-  DomainAdminUser:
-    AllowedPattern: '[a-zA-Z0-9]*'
-    Default: awsadmin
-    AllowedValues: ["awsadmin"]
-    Description: User name of an AD account with computer join privileges
-    MaxLength: '25'
-    MinLength: '5'
-    Type: String
-#  KerberosRealm:
-#    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
-#    Default: COMPUTE.INTERNAL
-#    AllowedValues: ["COMPUTE.INTERNAL"]
-#    Description: Cluster's Kerberos realm name. This is usually the VPC's domain name
-#      in uppercase letters e.g. COMPUTE.INTERNAL
-#    MaxLength: '25'
-#    MinLength: '3'
-#    Type: String
+    Default: s3://anubi-us-east-1/logs/
+
   KerberosADdomain:
     AllowedPattern: '[a-zA-Z0-9\-]+\..+'
     Default: AWSEMR.COM
@@ -193,12 +219,7 @@ Parameters:
     Default: 3
     Description: Number of instances (core nodes) for the cluster e.g., 2
     Type: Number
-  LDAPBindUserName:
-    Description: BindUser
-    Type: String
-    Default: binduser
-    AllowedValues:
-      - binduser
+
   RangerVersion:
     Description: 'RangerVersion. Expected values are : 0.6,0.7,1.0,2.0. NOTE: Use Ranger 0.6 if
       EMR version is 5.0'
@@ -231,7 +252,7 @@ Parameters:
   S3Bucket:
     Description: S3Bucket for the code [update this is you want to run this stack in a region other than US-EAST-1]
     Type: String
-    Default: aws-bigdata-blog
+    Default: anubi-us-east-1
   S3Key:
     Description: S3Key of the code [update this is you want to run this stack in a region other than US-EAST-1]
     Type: String
@@ -239,13 +260,16 @@ Parameters:
   S3ArtifactBucket:
     Description: S3Bucket where artifacts are stored
     Type: String
-    Default: aws-bigdata-blog
-    AllowedValues: ["aws-bigdata-blog"]
+    Default: anubi-us-east-1
+    AllowedValues:
+      - 'anubi-us-east-1'
+      - 'aws-bigdata-blog'
   S3ArtifactKey:
     Description: S3Key of the Lambda code
     Type: String
-    Default: artifacts/aws-blog-emr-ranger
-    AllowedValues: ["artifacts/aws-blog-emr-ranger"]
+    Default: 'artifacts/aws-blog-emr-ranger'
+    AllowedValues:
+      - 'artifacts/aws-blog-emr-ranger'
   ProjectVersion:
     Default: 3.0
     Description: Project version
@@ -253,21 +277,7 @@ Parameters:
     AllowedValues:
       - 3.0
       - beta
-  KeyPairName:
-    Description: Name of an existing EC2 key pair to access the Amazon EMR cluster
-    Type: AWS::EC2::KeyPair::KeyName
-  DBUserName:
-    Description: ' The RDS MySQL database username'
-    Type: String
-    Default: root
-    AllowedValues:
-      - root
-  DBRootPassword:
-    Description: The RDS MySQL database password (Should be the sames used in the previous Stack - Step1)
-    MaxLength: '41'
-    MinLength: '8'
-    NoEcho: 'true'
-    Type: String
+
   RangerAdminPassword:
     Description: Password of the Ranger Admin server
     NoEcho: 'true'
@@ -290,26 +300,170 @@ Parameters:
     Type: String
     Default: emr/rangerGAservercert
     AllowedValues: ["emr/rangerGAservercert"]
+  GlueDataCatalogIntegration:
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'true'
+    Description: (Preview) When true, enable the Glue data catalog integration for Hive and Spark
+    Type: String
+
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
-          default: Minimum required fields (others can be kept as default)
+          default: Artifact Repository
         Parameters:
-          - KeyPairName
-          - LDAPHostPrivateIP
-          - DomainAdminPassword
-          - CrossRealmTrustPrincipalPassword
-          - ADDomainJoinPassword
-          - LDAPBindPassword
-          - DBRootPassword
-          - EMRLogDir
-          - KdcAdminPassword
+          - S3ArtifactBucket
+          - S3ArtifactKey
+          - S3Bucket
+          - S3Key
+          - ProjectVersion
+
+      - Label:
+          default: Required Fields (others can be kept as default)
+        Parameters:
           - VPC
-          - PrivateSubnet1AID
-          - PrivateSubnet2AID
           - PublicSubnet1AID
           - PublicSubnet2AID
+          - PrivateSubnet1AID
+          - PrivateSubnet2AID
+          - KeyPairName
+          - LDAPHostPrivateIP
+          - LDAPBindUserName
+          - LDAPBindPassword
+          - DomainAdminUser
+          - DomainAdminPassword
+          - KdcAdminPassword
+          - CrossRealmTrustPrincipalPassword
+          - ADDomainJoinPassword
+          - DBUserName
+          - DBRootPassword
+
+      - Label:
+          default: (Optional) EMR Cluster
+        Parameters:
+          - EMRClusterName
+          - emrReleaseLabel
+          - AppsEMR
+          - MasterInstanceType
+          - MasterInstanceCount
+          - CoreInstanceType
+          - CoreInstanceCount
+          - EnableKerberos
+          - EMRLogDir
+          - GlueDataCatalogIntegration
+
+      - Label:
+          default: (Optional) Ranger Admin Server
+        Parameters:
+          - RangerVersion
+          - RangerInstanceType
+          - RangerAdminPassword
+          - RangerHttpProtocol
+          - RangerAgentKeySecretName
+          - RangerServerCertSecretName
+
+      - Label:
+          default: (Optional) LDAP / Kerberos
+        Parameters:
+          - DomainDNSName
+          - KerberosADdomain
+          - LDAPGroupObjectClass
+          - LDAPGroupSearchBase
+          - LDAPMemberAttribute
+          - LDAPSearchBase
+          - LDAPUserObjectClass
+          - LDAPUserSearchAttribute
+
+    ParameterLabels:
+      S3Bucket:
+        default: 'Bucket Name'
+      S3Key:
+        default: 'Bucket Prefix'
+      ProjectVersion:
+        default: 'Template Version'
+
+      VPC:
+        default: 'Vpc Id'
+      PublicSubnet1AID:
+        default: 'Public Subnet One'
+      PublicSubnet2AID:
+        default: 'Public Subnet Two'
+      PrivateSubnet1AID:
+        default: 'Private Subnet One'
+      PrivateSubnet2AID:
+        default: 'Private Subnet Two'
+      KeyPairName:
+        default: 'SSH Key Name'
+      LDAPHostPrivateIP:
+        default: 'LDAP Hostname'
+      DomainDNSName:
+        default: 'LDAP Domain'
+      LDAPBindUserName:
+        default: 'LDAP Bind User'
+      LDAPBindPassword:
+        default: 'LDAP Bind User Password'
+      LDAPSearchBase:
+        default: 'LDAP Search Base Directory'
+
+      DBUserName:
+        default: 'Database Admin User'
+      DBRootPassword:
+        default: 'Database Admin Password'
+
+      DomainAdminUser:
+        default: 'Domain Admin User'
+      DomainAdminPassword:
+        default: 'Domain Admin Password'
+      CrossRealmTrustPrincipalPassword:
+        default: 'CrossRealm Trust Principal Password'
+      KdcAdminPassword:
+        default: 'KDC Admin Password'
+
+
+      EMRClusterName:
+        default: 'Cluster Name'
+      emrReleaseLabel:
+        default: 'Release'
+      AppsEMR:
+        default: 'Applications'
+      MasterInstanceType:
+        default: 'MASTER Instance Type'
+      MasterInstanceCount:
+        default: 'MASTER Instance Count'
+      CoreInstanceType:
+        default: 'CORE Instance Type'
+      CoreInstanceCount:
+        default: 'CORE Instance Count'
+      EnableKerberos:
+        default: 'Enable Kerberos'
+      EMRLogDir:
+        default: 'S3 Logging Path'
+      GlueDataCatalogIntegration:
+        default: '(Preview) Glue Data Catalog Integration'
+
+      RangerAdminPassword:
+        default: 'Ranger Admin Password'
+      RangerInstanceType:
+        default: 'Instance Type'
+      RangerHttpProtocol:
+        default: 'Ranger Admin UI Protocol'
+      RangerAgentKeySecretName:
+        default: 'Ranger Agent Certificate - Secret Name'
+      RangerServerCertSecretName:
+        default: 'Ranger Admin Server Certificate - Secret Name'
+      RangerVersion:
+        default: 'Ranger Version'
+
+      CIDRAccessToPrivateSubnetResources:
+        default: 'Clients CIDR'
+      AttachAdditionalSourcePrefixToSG:
+        default: 'Attach Additional Source Prefix'
+      AdditionalSourcePrefixToSG:
+        default: 'Additional Source Prefix'
+
+
 Conditions:
   USEastRegion: !Equals [ !Ref 'AWS::Region', "us-east-1" ]
   EnableKerberos: !Equals [true, !Ref EnableKerberos]
@@ -318,15 +472,11 @@ Conditions:
     - !Equals [!Ref NumberOfAZs, "2"]
     - !Equals [!Ref NumberOfAZs, "3"]
   InstallEMRRangerinPublicSubnet: !Equals [true, !Ref InstallEMRRangerinPublicSubnet]
-Mappings:
-  DefaultConfiguration:
-    MachineConfiguration:
-      BastionInstanceType: t2.small
 Resources:
   RDSDatabase:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion', '/cloudformation/', 'rds-database.template']]
+      TemplateURL: !Sub 'https://s3.amazonaws.com/${S3ArtifactBucket}/${S3ArtifactKey}/${ProjectVersion}/cloudformation/rds-database.template'
       Parameters:
         Subnet1: !Ref 'PrivateSubnet1AID'
         Subnet2: !If
@@ -341,16 +491,15 @@ Resources:
       - RDSDatabase
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion','/cloudformation/', 'ranger-server.template']]
+      TemplateURL: !Sub 'https://s3.amazonaws.com/${S3ArtifactBucket}/${S3ArtifactKey}/${ProjectVersion}/cloudformation/ranger-server.template'
       Parameters:
         S3Bucket: !Ref 'S3ArtifactBucket'
         S3Key: !Ref 'S3ArtifactKey'
         VPC: !Ref VPC
-        Subnet: !If [ InstallEMRRangerinPublicSubnet, !Ref PublicSubnet1AID, !Ref PrivateSubnet1AID ]
+        Subnet1: !If [ InstallEMRRangerinPublicSubnet, !Ref PublicSubnet1AID, !Ref PrivateSubnet1AID ]
+        Subnet2: !If [ InstallEMRRangerinPublicSubnet, !Ref PublicSubnet2AID, !Ref PrivateSubnet2AID ]
         DBHostName: !GetAtt 'RDSDatabase.Outputs.RDSInstanceAddress'
         DBRootPassword: !Ref DBRootPassword
-        ADAdminUsername: !Ref 'DomainAdminUser'
-        ADAdminPassword: !Ref 'DomainAdminPassword'
         LDAPHostPrivateIP: !Ref LDAPHostPrivateIP
         DomainDNSName: !Ref DomainDNSName
         LDAPSearchBase: "dc=awsemr,dc=com"
@@ -366,7 +515,7 @@ Resources:
     DependsOn:
       - RangerServer
     Properties:
-      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion', '/cloudformation/', 'emr-template.template']]
+      TemplateURL: !Sub 'https://s3.amazonaws.com/${S3ArtifactBucket}/${S3ArtifactKey}/${ProjectVersion}/cloudformation/emr-template.template'
       Parameters:
         S3Bucket: !Ref 'S3Bucket'
         S3Key: !Ref 'S3Key'
@@ -387,7 +536,6 @@ Resources:
         KdcAdminPassword: !Ref 'KdcAdminPassword'
         ADDomainJoinPassword: !Ref 'ADDomainJoinPassword'
         DomainAdminUser: !Ref 'DomainAdminUser'
-#        KerberosRealm: !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
         DomainDNSName: !Ref 'DomainDNSName'
         LDAPHostPrivateIP: !Ref 'LDAPHostPrivateIP'
         LDAPBindUserName: !Ref 'LDAPBindUserName'
@@ -398,7 +546,7 @@ Resources:
         LDAPGroupSearchBase: !Ref 'LDAPGroupSearchBase'
         LDAPGroupObjectClass: !Ref 'LDAPGroupObjectClass'
         LDAPMemberAttribute: !Ref 'LDAPMemberAttribute'
-        RangerHostname: !GetAtt 'RangerServer.Outputs.PrivateDNS'
+        RangerHostname: !GetAtt 'RangerServer.Outputs.RangerAdminHost'
         RangerVersion: !Ref RangerVersion
         RangerHttpProtocol: !Ref RangerHttpProtocol
         DBHostName: !GetAtt 'RDSDatabase.Outputs.RDSInstanceAddress'
@@ -415,10 +563,8 @@ Outputs:
   RDSInstanceAddress:
     Description: IP Address of the RDS instance
     Value: !GetAtt 'RDSDatabase.Outputs.RDSInstanceAddress'
-  RangerServerIP:
-    Value: !GetAtt 'RangerServer.Outputs.IPAddress'
   RangerServerPrivateDNS:
-    Value: !GetAtt 'RangerServer.Outputs.PrivateDNS'
+    Value: !GetAtt 'RangerServer.Outputs.RangerAdminHost'
   HueIPAddress:
     Value: !GetAtt 'EMRCluster.Outputs.EMRClusterURL'
   EMRClusterURL:
