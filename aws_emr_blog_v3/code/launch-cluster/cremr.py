@@ -50,14 +50,6 @@ def create(event, context):
             'LogUri': event["ResourceProperties"]["LogFolder"],
             'AdditionalInfo': '{"clusterType":"development"}',
             'BootstrapActions': [
-                # {
-                #     "Name": "Install packages",
-                #     "ScriptBootstrapAction": {
-                #         "Path": "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
-                #             "S3Key"] + "/" + event["ResourceProperties"][
-                #                     "ProjectVersion"] + "/scripts/install-required-packages.sh"
-                #     }
-                # },
                 {
                     "Name": "Download scripts",
                     "ScriptBootstrapAction": {
@@ -68,19 +60,6 @@ def create(event, context):
                             "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
                                 "S3ArtifactKey"] + "/" + event["ResourceProperties"][
                                 "ProjectVersion"]
-                        ]
-                    }
-                },
-                {
-                    "Name": "Apache Ranger - Glue Data Catalog Preview",
-                    "ScriptBootstrapAction": {
-                        "Path": "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
-                            "S3ArtifactKey"] + "/" + event["ResourceProperties"][
-                            "ProjectVersion"] + "/scripts/ba_exec_background.sh",
-                        "Args": [
-                            "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
-                                "S3ArtifactKey"] + "/" + event["ResourceProperties"][
-                                "ProjectVersion"] + "/scripts/ba_ranger_glue_catalog_preview.sh"
                         ]
                     }
                 }
@@ -234,6 +213,9 @@ def create(event, context):
                     "Configurations": [
                         {
                             "Classification": "desktop",
+                            "Properties": {
+                                "app_blacklist": "search,indexer,impala"
+                            },
                             "Configurations": [
                                 {
                                     "Classification": "auth",
@@ -266,6 +248,12 @@ def create(event, context):
                                     }
                                 }
                             ]
+                        },
+                        {
+                            "Classification": "notebook",
+                            "Properties": {
+                                "interpreters_shown_on_wheel": "hive,sql"
+                            }
                         }
                     ],
                     "Properties": {
@@ -311,6 +299,21 @@ def create(event, context):
             }
 
         if event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "true":
+            
+            cluster_parameters['BootstrapActions'].append({
+                "Name": "Apache Ranger - Glue Data Catalog Preview",
+                "ScriptBootstrapAction": {
+                    "Path": "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
+                        "S3ArtifactKey"] + "/" + event["ResourceProperties"][
+                        "ProjectVersion"] + "/scripts/ba_exec_background.sh",
+                    "Args": [
+                        "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
+                            "S3ArtifactKey"] + "/" + event["ResourceProperties"][
+                            "ProjectVersion"] + "/scripts/ba_ranger_glue_catalog_preview.sh"
+                    ]
+                }
+            })
+
             cluster_parameters['Configurations'].append({
                 "Classification": "hive-site",
                 "Properties": {
@@ -329,6 +332,7 @@ def create(event, context):
                     "hive.metastore.client.factory.class": "com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory"
                 }
             })
+
         else:
             cluster_parameters['Configurations'].append({
                 "Classification": "hive-site",
@@ -346,7 +350,6 @@ def create(event, context):
                     "hive.server2.enable.doAs": "false"
                 }
             })
-
 
         cluster_id = client.run_job_flow(**cluster_parameters)
 
