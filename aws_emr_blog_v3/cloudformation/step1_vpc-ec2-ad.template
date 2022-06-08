@@ -6,7 +6,6 @@ Parameters:
       Availability Zones are used for this deployment, and the logical order of your
       selections is preserved.
     Default: us-east-1a,us-east-1b,us-east-1c
-#    AllowedValues: ["us-east-1a,us-east-1b,us-east-1c"]
     Type: List<AWS::EC2::AvailabilityZone::Name>
   KeyPairName:
     Description: The name of an existing public/private key pair, which allows you
@@ -237,7 +236,7 @@ Resources:
     DependsOn: STEP1VPC
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion', '/cloudformation/', 'ec2-win-ad.template']]
+      TemplateURL: !Sub 'https://s3.amazonaws.com/${S3ArtifactBucket}/${S3ArtifactKey}/${ProjectVersion}/cloudformation/ec2-win-ad.template'
       Parameters:
         KeyPairName: !Ref 'KeyPairName'
         ImageId: !Ref ADServerAMI

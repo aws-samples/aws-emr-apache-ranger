@@ -35,7 +35,7 @@ Metadata:
           - DomainDNSName
           - KerberosADdomain
           - DomainAdminUser
-          - ADDomainJoinPassword
+          - DomainAdminPassword
           - CrossRealmTrustPrincipalPassword
           - KdcAdminPassword
       - Label:
@@ -123,7 +123,7 @@ Metadata:
         default: 'Active Directory domain'
       DomainAdminUser:
         default: 'Domain admin user'
-      ADDomainJoinPassword:
+      DomainAdminPassword:
         default: 'Domain admin password'
       CrossRealmTrustPrincipalPassword:
         default: 'Cross-realm trust password'
@@ -238,9 +238,14 @@ Parameters:
     Type: AWS::EC2::KeyPair::KeyName
   emrReleaseLabel:
     Type: String
-    Default: emr-5.32.0
+    Default: emr-6.5.0
     AllowedValues:
+      - emr-5.35.0
+      - emr-5.34.0
+      - emr-5.33.0
       - emr-5.32.0
+      - emr-6.5.0
+      - emr-6.4.0
       - emr-6.3.0
     Description: Release label for the EMR cluster
   AppsEMR:
@@ -263,27 +268,32 @@ Parameters:
     Type: String
     Default: r5.2xlarge
     AllowedValues:
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
       - m5.xlarge
       - m5.2xlarge
+      - m5.4xlarge
+      - r5.xlarge
       - r5.2xlarge
+      - r5.4xlarge
+      - c5.xlarge
+      - c5.2xlarge
+      - c5.4xlarge
   CoreInstanceType:
     Description: Instance type for the cluster nodes
     Type: String
     Default: r5.2xlarge
     AllowedValues:
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
       - m5.xlarge
       - m5.2xlarge
+      - m5.4xlarge
+      - r5.xlarge
       - r5.2xlarge
+      - r5.4xlarge
+      - c5.xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+
   EMRLogDir:
-    Description: Log directory for EMR. Eg - s3://xxx
+    Description: 'Log Dir for the EMR cluster. Eg: s3://xxxxxxxx. If empty the default location will be used s3://aws-logs-ACCOUNT_ID-REGION/elasticmapreduce/'
     Type: String
     AllowedPattern: "^$|^s3://.*"
     Default: ''
@@ -373,7 +383,7 @@ Parameters:
     MaxLength: '25'
     MinLength: '5'
     Type: String
-  ADDomainJoinPassword:
+  DomainAdminPassword:
     Description: Password of the domain admin (joiner user) account
     NoEcho: 'true'
     Type: String
@@ -630,7 +640,7 @@ Resources:
       StackRegion: !Ref 'AWS::Region'
       CrossRealmTrustPrincipalPassword: !Ref 'CrossRealmTrustPrincipalPassword'
       KdcAdminPassword: !Ref 'KdcAdminPassword'
-      ADDomainJoinPassword: !Ref 'ADDomainJoinPassword'
+      ADDomainJoinPassword: !Ref 'DomainAdminPassword'
       ADDomainUser: !Ref 'DomainAdminUser'
       KerberosRealm: !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
       MasterInstanceCount: !Ref 'MasterInstanceCount'

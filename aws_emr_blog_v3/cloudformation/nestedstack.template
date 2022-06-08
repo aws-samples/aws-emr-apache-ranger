@@ -5,7 +5,6 @@ Parameters:
     Description: The list of Availability Zones to use for the subnets in the VPC. Three
       Availability Zones are used for this deployment, and the logical order of your
       selections is preserved.
-    Default: us-east-1a,us-east-1b,us-east-1c
     Type: List<AWS::EC2::AvailabilityZone::Name>
   PrivateSubnet1CIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
@@ -46,27 +45,8 @@ Parameters:
     Description: The CIDR block for the public (DMZ) subnet 3 located in Availability
       Zone 3
     Type: String
-  QSS3BucketName:
-    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
-    ConstraintDescription: Quick Start bucket name can include numbers, lowercase
-      letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
-      (-).
-    Default: aws-quickstart
-    Description: S3 bucket name for the Quick Start assets. This string can include
-      numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start
-      or end with a hyphen (-).
-    Type: String
-    AllowedValues: ['aws-quickstart']
-  QSS3KeyPrefix:
-    AllowedPattern: ^[0-9a-zA-Z-/.]*$
-    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
-      uppercase letters, hyphens (-), dots(.) and forward slash (/).
-    Default: quickstart-amazon-eks/
-    Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
-      can include numbers, lowercase letters, uppercase letters, hyphens (-), dots(.) and
-      forward slash (/).
-    Type: String
-    AllowedValues: ['quickstart-amazon-eks/']
+
+
   CIDRAccessToADAndBastion:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
@@ -89,7 +69,6 @@ Parameters:
     Description: S3Bucket where artifacts are stored
     Type: String
     Default: aws-bigdata-blog
-    AllowedValues: ["aws-bigdata-blog"]
   S3Key:
     Description: S3Key of the Lambda code
     Type: String
@@ -154,56 +133,42 @@ Parameters:
     Description: Sources that are allowd to access the Ranger Instance. Should be a source prefix
       e.g., pl-xxx
     Type: String
-  LDAPUserSearchAttribute:
-    Description: Ldap user search attribute
-    Type: String
-    Default: sAMAccountName
-    AllowedValues:
-      - sAMAccountName
-  LDAPUserObjectClass:
-    Description: Ldap user object class
-    Type: String
-    Default: person
-    AllowedValues:
-      - person
+
   LDAPGroupSearchBase:
     Description: Ldap group search
     Type: String
     Default: dc=awsemr,dc=com
     AllowedValues:
       - dc=awsemr,dc=com
-  LDAPGroupObjectClass:
-    Description: Ldap group object class
-    Type: String
-    Default: group
-    AllowedValues:
-      - group
-  LDAPMemberAttribute:
-    Description: Ldap member attribute
-    Type: String
-    Default: member
-    AllowedValues:
-      - member
+
   MasterInstanceType:
     Description: Instance type for the cluster nodes
     Type: String
     Default: r5.2xlarge
     AllowedValues:
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - r5.xlarge
       - r5.2xlarge
+      - r5.4xlarge
+      - c5.xlarge
+      - c5.2xlarge
+      - c5.4xlarge
   CoreInstanceType:
     Description: Instance type for the cluster nodes
     Type: String
     Default: r5.2xlarge
     AllowedValues:
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - r5.xlarge
       - r5.2xlarge
+      - r5.4xlarge
+      - c5.xlarge
+      - c5.2xlarge
+      - c5.4xlarge
   RangerInstanceType:
     Default: m4.xlarge
     Description: Instance Type of the core node
@@ -213,9 +178,10 @@ Parameters:
     Description: Cluster name for the EMR
     Type: String
   EMRLogDir:
-    Description: 'Log Dir for the EMR cluster. Eg: s3://xxx'
+    Description: 'Log Dir for the EMR cluster. Eg: s3://xxxxxxxx. If empty the default location will be used s3://aws-logs-ACCOUNT_ID-REGION/elasticmapreduce/'
     Type: String
-    AllowedPattern: ^s3://.*
+    AllowedPattern: "^$|^s3://.*"
+    Default: ''
   DomainDNSName:
     AllowedPattern: '[a-zA-Z0-9\-]+\..+'
     Default: awsemr.com
@@ -237,14 +203,6 @@ Parameters:
     MaxLength: '25'
     MinLength: '5'
     Type: String
-#  KerberosRealm:
-#    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
-#    Default: COMPUTE.INTERNAL
-#    Description: Cluster's Kerberos realm name. This is usually the VPC's domain name
-#      in uppercase letters e.g. COMPUTE.INTERNAL
-#    MaxLength: '25'
-#    MinLength: '3'
-#    Type: String
   KerberosADdomain:
     AllowedPattern: '[a-zA-Z0-9\-]+\..+'
     Default: AWSEMR.COM
@@ -292,10 +250,16 @@ Parameters:
     AllowedValues: [true]
   emrReleaseLabel:
     Type: String
-    Default: emr-5.32.0
+    Default: emr-6.5.0
     AllowedValues:
+      - emr-5.35.0
+      - emr-5.34.0
+      - emr-5.33.0
       - emr-5.32.0
+      - emr-6.5.0
+      - emr-6.4.0
       - emr-6.3.0
+    Description: Release label for the EMR cluster
   KeyPairName:
     Description: Name of an existing EC2 key pair to access the Amazon EMR cluster
     Type: AWS::EC2::KeyPair::KeyName
@@ -331,21 +295,179 @@ Parameters:
     Type: String
     Default: emr/rangerGAservercert
     AllowedValues: ["emr/rangerGAservercert"]
+  GlueDataCatalogIntegration:
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'true'
+    Description: (Preview) When true, enable the Glue data catalog integration for Hive and Spark
+    Type: String
+
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
+          default: Artifact Repository
+        Parameters:
+          - S3Bucket
+          - S3Key
+          - ProjectVersion
+      - Label:
           default: Minimum required fields (others can be kept as default)
         Parameters:
           - KeyPairName
+          - DBUserName
+          - DBRootPassword
+          - DomainAdminUser
           - DomainAdminPassword
-          - CrossRealmTrustPrincipalPassword
+          - LDAPBindUserName
           - LDAPBindPassword
           - DefaultADUserPassword
-          - CIDRAccessToADAndBastion
-          - DBRootPassword
-          - EMRLogDir
           - KdcAdminPassword
+          - CrossRealmTrustPrincipalPassword
+          - CIDRAccessToADAndBastion
+          - InstallEMRRangerinPublicSubnet
+          - NumberOfAZs
+          - AvailabilityZones
+      - Label:
+          default: (Optional) EMR Cluster
+        Parameters:
+          - EMRClusterName
+          - emrReleaseLabel
+          - AppsEMR
+          - MasterInstanceType
+          - MasterInstanceCount
+          - CoreInstanceType
+          - CoreInstanceCount
+          - EnableKerberos
+          - EMRLogDir
+          - GlueDataCatalogIntegration
+          - CIDRAccessToPrivateSubnetResources
+          - AttachAdditionalSourcePrefixToSG
+          - AdditionalSourcePrefixToSG
+          - CreateNonEMRResources
+      - Label:
+          default: (Optional) Ranger Admin Server
+        Parameters:
+          - RangerVersion
+          - RangerInstanceType
+          - RangerAdminPassword
+          - RangerHttpProtocol
+          - RangerAgentKeySecretName
+          - RangerServerCertSecretName
+      - Label:
+          default: (Optional) Networking
+        Parameters:
+          - VPCCIDR
+          - PublicSubnet1CIDR
+          - PublicSubnet2CIDR
+          - PublicSubnet3CIDR
+          - PrivateSubnet1CIDR
+          - PrivateSubnet2CIDR
+          - PrivateSubnet3CIDR
+
+      - Label:
+          default: (Optional) LDAP / Kerberos
+        Parameters:
+          - DomainDNSName
+          - KerberosADdomain
+          - LDAPGroupSearchBase
+          - LDAPSearchBase
+
+    ParameterLabels:
+      S3Bucket:
+        default: 'Bucket Name'
+      S3Key:
+        default: 'Bucket Prefix'
+      ProjectVersion:
+        default: 'Template Version'
+
+      VPCCIDR:
+        default: 'Vpc CIDR'
+      PublicSubnet1CIDR:
+        default: 'Public Subnet One CIDR'
+      PublicSubnet2CIDR:
+        default: 'Public Subnet Two CIDR'
+      PublicSubnet3CIDR:
+        default: 'Public Subnet Three CIDR'
+      PrivateSubnet1CIDR:
+        default: 'Private Subnet One CIDR'
+      PrivateSubnet2CIDR:
+        default: 'Private Subnet Two CIDR'
+      PrivateSubnet3CIDR:
+        default: 'Private Subnet Three CIDR'
+      NumberOfAZs:
+        default: 'Number of Availability Zones'
+
+      KeyPairName:
+        default: 'SSH Key Name'
+      LDAPHostPrivateIP:
+        default: 'LDAP Hostname'
+      DomainDNSName:
+        default: 'LDAP Domain'
+      LDAPBindUserName:
+        default: 'LDAP Bind User'
+      LDAPBindPassword:
+        default: 'LDAP Bind User Password'
+      LDAPSearchBase:
+        default: 'LDAP Search Base Directory'
+
+      DBUserName:
+        default: 'Database Admin User'
+      DBRootPassword:
+        default: 'Database Admin Password'
+
+      DomainAdminUser:
+        default: 'Domain Admin User'
+      DomainAdminPassword:
+        default: 'Domain Admin Password'
+      CrossRealmTrustPrincipalPassword:
+        default: 'CrossRealm Trust Principal Password'
+      KdcAdminPassword:
+        default: 'KDC Admin Password'
+
+
+      EMRClusterName:
+        default: 'Cluster Name'
+      emrReleaseLabel:
+        default: 'Release'
+      AppsEMR:
+        default: 'Applications'
+      MasterInstanceType:
+        default: 'MASTER Instance Type'
+      MasterInstanceCount:
+        default: 'MASTER Instance Count'
+      CoreInstanceType:
+        default: 'CORE Instance Type'
+      CoreInstanceCount:
+        default: 'CORE Instance Count'
+      EnableKerberos:
+        default: 'Enable Kerberos'
+      EMRLogDir:
+        default: 'S3 Logging Path'
+      GlueDataCatalogIntegration:
+        default: '(Preview) Glue Data Catalog Integration'
+
+      RangerAdminPassword:
+        default: 'Ranger Admin Password'
+      RangerInstanceType:
+        default: 'Instance Type'
+      RangerHttpProtocol:
+        default: 'Ranger Admin UI Protocol'
+      RangerAgentKeySecretName:
+        default: 'Ranger Agent Certificate - Secret Name'
+      RangerServerCertSecretName:
+        default: 'Ranger Admin Server Certificate - Secret Name'
+      RangerVersion:
+        default: 'Ranger Version'
+
+      CIDRAccessToPrivateSubnetResources:
+        default: 'Clients CIDR'
+      AttachAdditionalSourcePrefixToSG:
+        default: 'Attach Additional Source Prefix'
+      AdditionalSourcePrefixToSG:
+        default: 'Additional Source Prefix'
+
 Mappings:
   DefaultConfiguration:
     MachineConfiguration:
@@ -386,8 +508,8 @@ Resources:
     Properties:
       TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3Bucket', '/', !Ref 'S3Key', '/', !Ref 'ProjectVersion', '/cloudformation/', 'step2_ranger-rds-emr.template']]
       Parameters:
-        S3Bucket: !Ref S3Bucket
-        S3Key: !Ref S3Key
+        S3ArtifactBucket: !Ref S3Bucket
+        S3ArtifactKey: !Ref S3Key
         ProjectVersion: !Ref ProjectVersion
         KeyPairName: !Ref 'KeyPairName'
         VPC: !GetAtt 'STEP1.Outputs.VPC'
@@ -402,18 +524,13 @@ Resources:
         DomainAdminPassword: !Ref 'DomainAdminPassword'
         DomainDNSName: !Ref 'DomainDNSName'
         CrossRealmTrustPrincipalPassword: !Ref 'CrossRealmTrustPrincipalPassword'
-        ADDomainJoinPassword: !Ref 'DomainAdminPassword'
         KdcAdminPassword: !Ref 'KdcAdminPassword'
         LDAPHostPrivateIP: !GetAtt 'STEP1.Outputs.LDAPHostPrivateIP'
         LDAPBindUserName: !Ref LDAPBindUserName
         LDAPBindPassword: !Ref LDAPBindPassword
         LDAPGroupSearchBase: !Ref LDAPGroupSearchBase
-        LDAPMemberAttribute: !Ref LDAPMemberAttribute
         LDAPSearchBase: !Ref LDAPSearchBase
-        LDAPUserObjectClass: !Ref LDAPUserObjectClass
-        LDAPUserSearchAttribute: !Ref LDAPUserSearchAttribute
         KerberosRealm: !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
-        KerberosADdomain: !Ref KerberosADdomain
         AppsEMR: !Ref AppsEMR
         EMRClusterName: !Ref EMRClusterName
         EMRLogDir: !Ref EMRLogDir
@@ -429,6 +546,7 @@ Resources:
         AdditionalSourcePrefixToSG: !Ref AdditionalSourcePrefixToSG
         RangerAgentKeySecretName: !Ref RangerAgentKeySecretName
         RangerServerCertSecretName: !Ref RangerServerCertSecretName
+        GlueDataCatalogIntegration: !Ref GlueDataCatalogIntegration
 Outputs:
   VPC:
     Value: !GetAtt 'STEP1.Outputs.VPC'
@@ -440,7 +558,7 @@ Outputs:
     Description: IP Address of the RDS instance
     Value: !GetAtt 'STEP2.Outputs.RDSInstanceAddress'
   RangerServerIP:
-    Value: !GetAtt 'STEP2.Outputs.RangerServerIP'
+    Value: !GetAtt 'STEP2.Outputs.RangerServerPrivateDNS'
   EMRClusterURL:
     Description: Cluster EMR cluster MasterNode
     Value: !GetAtt 'STEP2.Outputs.EMRClusterURL'

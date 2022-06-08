@@ -5,6 +5,29 @@ Description: 'AWS CloudFormation Sample Template:
   **WARNING** You will be billed for the AWS resources used if you create a
   stack from this template.'
 Parameters:
+
+################################################################################
+# Artifacts
+################################################################################
+  S3ArtifactBucket:
+    Description: S3 bucket name  where artifacts are stored [update this is you want to run this stack in a region other than US-EAST-1]
+    Type: String
+    Default: aws-bigdata-blog
+  S3ArtifactKey:
+    Description: S3 prefix where the artifacts are stored [update this is you want to run this stack in a region other than US-EAST-1]
+    Type: String
+    Default: 'artifacts/aws-blog-emr-ranger'
+  ProjectVersion:
+    Default: 3.0
+    Description: Project version
+    Type: String
+    AllowedValues:
+      - 3.0
+      - beta
+
+################################################################################
+# Required Fields
+################################################################################
   VPC:
     Description: Select the Virtual Private Cloud (VPC) previously created
     Type: AWS::EC2::VPC::Id
@@ -20,11 +43,9 @@ Parameters:
   PublicSubnet2AID:
     Description: ID of an existing public subnet
     Type: AWS::EC2::Subnet::Id
-
   KeyPairName:
     Description: Name of an existing EC2 key pair to access the Amazon EMR cluster and the Ranger Admin server
     Type: AWS::EC2::KeyPair::KeyName
-
   LDAPHostPrivateIP:
     Description: IP Address or hostname of the LDAP server
     Type: String
@@ -35,48 +56,10 @@ Parameters:
     AllowedValues:
       - binduser
   LDAPBindPassword:
-    Description: Ldap Bind user password that was used in the previous cloud formation
+    Description: LDAP Bind user password that was used in the previous cloud formation (Should be the sames used in the previous Stack - Step1)
       template
     Type: String
     NoEcho: 'true'
-
-  LDAPSearchBase:
-    Description: Ldap search base
-    Type: String
-    Default: CN=Users,DC=awsemr,DC=com
-    AllowedValues:
-      - CN=Users,DC=awsemr,DC=com
-  LDAPUserSearchAttribute:
-    Description: Ldap user search attribute
-    Type: String
-    Default: sAMAccountName
-    AllowedValues:
-      - sAMAccountName
-  LDAPUserObjectClass:
-    Description: Ldap user object class
-    Type: String
-    Default: person
-    AllowedValues:
-      - person
-  LDAPGroupSearchBase:
-    Description: Ldap group search
-    Type: String
-    Default: dc=awsemr,dc=com
-    AllowedValues:
-      - dc=awsemr,dc=com
-  LDAPGroupObjectClass:
-    Description: Ldap group object class
-    Type: String
-    Default: group
-    AllowedValues:
-      - group
-  LDAPMemberAttribute:
-    Description: Ldap member attribute
-    Type: String
-    Default: member
-    AllowedValues:
-      - member
-
   DomainDNSName:
     AllowedPattern: '[a-zA-Z0-9\-]+\..+'
     Default: awsemr.com
@@ -96,8 +79,7 @@ Parameters:
     Type: String
   DomainAdminPassword:
     AllowedPattern: (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
-    Description: Password for the domain admin user. Must be at least 8 characters
-      containing letters, numbers and symbols
+    Description: Password of the domain admin (joiner user) account (Should be the sames used in the previous Stack - Step1)
     MaxLength: '32'
     MinLength: '8'
     NoEcho: 'true'
@@ -108,17 +90,12 @@ Parameters:
     MinLength: '5'
     NoEcho: 'true'
     Type: String
-  ADDomainJoinPassword:
-    Description: Password of the domain admin (joiner user) account (Should be the sames used in the previous Stack - Step1)
-    NoEcho: 'true'
-    Type: String
   KdcAdminPassword:
     Description: Password of your KDC Server runing on the EMR Master Node
     MaxLength: '32'
     MinLength: '5'
     NoEcho: 'true'
     Type: String
-
   DBUserName:
     Description: The RDS MySQL database username
     Type: String
@@ -131,12 +108,161 @@ Parameters:
     MinLength: '8'
     NoEcho: 'true'
     Type: String
-
   InstallEMRRangerinPublicSubnet:
     Description: Flag to indicate if Ranger and EMR servers should be run in the Public subnet
     Default: false
     Type: String
     AllowedValues: [true, false]
+  CreateNonEMRResources:
+    Description: Only Install EMR cluster, Other resources which might have been created with previous stacks will be ignored. Eg- CloudWatch Log Groups
+                 Allows you to re-run the same stack multiple times.
+    Default: true
+    Type: String
+    AllowedValues: [true, false]
+  NumberOfAZs:
+    Type: String
+    AllowedValues: ["2", "3"]
+    Default: "3"
+    Description: Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.
+
+################################################################################
+# EMR
+################################################################################
+  MasterInstanceCount:
+    Default: '1'
+    Description: Number of master instances
+    Type: Number
+  CoreInstanceCount:
+    Default: 3
+    Description: Number of instances (core nodes) for the cluster e.g., 2
+    Type: Number
+  MasterInstanceType:
+    Description: Instance type for the cluster nodes
+    Type: String
+    Default: r5.2xlarge
+    AllowedValues:
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - r5.xlarge
+      - r5.2xlarge
+      - r5.4xlarge
+      - c5.xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+  CoreInstanceType:
+    Description: Instance type for the cluster nodes
+    Type: String
+    Default: r5.2xlarge
+    AllowedValues:
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - r5.xlarge
+      - r5.2xlarge
+      - r5.4xlarge
+      - c5.xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+  EMRClusterName:
+    Default: EMR-EMRSecurityWithRangerGA
+    Description: Cluster name for the EMR
+    Type: String
+  EMRLogDir:
+    Description: 'Log Dir for the EMR cluster. Eg: s3://xxxxxxxx. If empty the default location will be used s3://aws-logs-ACCOUNT_ID-REGION/elasticmapreduce/'
+    Type: String
+    AllowedPattern: "^$|^s3://.*"
+    Default: ''
+  AppsEMR:
+    Description: 'Comma separated list of applications to install on the cluster e.g., '
+    Type: String
+    Default: Hadoop, Spark, Hive, Livy, Hue
+    AllowedValues: ["Hadoop, Spark, Hive, Livy, Hue"]
+  EnableKerberos:
+    Description: Enable Kerberos on the Cluster. This is Required for Ranger EMR support
+    Default: true
+    Type: String
+    AllowedValues: [true]
+  emrReleaseLabel:
+    Type: String
+    Default: emr-6.5.0
+    AllowedValues:
+      - emr-5.35.0
+      - emr-5.34.0
+      - emr-5.33.0
+      - emr-5.32.0
+      - emr-6.5.0
+      - emr-6.4.0
+      - emr-6.3.0
+    Description: Release label for the EMR cluster
+  GlueDataCatalogIntegration:
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'true'
+    Description: (Preview) When true, enable the Glue data catalog integration for Hive and Spark
+    Type: String
+
+################################################################################
+# Ranger
+################################################################################
+  RangerInstanceType:
+    Default: m5.xlarge
+    Description: Instance Type of the core node
+    Type: String
+    AllowedValues:
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - r5.xlarge
+      - r5.2xlarge
+      - r5.4xlarge
+  RangerVersion:
+    Description: 'RangerVersion. Expected values are : 0.6,0.7,1.0,2.0. NOTE: Use Ranger 0.6 if
+      EMR version is 5.0'
+    AllowedValues:
+      - '2.0'
+    Type: String
+    Default: '2.0'
+  RangerHttpProtocol:
+    Description: Ranger HTTP protocol
+    Type: String
+    Default: 'https'
+    AllowedValues:
+      - 'https'
+  RangerAdminPassword:
+    Description: Password of the Ranger Admin server
+    NoEcho: 'true'
+    Default: admin
+    Type: String
+    AllowedValues: ["admin"]
+  RangerAgentKeySecretName:
+    Description: Name of Ranger Agent Cert Secrets mgr resource
+    Type: String
+    Default: emr/rangerGAagentkey
+    AllowedValues: ["emr/rangerGAagentkey"]
+  RangerServerCertSecretName:
+    Description: Name of Ranger Server Cert Secrets mgr resource
+    Type: String
+    Default: emr/rangerGAservercert
+    AllowedValues: ["emr/rangerGAservercert"]
+
+################################################################################
+# LDAP
+################################################################################
+  LDAPSearchBase:
+    Description: Ldap search base
+    Type: String
+    Default: CN=Users,DC=awsemr,DC=com
+    AllowedValues:
+      - CN=Users,DC=awsemr,DC=com
+  LDAPGroupSearchBase:
+    Description: Ldap group search
+    Type: String
+    Default: dc=awsemr,dc=com
+    AllowedValues:
+      - dc=awsemr,dc=com
+
   AttachAdditionalSourcePrefixToSG:
     Description: (Optional) Attaches additional sources prefix lists to EMR Master Security Group
     Default: false
@@ -155,158 +281,6 @@ Parameters:
     Description: (Optional) Sources that are allowd to access the Ranger Instance. Should be a source prefix
       e.g., pl-xxx
     Type: String
-  NumberOfAZs:
-    Type: String
-    AllowedValues: ["2", "3"]
-    Default: "3"
-    Description: Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.
-
-  MasterInstanceType:
-    Description: Instance type for the cluster nodes
-    Type: String
-    Default: r5.2xlarge
-    AllowedValues:
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
-      - r5.2xlarge
-  CoreInstanceType:
-    Description: Instance type for the cluster nodes
-    Type: String
-    Default: r5.2xlarge
-    AllowedValues:
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
-      - r5.2xlarge
-  RangerInstanceType:
-    Default: m5.xlarge
-    Description: Instance Type of the core node
-    Type: String
-    AllowedValues:
-      - m5.xlarge
-      - m5.2xlarge
-      - m5.4xlarge
-      - r5.xlarge
-      - r5.2xlarge
-      - r5.4xlarge
-  EMRClusterName:
-    Default: EMR-EMRSecurityWithRangerGA
-    Description: Cluster name for the EMR
-    Type: String
-  EMRLogDir:
-    Description: 'Log Dir for the EMR cluster. Eg: s3://xxx'
-    Type: String
-    AllowedPattern: ^s3://.*
-    Default: s3://anubi-us-east-1/logs/
-
-  KerberosADdomain:
-    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
-    Default: AWSEMR.COM
-    AllowedValues: ["AWSEMR.COM"]
-    Description: The AD domain that you want to trust. This is the same as the AD
-      domain name, but in uppercase letters e.g., AWSEMR.COM
-    MaxLength: '25'
-    MinLength: '3'
-    Type: String
-  MasterInstanceCount:
-    Default: '1'
-    Description: Number of master instances
-    Type: Number
-  CoreInstanceCount:
-    Default: 3
-    Description: Number of instances (core nodes) for the cluster e.g., 2
-    Type: Number
-
-  RangerVersion:
-    Description: 'RangerVersion. Expected values are : 0.6,0.7,1.0,2.0. NOTE: Use Ranger 0.6 if
-      EMR version is 5.0'
-    AllowedValues:
-      - '2.0'
-    Type: String
-    Default: '2.0'
-  RangerHttpProtocol:
-    Description: Ranger HTTP protocol
-    Type: String
-    Default: 'https'
-    AllowedValues:
-      - 'https'
-  AppsEMR:
-    Description: 'Comma separated list of applications to install on the cluster e.g., '
-    Type: String
-    Default: Hadoop, Spark, Hive, Livy, Hue
-    AllowedValues: ["Hadoop, Spark, Hive, Livy, Hue"]
-  EnableKerberos:
-    Description: Enable Kerberos on the Cluster. This is Required for Ranger EMR support
-    Default: true
-    Type: String
-    AllowedValues: [true]
-  emrReleaseLabel:
-    Type: String
-    Default: emr-5.32.0
-    AllowedValues:
-      - emr-5.32.0
-      - emr-6.3.0
-  S3Bucket:
-    Description: S3Bucket for the code [update this is you want to run this stack in a region other than US-EAST-1]
-    Type: String
-    Default: anubi-us-east-1
-  S3Key:
-    Description: S3Key of the code [update this is you want to run this stack in a region other than US-EAST-1]
-    Type: String
-    Default: artifacts/aws-blog-emr-ranger
-  S3ArtifactBucket:
-    Description: S3Bucket where artifacts are stored
-    Type: String
-    Default: anubi-us-east-1
-    AllowedValues:
-      - 'anubi-us-east-1'
-      - 'aws-bigdata-blog'
-  S3ArtifactKey:
-    Description: S3Key of the Lambda code
-    Type: String
-    Default: 'artifacts/aws-blog-emr-ranger'
-    AllowedValues:
-      - 'artifacts/aws-blog-emr-ranger'
-  ProjectVersion:
-    Default: 3.0
-    Description: Project version
-    Type: String
-    AllowedValues:
-      - 3.0
-      - beta
-
-  RangerAdminPassword:
-    Description: Password of the Ranger Admin server
-    NoEcho: 'true'
-    Default: admin
-    Type: String
-    AllowedValues: ["admin"]
-  CreateNonEMRResources:
-    Description: Only Install EMR cluster, Other resources which might have been created with previous stacks will be ignored. Eg- CloudWatch Log Groups
-                 Allows you to re-run the same stack multiple times.
-    Default: true
-    Type: String
-    AllowedValues: [true, false]
-  RangerAgentKeySecretName:
-    Description: Name of Ranger Agent Cert Secrets mgr resource
-    Type: String
-    Default: emr/rangerGAagentkey
-    AllowedValues: ["emr/rangerGAagentkey"]
-  RangerServerCertSecretName:
-    Description: Name of Ranger Server Cert Secrets mgr resource
-    Type: String
-    Default: emr/rangerGAservercert
-    AllowedValues: ["emr/rangerGAservercert"]
-  GlueDataCatalogIntegration:
-    AllowedValues:
-      - 'true'
-      - 'false'
-    Default: 'true'
-    Description: (Preview) When true, enable the Glue data catalog integration for Hive and Spark
-    Type: String
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -316,8 +290,6 @@ Metadata:
         Parameters:
           - S3ArtifactBucket
           - S3ArtifactKey
-          - S3Bucket
-          - S3Key
           - ProjectVersion
 
       - Label:
@@ -336,9 +308,11 @@ Metadata:
           - DomainAdminPassword
           - KdcAdminPassword
           - CrossRealmTrustPrincipalPassword
-          - ADDomainJoinPassword
           - DBUserName
           - DBRootPassword
+          - NumberOfAZs
+          - InstallEMRRangerinPublicSubnet
+          - CreateNonEMRResources
 
       - Label:
           default: (Optional) EMR Cluster
@@ -368,18 +342,13 @@ Metadata:
           default: (Optional) LDAP / Kerberos
         Parameters:
           - DomainDNSName
-          - KerberosADdomain
-          - LDAPGroupObjectClass
           - LDAPGroupSearchBase
-          - LDAPMemberAttribute
           - LDAPSearchBase
-          - LDAPUserObjectClass
-          - LDAPUserSearchAttribute
 
     ParameterLabels:
-      S3Bucket:
+      S3ArtifactBucket:
         default: 'Bucket Name'
-      S3Key:
+      S3ArtifactKey:
         default: 'Bucket Prefix'
       ProjectVersion:
         default: 'Template Version'
@@ -532,7 +501,7 @@ Resources:
         KeyPairName: !Ref 'KeyPairName'
         CrossRealmTrustPrincipalPassword: !Ref 'CrossRealmTrustPrincipalPassword'
         KdcAdminPassword: !Ref 'KdcAdminPassword'
-        ADDomainJoinPassword: !Ref 'ADDomainJoinPassword'
+        DomainAdminPassword: !Ref 'DomainAdminPassword'
         DomainAdminUser: !Ref 'DomainAdminUser'
         DomainDNSName: !Ref 'DomainDNSName'
         LDAPHostPrivateIP: !Ref 'LDAPHostPrivateIP'
@@ -552,6 +521,7 @@ Resources:
         AttachAdditionalSourcePrefixToSG: !Ref AttachAdditionalSourcePrefixToSG
         CIDRAccessToPrivateSubnetResources: !Ref CIDRAccessToPrivateSubnetResources
         AdditionalSourcePrefixToSG: !Ref AdditionalSourcePrefixToSG
+        GlueDataCatalogIntegration: !Ref GlueDataCatalogIntegration
       TimeoutInMinutes: '60'
 Outputs:
   RDSInstanceAddress:
