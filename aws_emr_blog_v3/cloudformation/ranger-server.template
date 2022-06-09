@@ -364,7 +364,7 @@ Resources:
       TargetGroupARNs:
         - !Ref RangerTargetGroupOne
       HealthCheckType: ELB
-      HealthCheckGracePeriod: 300
+      HealthCheckGracePeriod: 600
       Tags:
         - Key: Name
           Value: RangerServer
@@ -418,7 +418,7 @@ Resources:
           sudo systemctl restart awslogsd.service
 
           chmod +x /tmp/install-ranger-admin-server.sh
-          /tmp/install-ranger-admin-server.sh "${LDAPHostPrivateIP}" "${LDAPSearchBase}" "${LDAPBindUserName}@${DomainDNSName}" "${LDAPBindPassword}" "${rangerVersion}" "s3://${S3Bucket}/${S3Key}" "${ProjectVersion}" "${DBHostName}" "${DBRootPassword}" "${AWS::Region}" > create-ranger-server-output.log
+          /tmp/install-ranger-admin-server.sh "${LDAPHostPrivateIP}" "${LDAPSearchBase}" "${LDAPBindUserName}@${DomainDNSName}" "${LDAPBindPassword}" "${rangerVersion}" "s3://${S3Bucket}/${S3Key}" "${ProjectVersion}" "${DBHostName}" "${DBRootPassword}" "${AWS::Region}" > create-ranger-server-output.log 2>&1
 
 Outputs:
   RangerAdminHost:
