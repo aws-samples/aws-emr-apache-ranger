@@ -252,7 +252,7 @@ def create(event, context):
                         {
                             "Classification": "notebook",
                             "Properties": {
-                                "interpreters_shown_on_wheel": "hive,sql"
+                                "interpreters_shown_on_wheel": "hive"
                             }
                         }
                     ],
@@ -299,7 +299,7 @@ def create(event, context):
             }
 
         if event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "true":
-            
+
             cluster_parameters['BootstrapActions'].append({
                 "Name": "Apache Ranger - Glue Data Catalog Preview",
                 "ScriptBootstrapAction": {
