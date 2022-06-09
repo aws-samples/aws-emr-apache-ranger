@@ -206,6 +206,13 @@ Parameters:
 ################################################################################
 # Ranger
 ################################################################################
+  RangerServersCount:
+    Type: String
+    Default: 2
+    AllowedValues:
+      - 2
+      - 1
+    Description: Number of Ranger Servers to launch
   RangerInstanceType:
     Default: m5.xlarge
     Description: Instance Type of the core node
@@ -333,6 +340,7 @@ Metadata:
         Parameters:
           - RangerVersion
           - RangerInstanceType
+          - RangerServersCount
           - RangerAdminPassword
           - RangerHttpProtocol
           - RangerAgentKeySecretName
@@ -424,6 +432,8 @@ Metadata:
         default: 'Ranger Admin Server Certificate - Secret Name'
       RangerVersion:
         default: 'Ranger Version'
+      RangerServersCount:
+        default: 'Number of Instances'
 
       CIDRAccessToPrivateSubnetResources:
         default: 'Clients CIDR'
@@ -475,6 +485,7 @@ Resources:
         LDAPBindUserName: !Ref 'LDAPBindUserName'
         LDAPBindPassword: !Ref 'LDAPBindPassword'
         rangerVersion: !Ref RangerVersion
+        RangerServersCount: !Ref RangerServersCount
         KeyPairName: !Ref KeyPairName
         AttachAdditionalSourcePrefixToSG: !Ref AttachAdditionalSourcePrefixToSG
         CIDRAccessToPrivateSubnetResources: !Ref CIDRAccessToPrivateSubnetResources

@@ -553,8 +553,8 @@ Resources:
             Action:
               - secretsmanager:GetSecretValue
             Resource:
-              - !Join ['', ['arn:aws:secretsmanager:', !Ref "AWS::Region", ':', !Ref "AWS::AccountId", ':secret:', !Ref RangerAgentKeySecretName, '*']]
-              - !Join ['', ['arn:aws:secretsmanager:', !Ref "AWS::Region", ':', !Ref "AWS::AccountId", ':secret:', !Ref RangerServerCertSecretName, '*']]
+              - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${RangerAgentKeySecretName}*
+              - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${RangerServerCertSecretName}*
       Roles:
         - !Ref EmrEc2Role
   EMRInstanceProfile:
@@ -579,20 +579,19 @@ Resources:
                 KdcServer: !Ref 'DomainDNSName'
         AuthorizationConfiguration:
           RangerConfiguration:
-            AdminServerURL: !Join ['', [!Ref RangerHttpProtocol,
-                                        '://', !Ref RangerHostname, ':6182']]
+            AdminServerURL: !Sub '${RangerHttpProtocol}://${RangerHostname}:6182'
             RoleForRangerPluginsARN: !GetAtt 'DataAccessRoleARN.Arn'
             RoleForOtherAWSServicesARN: !GetAtt 'UserRoleARN.Arn'
-            AdminServerSecretARN: !Join ['', ['arn:aws:secretsmanager:', !Ref "AWS::Region", ':', !Ref "AWS::AccountId", ':secret:', !Ref RangerServerCertSecretName]]
+            AdminServerSecretARN: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${RangerServerCertSecretName}
             RangerPluginConfigurations:
               - App: "Spark"
-                ClientSecretARN: !Join ['', ['arn:aws:secretsmanager:', !Ref "AWS::Region", ':', !Ref "AWS::AccountId", ':secret:', !Ref RangerAgentKeySecretName]]
+                ClientSecretARN: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${RangerAgentKeySecretName}
                 PolicyRepositoryName: "amazonemrspark"
               - App: "Hive"
-                ClientSecretARN: !Join ['', ['arn:aws:secretsmanager:', !Ref "AWS::Region", ':', !Ref "AWS::AccountId", ':secret:', !Ref RangerAgentKeySecretName]]
+                ClientSecretARN: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${RangerAgentKeySecretName}
                 PolicyRepositoryName: "hivedev"
               - App: "EMRFS-S3"
-                ClientSecretARN: !Join ['', ['arn:aws:secretsmanager:', !Ref "AWS::Region", ':', !Ref "AWS::AccountId", ':secret:', !Ref RangerAgentKeySecretName]]
+                ClientSecretARN: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${RangerAgentKeySecretName}
                 PolicyRepositoryName: "amazonemrs3"
             AuditConfiguration:
               Destinations:

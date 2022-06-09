@@ -26,7 +26,6 @@ Metadata:
       - Label:
           default: Cross-realm Trust Configuration
         Parameters:
-#          - KerberosRealm
           - CrossRealmTrustPrincipalPassword
     ParameterLabels:
       VPC:
@@ -49,8 +48,6 @@ Metadata:
         default: 'Domain admin password: '
       DomainNetBIOSName:
         default: 'Domain NetBIOS name: '
-#      KerberosRealm:
-#        default: 'EMR Kerberos realm: '
       CrossRealmTrustPrincipalPassword:
         default: 'Cross-realm trust password: '
 Parameters:
@@ -124,16 +121,7 @@ Parameters:
     MaxLength: '25'
     MinLength: '5'
     Type: String
-#  KerberosRealm:
-#    AllowedValues:
-#      - COMPUTE.INTERNAL
-#      - EC2.INTERNAL
-#    Default: EC2.INTERNAL
-#    Description: EMR Kerberos realm name. This is usually the VPC's domain name in
-#      uppercase letters e.g. EC2.INTERNAL
-#    MaxLength: '25'
-#    MinLength: '3'
-#    Type: String
+
   CrossRealmTrustPrincipalPassword:
     Description: 'Password that you want to use for your cross-realm trust - Eg: CheckSum123'
     MaxLength: '32'

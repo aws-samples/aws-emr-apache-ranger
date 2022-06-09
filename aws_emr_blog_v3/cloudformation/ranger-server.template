@@ -109,7 +109,13 @@ Parameters:
   AmazonLinux2ImageId:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
-
+  RangerServersCount:
+    Type: String
+    Default: 2
+    AllowedValues:
+      - 2
+      - 1
+    Description: Number of Ranger Servers to launch
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -130,6 +136,7 @@ Metadata:
         Parameters:
           - AmazonLinux2ImageId
           - InstanceType
+          - RangerServersCount
           - KeyPairName
           - rangerVersion
           - CIDRAccessToPrivateSubnetResources
@@ -174,6 +181,8 @@ Metadata:
         default: 'SSH Key Name'
       rangerVersion:
         default: 'Ranger Version'
+      RangerServersCount:
+        default: 'Number of Instances'
       CIDRAccessToPrivateSubnetResources:
         default: 'Clients CIDR'
       AttachAdditionalSourcePrefixToSG:
@@ -347,8 +356,8 @@ Resources:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       LaunchConfigurationName: !Ref 'RangerLaunchConfig'
-      MinSize: '1'
-      MaxSize: '1'
+      MinSize: !Ref RangerServersCount
+      MaxSize: !Ref RangerServersCount
       VPCZoneIdentifier:
         - !Ref Subnet1
         - !Ref Subnet2

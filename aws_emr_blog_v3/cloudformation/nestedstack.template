@@ -6,46 +6,6 @@ Parameters:
       Availability Zones are used for this deployment, and the logical order of your
       selections is preserved.
     Type: List<AWS::EC2::AvailabilityZone::Name>
-  PrivateSubnet1CIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.0.0/19
-    Description: The CIDR block for private subnet 1 located in Availability Zone 1
-    Type: String
-  PrivateSubnet2CIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.32.0/19
-    Description: The CIDR block for private subnet 2 located in Availability Zone 2
-    Type: String
-  PrivateSubnet3CIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.64.0/19
-    Description: The CIDR block for private subnet 3 located in Availability Zone 3
-    Type: String
-  PublicSubnet1CIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.128.0/20
-    Description: CIDR block for the public (DMZ) subnet 1 located in Availability
-      Zone 1
-    Type: String
-  PublicSubnet2CIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.144.0/20
-    Description: The CIDR block for the public (DMZ) subnet 2 located in Availability
-      Zone 2
-    Type: String
-  PublicSubnet3CIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.160.0/20
-    Description: The CIDR block for the public (DMZ) subnet 3 located in Availability
-      Zone 3
-    Type: String
-
 
   CIDRAccessToADAndBastion:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
@@ -54,12 +14,7 @@ Parameters:
       that you set this value to a trusted IP range.
     Type: String
     Default: 0.0.0.0/0
-  VPCCIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.0.0/16
-    Description: The CIDR block for the VPC
-    Type: String
+
   NumberOfAZs:
     Type: String
     AllowedValues: ["2", "3"]
@@ -100,6 +55,13 @@ Parameters:
     Default: CN=Users,DC=awsemr,DC=com
     AllowedValues:
       - CN=Users,DC=awsemr,DC=com
+  LDAPGroupSearchBase:
+    Description: Ldap group search
+    Type: String
+    Default: dc=awsemr,dc=com
+    AllowedValues:
+      - dc=awsemr,dc=com
+
   CrossRealmTrustPrincipalPassword:
     Description: 'Password that you want to use for your cross-realm trust - Eg: CheckSum123'
     MaxLength: '32'
@@ -134,12 +96,7 @@ Parameters:
       e.g., pl-xxx
     Type: String
 
-  LDAPGroupSearchBase:
-    Description: Ldap group search
-    Type: String
-    Default: dc=awsemr,dc=com
-    AllowedValues:
-      - dc=awsemr,dc=com
+
 
   MasterInstanceType:
     Description: Instance type for the cluster nodes
@@ -170,9 +127,16 @@ Parameters:
       - c5.2xlarge
       - c5.4xlarge
   RangerInstanceType:
-    Default: m4.xlarge
-    Description: Instance Type of the core node
+    Description: Instance type of the Ranger Server
     Type: String
+    Default: r5.2xlarge
+    AllowedValues:
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - r5.xlarge
+      - r5.2xlarge
+      - r5.4xlarge
   EMRClusterName:
     Default: EMR-EMRSecurityWithRangerV1
     Description: Cluster name for the EMR
@@ -282,7 +246,7 @@ Parameters:
     Type: String
   CreateNonEMRResources:
     Description: Only Install EMR cluster, Other resources are ignored as they might have been created with previous stacks
-    Default: false
+    Default: true
     Type: String
     AllowedValues: [true, false]
   RangerAgentKeySecretName:
@@ -302,6 +266,13 @@ Parameters:
     Default: 'true'
     Description: (Preview) When true, enable the Glue data catalog integration for Hive and Spark
     Type: String
+  RangerServersCount:
+    Type: String
+    Default: 2
+    AllowedValues:
+      - 2
+      - 1
+    Description: Number of Ranger Servers to launch
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -351,6 +322,7 @@ Metadata:
         Parameters:
           - RangerVersion
           - RangerInstanceType
+          - RangerServersCount
           - RangerAdminPassword
           - RangerHttpProtocol
           - RangerAgentKeySecretName
@@ -460,6 +432,8 @@ Metadata:
         default: 'Ranger Admin Server Certificate - Secret Name'
       RangerVersion:
         default: 'Ranger Version'
+      RangerServersCount:
+        default: 'Number of Instances'
 
       CIDRAccessToPrivateSubnetResources:
         default: 'Clients CIDR'
@@ -490,7 +464,7 @@ Resources:
   STEP1:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3Bucket', '/', !Ref 'S3Key', '/', !Ref 'ProjectVersion', '/cloudformation/', 'step1_vpc-ec2-ad.template']]
+      TemplateURL: !Sub 'https://s3.amazonaws.com/${S3Bucket}/${S3Key}/${ProjectVersion}/cloudformation/step1_vpc-ec2-ad.template'
       Parameters:
         S3Bucket: !Ref S3Bucket
         S3Key: !Ref S3Key
@@ -506,7 +480,7 @@ Resources:
     DependsOn: STEP1
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3Bucket', '/', !Ref 'S3Key', '/', !Ref 'ProjectVersion', '/cloudformation/', 'step2_ranger-rds-emr.template']]
+      TemplateURL: !Sub 'https://s3.amazonaws.com/${S3Bucket}/${S3Key}/${ProjectVersion}/cloudformation/step2_ranger-rds-emr.template'
       Parameters:
         S3ArtifactBucket: !Ref S3Bucket
         S3ArtifactKey: !Ref S3Key
@@ -530,7 +504,6 @@ Resources:
         LDAPBindPassword: !Ref LDAPBindPassword
         LDAPGroupSearchBase: !Ref LDAPGroupSearchBase
         LDAPSearchBase: !Ref LDAPSearchBase
-        KerberosRealm: !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
         AppsEMR: !Ref AppsEMR
         EMRClusterName: !Ref EMRClusterName
         EMRLogDir: !Ref EMRLogDir
@@ -540,6 +513,7 @@ Resources:
         RangerVersion: !Ref RangerVersion
         RangerHttpProtocol: !Ref RangerHttpProtocol
         RangerAdminPassword: !Ref RangerAdminPassword
+        RangerServersCount: !Ref RangerServersCount
         CIDRAccessToPrivateSubnetResources: !Ref CIDRAccessToPrivateSubnetResources
         CreateNonEMRResources: !Ref CreateNonEMRResources
         AttachAdditionalSourcePrefixToSG: !Ref AttachAdditionalSourcePrefixToSG
