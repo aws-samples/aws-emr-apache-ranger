@@ -1,0 +1,150 @@
+{
+    "name": "amazon-emr-spark",
+    "implClass": "org.apache.ranger.services.spark.RangerServiceSpark",
+    "label": "Amazon EMR Spark",
+    "description": "Amazon EMR Spark",
+    "guid": "f4707ecc-b5c6-11ea-b8ab-02f5a39015b1",
+    "resources":
+    [
+        {
+            "itemId": 1,
+            "name": "database",
+            "type": "string",
+            "level": 10,
+            "parent": "",
+            "mandatory": true,
+            "lookupSupported": false,
+            "recursiveSupported": false,
+            "excludesSupported": true,
+            "matcher": "org.apache.ranger.plugin.resourcematcher.RangerDefaultResourceMatcher",
+            "matcherOptions": { "wildCard":true, "ignoreCase":true },
+            "validationRegEx":"",
+            "validationMessage": "",
+            "uiHint":"",
+            "label": "EMR Spark Database",
+            "description": "EMR Spark Database"
+        },
+
+        {
+            "itemId": 2,
+            "name": "table",
+            "type": "string",
+            "level": 20,
+            "parent": "database",
+            "mandatory": true,
+            "lookupSupported": false,
+            "recursiveSupported": false,
+            "excludesSupported": true,
+            "matcher": "org.apache.ranger.plugin.resourcematcher.RangerDefaultResourceMatcher",
+            "matcherOptions": { "wildCard":true, "ignoreCase":true },
+            "validationRegEx":"",
+            "validationMessage": "",
+            "uiHint":"",
+            "label": "EMR Spark Table",
+            "description": "EMR Spark Table"
+        },
+
+        {
+            "itemId": 3,
+            "name": "column",
+            "type": "string",
+            "level": 30,
+            "parent": "table",
+            "mandatory": true,
+            "lookupSupported": false,
+            "recursiveSupported": false,
+            "excludesSupported": true,
+            "matcher": "org.apache.ranger.plugin.resourcematcher.RangerDefaultResourceMatcher",
+            "matcherOptions": { "wildCard":true, "ignoreCase":true },
+            "validationRegEx":"",
+            "validationMessage": "",
+            "uiHint":"",
+            "label": "EMR Spark Column",
+            "description": "EMR Spark Column"
+        },
+
+        {
+            "itemId": 4,
+            "name": "url",
+            "type": "string",
+            "level": 10,
+            "parent": "",
+            "mandatory": true,
+            "lookupSupported": false,
+            "recursiveSupported": true,
+            "excludesSupported": false,
+            "matcher": "org.apache.ranger.plugin.resourcematcher.RangerURLResourceMatcher",
+            "matcherOptions": { "wildCard":true, "ignoreCase":false },
+            "validationRegEx":"",
+            "validationMessage": "",
+            "uiHint":"",
+            "label": "EMR Spark Table URL",
+            "description": "EMR Spark Table URL"
+        }
+    ],
+
+    "accessTypes":
+    [
+        {
+            "itemId": 1,
+            "name": "select",
+            "label": "select"
+        },
+        {
+            "itemId": 2,
+            "name": "update",
+            "label": "update"
+        },
+        {
+            "itemId": 3,
+            "name": "alter",
+            "label": "alter"
+        },
+        {
+            "itemId": 4,
+            "name": "read",
+            "label": "read"
+        },
+        {
+            "itemId": 5,
+            "name": "write",
+            "label": "write"
+        },
+        {
+            "itemId": 6,
+            "name": "create",
+            "label": "create"
+        },
+        {
+            "itemId": 7,
+            "name": "drop",
+            "label": "drop"
+        }
+    ],
+    "configs":
+    [
+        {
+            "itemId": 1,
+            "name": "commonNameForCertificate",
+            "type": "string",
+            "mandatory": false,
+            "validationRegEx":"",
+            "validationMessage": "",
+            "uiHint":"",
+            "label": "Common Name for Certificate"
+        }
+    ],
+
+    "enums":
+    [
+
+    ],
+
+    "contextEnrichers":
+    [
+    ],
+
+    "policyConditions":
+    [
+    ]
+}
