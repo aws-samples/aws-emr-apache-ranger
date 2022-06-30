@@ -1,0 +1,75 @@
+{
+  "id": 157,
+  "name": "amazon-emr-emrfs",
+  "label": "EMRFS S3 object storage",
+  "description": "EMRFS Ranger plugin for AWS S3 object storage service",
+  "implClass": "com.amazonaws.emr.ranger.emrfs.RangerServiceS3",
+  "version": 1,
+  "options": {
+    "enableDenyAndExceptionsInPolicies": "false"
+  },
+  "configs": [
+    {
+      "itemId": 1,
+      "name": "commonNameForCertificate",
+      "type": "string",
+      "subType": "",
+      "mandatory": false,
+      "validationRegEx": "",
+      "validationMessage": "",
+      "uiHint": "",
+      "label": "Common Name for Certificate"
+    }
+  ],
+  "resources": [
+    {
+      "itemId": 1,
+      "name": "sthreeresource",
+      "type": "path",
+      "level": 10,
+      "parent": "",
+      "mandatory": true,
+      "lookupSupported": true,
+      "recursiveSupported": true,
+      "excludesSupported": false,
+      "matcher": "org.apache.ranger.plugin.resourcematcher.RangerPathResourceMatcher",
+      "matcherOptions": {
+        "wildCard": true,
+        "ignoreCase": false
+      },
+      "validationRegEx": ".+",
+      "validationMessage": "S3 resource can't be empty",
+      "uiHint": "",
+      "label": "S3 resource",
+      "description": "Represents an S3 resource i.e. either a bucket or bucket and object key. Supports default Ranger wildcards."
+    }
+  ],
+  "accessTypes": [
+    {
+      "itemId": 1,
+      "name": "GetObject",
+      "label": "GetObject"
+    },
+    {
+      "itemId": 2,
+      "name": "PutObject",
+      "label": "PutObject"
+    },
+    {
+      "itemId": 3,
+      "name": "ListObjects",
+      "label": "ListObjects"
+    },
+    {
+      "itemId": 4,
+      "name": "DeleteObject",
+      "label": "DeleteObject"
+    }
+  ],
+  "enums": [
+  ],
+  "contextEnrichers": [
+  ],
+  "policyConditions": [
+  ]
+}
