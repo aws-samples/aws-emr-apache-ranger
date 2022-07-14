@@ -179,6 +179,7 @@ Resources:
     Properties:
       TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion', '/cloudformation/', 'lambda-amilookup-win.template']]
       Parameters:
+        ProjectVersion: !Ref 'ProjectVersion'
         S3Bucket: !Ref 'S3Bucket'
         S3Key: !Ref 'S3Key'
   STEP1VPC:

@@ -24,6 +24,7 @@ set -x
 #================================================================
 
 scripts_repo_path=$1
+#sudo yum -y install krb5-workstation krb5-libs krb5-auth-dialog
 mkdir -p /tmp/aws-blog-emr-ranger/scripts/emr-steps/
 cd /tmp/aws-blog-emr-ranger/scripts/emr-steps/
 #sudo yum -y install svn

@@ -216,7 +216,10 @@ Parameters:
     Description: 'Comma separated list of applications to install on the cluster e.g., '
     Type: String
     Default: Hadoop, Spark, Hive, Livy, Hue
-    AllowedValues: ["Hadoop, Spark, Hive, Livy, Hue"]
+    AllowedValues:
+      - "Hadoop, Spark, Hive, Livy, Hue"
+      - "Hadoop, Spark, Hive, Livy, Hue, Trino"
+      - "Hadoop, Spark, Hive, Livy"
   EnableKerberos:
     Description: Enable Kerberos on the Cluster. This is Required for Ranger EMR support
     Default: true
@@ -229,6 +232,7 @@ Parameters:
       - emr-5.32.0
       - emr-6.3.0
       - emr-6.4.0
+      - emr-6.7.0
   S3Bucket:
     Description: S3Bucket for the code [update this is you want to run this stack in a region other than US-EAST-1]
     Type: String
@@ -346,6 +350,7 @@ Resources:
       Parameters:
         S3Bucket: !Ref 'S3ArtifactBucket'
         S3Key: !Ref 'S3ArtifactKey'
+        ProjectVersion: !Ref 'ProjectVersion'
         VPC: !Ref VPC
         Subnet: !If [ InstallEMRRangerinPublicSubnet, !Ref PublicSubnet1AID, !Ref PrivateSubnet1AID ]
         DBHostName: !GetAtt 'RDSDatabase.Outputs.RDSInstanceAddress'
@@ -369,6 +374,7 @@ Resources:
     Properties:
       TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion', '/cloudformation/', 'emr-template.template']]
       Parameters:
+        ProjectVersion: !Ref 'ProjectVersion'
         S3Bucket: !Ref 'S3Bucket'
         S3Key: !Ref 'S3Key'
         S3ArtifactBucket: !Ref 'S3ArtifactBucket'

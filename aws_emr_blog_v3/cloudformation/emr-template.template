@@ -245,6 +245,7 @@ Parameters:
       - emr-5.32.0
       - emr-6.3.0
       - emr-6.4.0
+      - emr-6.7.0
     Description: Release label for the EMR cluster
   AppsEMR:
     Description: 'Comma separated list of applications to install on the cluster e.g., '
@@ -252,6 +253,7 @@ Parameters:
     Default: Hadoop, Spark, Hive, Livy, Hue
     AllowedValues:
       - "Hadoop, Spark, Hive, Livy, Hue"
+      - "Hadoop, Spark, Hive, Livy, Hue, Trino"
       - "Hadoop, Spark, Hive, Livy"
   EnableKerberos:
     Description: Enable Kerberos on the Cluster. This is Required for Ranger EMR support
@@ -342,6 +344,11 @@ Parameters:
     Default: true
     Type: String
     AllowedValues: [true, false]
+  EnableSparkDDLAndIceberg:
+    Description: Installs Spark DDL's and Iceberg configuration
+    Default: false
+    Type: String
+    AllowedValues: [ true, false ]
   RangerAgentKeySecretName:
     Description: Name of Ranger Agent Cert Secrets mgr resource
     Type: String
@@ -534,10 +541,20 @@ Resources:
               - App: "EMRFS-S3"
                 ClientSecretARN: !Join ['', ['arn:aws:secretsmanager:', !Ref "AWS::Region", ':', !Ref "AWS::AccountId", ':secret:', !Ref RangerAgentKeySecretName]]
                 PolicyRepositoryName: "amazonemrs3"
+              - App: "Trino"
+                ClientSecretARN: !Join ['', ['arn:aws:secretsmanager:', !Ref "AWS::Region", ':', !Ref "AWS::AccountId", ':secret:', !Ref RangerAgentKeySecretName]]
+                PolicyRepositoryName: "amazonemrtrino"
             AuditConfiguration:
               Destinations:
                 AmazonCloudWatchLogs:
                   CloudWatchLogGroup: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${RangerCloudWatchLogGroupName}'
+        EncryptionConfiguration:
+          EnableInTransitEncryption: true
+          EnableAtRestEncryption: false
+          InTransitEncryptionConfiguration:
+            TLSCertificateConfiguration:
+              CertificateProviderType: PEM
+              S3Object: !Join ['', ["s3://", !Ref S3ArtifactBucket, "/", !Ref S3ArtifactKey, "/", !Ref ProjectVersion, "/emr-tls/", "emr-certs-certs.zip"]]
   LaunchEMRClusterFunction:
     Type: AWS::Lambda::Function
     DependsOn: LambdaExecutionRole
@@ -604,9 +621,11 @@ Resources:
       DBHostName: !Ref DBHostName
       DBUserName: !Ref DBUserName
       DBRootPassword: !Ref DBRootPassword
+      ClientSecretARN: !Join ['', ['arn:aws:secretsmanager:', !Ref "AWS::Region", ':', !Ref "AWS::AccountId", ':secret:', !Ref RangerAgentKeySecretName]]
       CertLocationPath: !Join ['', ["s3://", !Ref S3ArtifactBucket, "/", !Ref S3ArtifactKey, "/", !Ref ProjectVersion]]
       RangerAdminPassword: !Ref RangerAdminPassword
       DefaultDomain: !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
+      EnableSparkDDLAndIceberg: !Ref EnableSparkDDLAndIceberg
 
   emrCreateWaitHandle:
     Type: AWS::CloudFormation::WaitConditionHandle

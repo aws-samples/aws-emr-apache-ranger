@@ -1,0 +1,63 @@
+{
+ "isEnabled":true,
+ "version":1,
+ "service":"amazonemrtrino",
+ "name":"ImpersonateUser",
+ "policyType":0,
+ "policyPriority":0,
+ "description":"ImpersonateUser",
+ "isAuditEnabled":true,
+ "resources": {
+  "trinouser": {
+   "values": [
+    "analyst*"
+   ],
+   "isExcludes": false,
+   "isRecursive": false
+  }
+ },
+ "policyItems": [
+  {
+   "accesses": [
+    {
+     "type": "impersonate",
+     "isAllowed": true
+    }
+   ],
+   "users": [
+    "trino"
+   ],
+   "groups": [],
+   "roles": [],
+   "conditions": [],
+   "delegateAdmin": false
+  }
+ ],
+ "denyPolicyItems":[
+
+ ],
+ "allowExceptions":[
+
+ ],
+ "denyExceptions":[
+
+ ],
+ "dataMaskPolicyItems":[
+
+ ],
+ "rowFilterPolicyItems":[
+
+ ],
+ "serviceType":"trino",
+ "options":{
+
+ },
+ "validitySchedules":[
+
+ ],
+ "policyLabels":[
+
+ ],
+ "zoneName":"",
+ "isDenyAllElse":false
+}
