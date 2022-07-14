@@ -68,6 +68,7 @@ Parameters:
       - Windows Server 2012 RTM English 64-bit
       - Windows Server 2012 R2 English 64-bit
       - Windows Server 2016 Base English 64-bit
+      - Windows Server 2019 Base English 64-bit
     ConstraintDescription: Must be a valid Windows version.
   ModuleName:
     Description: The name of the JavaScript file
@@ -87,6 +88,7 @@ Parameters:
     Type: String
     AllowedValues:
       - 3.0
+      - beta
 Resources:
 #  SampleInstance:
 #    Type: AWS::EC2::Instance

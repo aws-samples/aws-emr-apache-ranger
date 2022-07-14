@@ -57,5 +57,29 @@ PARTITIONED BY (
 STORED AS SEQUENCEFILE
 LOCATION '$hive_script_data_location/joined_impressions/';
 MSCK REPAIR TABLE tblanalyst2;
+CREATE EXTERNAL TABLE IF NOT EXISTS impressions (
+  requestBeginTime string, adId string, impressionId string, referrer string,
+  userAgent string, userCookie string, ip string
+)
+PARTITIONED BY (dt string)
+ ROW FORMAT
+ serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+ with serdeproperties ( 'paths'='requestBeginTime, adId, impressionId, referrer, userAgent, userCookie, ip' )
+LOCATION '$hive_script_data_location/impressions/';
+MSCK REPAIR TABLE impressions;
+CREATE EXTERNAL TABLE IF NOT EXISTS clicks (
+    impressionId string
+  )
+  partitioned by (dt string)
+  row format
+    serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+    with serdeproperties ( 'paths'='impressionId' )
+location '$hive_script_data_location/clicks/' ;
+MSCK REPAIR TABLE clicks;
+CREATE TABLE IF NOT EXISTS user_mapping (
+ user_name STRING,
+ page STRING)
+STORED AS PARQUET
+LOCATION 's3://aws-bigdata-blog/artifacts/aws-blog-emr-ranger/data/user_mapping/';
 " >> createTable.hql
 sudo -u hive hive -f createTable.hql

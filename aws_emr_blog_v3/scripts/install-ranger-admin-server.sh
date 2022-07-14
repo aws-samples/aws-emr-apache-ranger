@@ -372,6 +372,7 @@ rm -rf ${certs_path}
 
 sudo /usr/bin/ranger-admin stop || true
 sudo /usr/bin/ranger-admin start
+sudo chkconfig ranger-admin on
 i=0;
 while ! timeout 1 bash -c "echo > /dev/tcp/$current_hostname/6182"; do
         sleep 10;
@@ -383,6 +384,7 @@ done
 #Start Ranger Usersync
 sudo /usr/bin/ranger-usersync stop || true
 sudo /usr/bin/ranger-usersync start
+sudo chkconfig ranger-usersync on
 #cd $installpath
 
 ## Update the Ranger service def
@@ -399,7 +401,16 @@ for i in `find . -name "ranger-servicedef-*.json" -type f`; do
     curl -iv --insecure -u admin:admin -X POST -d @$file_name -H "Accept: application/json" -H "Content-Type: application/json" -k $HTTP_URL/service/public/v2/api/servicedef
 done
 
+aws s3 cp $s3bucket/${project_version}/inputdata/ranger-users/ . --recursive --exclude "*" --include "*.json" --region us-east-1
+for i in `find . -name "ranger-.*-user.json" -type f`; do
+    file_name=`echo "$i" | cut -c 3-`
+    echo "$file_name"
+    curl -iv --insecure -u admin:admin -X POST -d @$file_name -H "Accept: application/json" -H "Content-Type: application/json" -k $HTTP_URL/service/xusers/secure/users
+done
+
 # Restart SOLR
 sudo /opt/solr/ranger_audit_server/scripts/stop_solr.sh || true
 sudo /opt/solr/ranger_audit_server/scripts/start_solr.sh
+sudo cp /opt/solr/bin/init.d/solr /etc/init.d/ || true
+sudo chkconfig solr on || true
 #curl -X POST -H 'Content-Type: application/json'  http://localhost:8983/solr/ranger_audits/update?commit=true -d '{ "delete": {"query":"*:*"} }'

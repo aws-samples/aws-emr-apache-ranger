@@ -1,0 +1,13 @@
+{
+  "name": "amazonemrtrino",
+  "description": "Create EMR Trino Repo using CURL",
+  "type": "trino",
+  "configs": {
+    "username": "policymgr_hive",
+    "password": "policymgr_hive",
+    "jdbc.driverClassName": "org.apache.hive.jdbc.HiveDriver",
+    "jdbc.url": "jdbc:hive2://emr_masternode:10000/default",
+    "commonNameForCertificate": "*.default_domain"
+  },
+  "isEnabled": true
+}

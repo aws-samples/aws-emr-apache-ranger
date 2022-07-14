@@ -12,7 +12,8 @@ var osNameToPattern = {
     "Windows Server 2008 R2 English 64-bit": "Windows_Server-2008-R2_SP1-English-64Bit-Base-*",
 	"Windows Server 2012 RTM English 64-bit": "Windows_Server-2012-RTM-English-64Bit-Base-*",
 	"Windows Server 2012 R2 English 64-bit": "Windows_Server-2012-R2_RTM-English-64Bit-Base-*",
-	"Windows Server 2016 Base English 64-bit": "Windows_Server-2016-English-Full-Base-*"
+	"Windows Server 2016 Base English 64-bit": "Windows_Server-2016-English-Full-Base-*",
+	"Windows Server 2019 Base English 64-bit": "Windows_Server-2019-English-Full-Base-*"
 };
 
 var aws = require("aws-sdk");

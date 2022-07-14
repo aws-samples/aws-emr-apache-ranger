@@ -59,7 +59,7 @@ generate_certs() {
   rm -rf $1
   mkdir -p $1
   pushd $1
-  openssl req -x509 -newkey rsa:4096 -keyout privateKey.pem -out certificateChain.pem -days 365 -nodes -subj ${certs_subject}
+  openssl req -x509 -newkey rsa:4096 -keyout privateKey.pem -out certificateChain.pem -days 1095 -nodes -subj ${certs_subject}
   cp certificateChain.pem trustedCertificates.pem
   zip -r -X ../$1-certs.zip certificateChain.pem privateKey.pem trustedCertificates.pem
 #  rm -rf *.pem

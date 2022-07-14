@@ -25,59 +25,41 @@ except Exception as e:
 def create(event, context):
     apps = event["ResourceProperties"]["AppsEMR"]
     emrReleaseLabel = event["ResourceProperties"]["emrReleaseLabel"]
-    prestoEngineRequested = "Presto"
-    isPrestoAppRequested = False
-    isSparkAppRequested = False
+    isTrinoAppRequested = True
     formatted_applist = apps.split(",")
     applist = []
     for app in formatted_applist:
         applist.append({"Name": app.strip()})
-        if app.strip() in ["Presto", "PrestoSQL"]:
-            isPrestoAppRequested = True
-            prestoEngineRequested = app.strip()
-        if app.strip() in ["Spark"]:
-            isSparkAppRequested = True
-
+        if app.strip() in ["Trino"]:
+            isTrinoAppRequested = True
     try:
-        emrVersion = emrReleaseLabel.split("-")[1].split(".")
+        emrVersion = emrReleaseLabel.split("-")[1]
+        # emrMinorVersion = emrReleaseLabel.split("-")[1].split(".")
         client = boto3.client("emr", region_name=event["ResourceProperties"]["StackRegion"])
-        scriptRunnerJar = "s3://"+event["ResourceProperties"]["StackRegion"]+".elasticmapreduce/libs/script-runner/script-runner.jar"
+        scriptRunnerJar = "s3://" + event["ResourceProperties"][
+            "StackRegion"] + ".elasticmapreduce/libs/script-runner/script-runner.jar"
         cluster_name = "EMR-" + event["ResourceProperties"]["StackName"]
         cluster_parameters = {'Name': cluster_name, 'ReleaseLabel': emrReleaseLabel,
                               'LogUri': event["ResourceProperties"]["LogFolder"],
                               'AdditionalInfo': '{"clusterType":"development"}',
+                              'EbsRootVolumeSize': 100,
                               'BootstrapActions': [
-                # {
-                #     "Name": "Install packages",
-                #     "ScriptBootstrapAction": {
-                #         "Path": "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
-                #             "S3Key"] + "/" + event["ResourceProperties"][
-                #                     "ProjectVersion"] + "/scripts/install-required-packages.sh"
-                #     }
-                # },
-                {
-                    "Name": "Download scripts",
-                    "ScriptBootstrapAction": {
-                        "Path": "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" + event["ResourceProperties"][
-                            "S3Key"] + "/" + event["ResourceProperties"][
-                                    "ProjectVersion"] + "/scripts/download-scripts.sh",
-                        "Args": [
-                            "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
-                                "S3ArtifactKey"] + "/" + event["ResourceProperties"][
-                                "ProjectVersion"]
-                        ]
-                    }
-                }
-                # ,
-                # {
-                #     "Name": "Setup HDFS home dir",
-                #     "ScriptBootstrapAction": {
-                #         "Path": "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
-                #             "S3ArtifactKey"] + "/" + event["ResourceProperties"][
-                #                     "ProjectVersion"] + "/scripts/create-hdfs-home-ba.sh"
-                #     }
-                # }
-            ],
+                                  {
+                                      "Name": "Download scripts",
+                                      "ScriptBootstrapAction": {
+                                          "Path": "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" +
+                                                  event["ResourceProperties"][
+                                                      "S3Key"] + "/" + event["ResourceProperties"][
+                                                      "ProjectVersion"] + "/scripts/download-scripts.sh",
+                                          "Args": [
+                                              "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" +
+                                              event["ResourceProperties"][
+                                                  "S3ArtifactKey"] + "/" + event["ResourceProperties"][
+                                                  "ProjectVersion"]
+                                          ]
+                                      }
+                                  }
+                              ],
                               'Applications': applist,
                               'Steps': [
                                   {
@@ -91,17 +73,17 @@ def create(event, context):
                                           ]
                                       }
                                   },
-                                  # {
-                                  #     "Name": "CreateExtendedHiveTables",
-                                  #     "ActionOnFailure": "CONTINUE",
-                                  #     "HadoopJarStep": {
-                                  #         "Jar": scriptRunnerJar,
-                                  #         "Args": [
-                                  #             "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/createdExtendedHiveTables.sh",
-                                  #             event["ResourceProperties"]["StackRegion"]
-                                  #         ]
-                                  #     }
-                                  # },
+                                  {
+                                      "Name": "CreateExtendedHiveTables",
+                                      "ActionOnFailure": "CONTINUE",
+                                      "HadoopJarStep": {
+                                          "Jar": scriptRunnerJar,
+                                          "Args": [
+                                              "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/createdExtendedHiveTables.sh",
+                                              event["ResourceProperties"]["StackRegion"]
+                                          ]
+                                      }
+                                  },
                                   {
                                       "Name": "LoadHDFSData",
                                       "ActionOnFailure": "CONTINUE",
@@ -113,25 +95,6 @@ def create(event, context):
                                           ]
                                       }
                                   },
-                                  # {
-                                  #     "Name": "InstallHiveHDFSRangerPlugin",
-                                  #     "ActionOnFailure": "CONTINUE",
-                                  #     "HadoopJarStep": {
-                                  #         "Jar": scriptRunnerJar,
-                                  #         "Args": [
-                                  #             "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-hive-hdfs-ranger-plugin.sh",
-                                  #             event["ResourceProperties"]["RangerHostname"],
-                                  #             event["ResourceProperties"]["RangerVersion"],
-                                  #             "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"]["S3ArtifactKey"],
-                                  #             event["ResourceProperties"][
-                                  #                 "ProjectVersion"],
-                                  #             event["ResourceProperties"]["emrReleaseLabel"],
-                                  #             event["ResourceProperties"]["RangerHttpProtocol"],
-                                  #             event["ResourceProperties"]["InstallCloudWatchAgentForAudit"]
-                                  #         ]
-                                  #     }
-                                  # },
-
                                   {
                                       "Name": "InstallRangerServiceDef",
                                       "ActionOnFailure": "CONTINUE",
@@ -267,7 +230,8 @@ def create(event, context):
                                                       "Classification": "ldap",
                                                       "Properties": {
                                                           "base_dn": event["ResourceProperties"]["LDAPGroupSearchBase"],
-                                                          "bind_dn": event["ResourceProperties"]["LDAPBindUserName"] + '@' +
+                                                          "bind_dn": event["ResourceProperties"][
+                                                                         "LDAPBindUserName"] + '@' +
                                                                      event["ResourceProperties"]["DomainDNSName"],
                                                           "bind_password": event["ResourceProperties"][
                                                               "LDAPBindPassword"],
@@ -320,16 +284,6 @@ def create(event, context):
                 }
             )
 
-        # if event["ResourceProperties"]["InstallCloudWatchAgentForAudit"] == "true":
-        #     cluster_parameters['BootstrapActions'].append(
-        #         {
-        #             "Name": "Install cloudwatch agent",
-        #             "ScriptBootstrapAction": {
-        #                 "Path": "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
-        #                     "S3ArtifactKey"] + "/" + event["ResourceProperties"][
-        #                             "ProjectVersion"] + "/scripts/install-cloudwatch-agent.sh"
-        #             }
-        #         })
         if event["ResourceProperties"]["EMRSecurityConfig"] != "false":
             cluster_parameters['SecurityConfiguration'] = event["ResourceProperties"]["EMRSecurityConfig"]
             cluster_parameters['KerberosAttributes'] = {
@@ -340,20 +294,6 @@ def create(event, context):
                 "ADDomainJoinPassword": event["ResourceProperties"]["ADDomainJoinPassword"]
             }
 
-        # if event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "true":
-        #     cluster_parameters['Configurations'].append({
-        #         "Classification": "hive-site",
-        #         "Properties": {
-        #             "hive.server2.thrift.http.port": "10001",
-        #             "hive.server2.thrift.http.path": "cliservice",
-        #             "hive.server2.transport.mode": "binary",
-        #             "hive.server2.allow.user.substitution": "true",
-        #             "hive.server2.authentication.kerberos.principal": "hive/_HOST@"+event["ResourceProperties"]["DefaultDomain"],
-        #             "hive.server2.enable.doAs": "false",
-        #             "hive.metastore.client.factory.class": "com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory"
-        #         }
-        #     })
-        # else:
         cluster_parameters['Configurations'].append({
             "Classification": "hive-site",
             "Properties": {
@@ -366,21 +306,12 @@ def create(event, context):
                 "hive.server2.thrift.http.path": "cliservice",
                 "hive.server2.transport.mode": "binary",
                 "hive.server2.allow.user.substitution": "true",
-                "hive.server2.authentication.kerberos.principal": "hive/_HOST@"+event["ResourceProperties"]["DefaultDomain"],
+                "hive.server2.authentication.kerberos.principal": "hive/_HOST@" + event["ResourceProperties"][
+                    "DefaultDomain"],
                 "hive.server2.enable.doAs": "false"
             }
         })
 
-        # ## If Hive LDAP
-        #     cluster_parameters['Configurations'].append({
-        #         "Classification": "hive-site",
-        #         "Properties": {
-        #             "hive.server2.authentication": "LDAP",
-        #             "hive.server2.authentication.ldap.url": "ldap://" + event["ResourceProperties"][
-        #                 "LDAPHostPrivateIP"],
-        #             "hive.server2.authentication.ldap.baseDN": event["ResourceProperties"]["LDAPGroupSearchBase"]
-        #         }
-        #     })
         cluster_parameters['Configurations'].append({
             "Classification": "core-site",
             "Properties": {
@@ -399,74 +330,33 @@ def create(event, context):
                 "hadoop.proxyuser.livy.hosts": "*",
                 "hadoop.proxyuser.hive.hosts": "*",
                 "hadoop.proxyuser.hive.groups": "*",
+                "hadoop.proxyuser.trino.hosts": "*",
+                "hadoop.proxyuser.trino.groups": "*",
                 "hadoop.proxyuser.hue_hive.groups": "*"
             }
         })
+        if emrVersion.split(".")[0] == '6' and emrVersion.split(".")[1] == '7':
+            cluster_parameters['BootstrapActions'].append({
+                "Name": "Remove Yum Package Name Validator",
+                "ScriptBootstrapAction": {
+                    "Path": "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" +
+                            event["ResourceProperties"][
+                                "S3Key"] + "/" + event["ResourceProperties"][
+                                "ProjectVersion"] + "/scripts/remove-yum-package-name-validator.sh"
+                }
+            })
+        if isTrinoAppRequested:
+            cluster_parameters['Steps'].append({
+                "Name": "Trino-update-user-mapping",
+                "ActionOnFailure": "CONTINUE",
+                "HadoopJarStep": {
+                    "Jar": scriptRunnerJar,
+                    "Args": [
+                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/trino-update-user-mapping.sh"
+                    ]
+                }
+            })
 
-        # if isPrestoAppRequested:
-        #     if event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "false":
-        #         cluster_parameters['BootstrapActions'].append(
-        #             {
-        #                 "Name": "Setup Presto Kerberos",
-        #                 "ScriptBootstrapAction": {
-        #                     "Path": "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
-        #                         "S3ArtifactKey"] + "/" + event["ResourceProperties"][
-        #                                 "ProjectVersion"] + "/scripts/configure_presto_kerberos_ba.sh",
-        #                     "Args": [
-        #                         "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"][
-        #                             "S3ArtifactKey"] + "/" + event["ResourceProperties"][
-        #                             "ProjectVersion"],
-        #                         event["ResourceProperties"]["KdcAdminPassword"]
-        #                     ]
-        #                 }
-        #             })
-        #     if event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "true":
-        #         if prestoEngineRequested == "PrestoSQL":
-        #             cluster_parameters['Configurations'].append(
-        #                 {
-        #                     "Classification": "prestosql-connector-hive",
-        #                     "Properties": {
-        #                         "hive.metastore": "glue"
-        #                     }
-        #                 });
-        #         else:
-        #             cluster_parameters['Configurations'].append(
-        #                 {
-        #                     "Classification": "presto-connector-hive",
-        #                     "Properties": {
-        #                         "hive.metastore": "glue"
-        #                     }
-        #                 });
-        # if isSparkAppRequested and event["ResourceProperties"]["UseAWSGlueForHiveMetastore"] == "true":
-        #     cluster_parameters['Configurations'].append(
-        #         {
-        #             "Classification": "spark-hive-site",
-        #             "Properties": {
-        #                 "hive.server2.enable.doAs": "true",
-        #                 "hive.metastore.client.factory.class": "com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory"
-        #             }
-        #         });
-
-        # if isPrestoAppRequested and event["ResourceProperties"]["InstallPrestoPlugin"] == "true":
-        #     cluster_parameters['Steps'].append({
-        #         "Name": "InstallRangerPrestoPlugin",
-        #         "ActionOnFailure": "CONTINUE",
-        #         "HadoopJarStep": {
-        #             "Jar": scriptRunnerJar,
-        #             "Args": [
-        #                 "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-presto-ranger-plugin.sh",
-        #                 event["ResourceProperties"]["RangerHostname"],
-        #                 event["ResourceProperties"]["RangerVersion"],
-        #                 "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" + event["ResourceProperties"]["S3ArtifactKey"],
-        #                 event["ResourceProperties"][
-        #                     "ProjectVersion"],
-        #                 event["ResourceProperties"]["emrReleaseLabel"],
-        #                 prestoEngineRequested,
-        #                 event["ResourceProperties"]["RangerHttpProtocol"],
-        #                 event["ResourceProperties"]["InstallCloudWatchAgentForAudit"]
-        #             ]
-        #         }
-        #     })
         cluster_id = client.run_job_flow(**cluster_parameters)
 
         physical_resource_id = cluster_id["JobFlowId"]

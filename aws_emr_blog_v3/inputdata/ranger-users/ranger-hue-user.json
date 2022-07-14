@@ -1,0 +1,15 @@
+{
+  "name": "hue1",
+  "firstName": "hue",
+  "lastName": "",
+  "loginId": "hue1",
+  "emailAddress" : null,
+  "description" : "hue user",
+  "password" : "user1pass",
+  "groupIdList": [],
+  "groupNameList": [],
+  "status": 1,
+  "isVisible": 1,
+  "userRoleList": [ "ROLE_USER" ],
+  "userSource": 0
+}
