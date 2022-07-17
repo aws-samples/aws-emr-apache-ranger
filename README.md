@@ -5,7 +5,11 @@ Features include centralized security administration,
 fine-grained authorization across many Hadoop components (eg - Hadoop, Hive, HBase, Storm, Knox, Solr, Kafka, and YARN) and central auditing. 
 It uses agents to sync policies and users, and plugins that run within the same process as the Hadoop component, like NameNode and HiveServer2.
 
-The repo contains code tied to [AWS Big Data Blog](https://aws.amazon.com/blogs/big-data/implementing-authorization-and-auditing-using-apache-ranger-on-amazon-emr/).
+The repo contains code tied to following AWS Big data blogs:
+ - [Introducing Amazon EMR integration with Apache Ranger](https://aws.amazon.com/blogs/big-data/introducing-amazon-emr-integration-with-apache-ranger/)
+ - [Authorize SparkSQL data manipulation on Amazon EMR using Apache Ranger](https://aws.amazon.com/blogs/big-data/authorize-sparksql-data-manipulation-on-amazon-emr-using-apache-ranger/).
+ - [Enable federated governance using Trino and Apache Ranger on Amazon EMR] (**New!** - Coming soon)
+ - [Implementing Authorization and Auditing using Apache Ranger on Amazon EMR](https://aws.amazon.com/blogs/big-data/implementing-authorization-and-auditing-using-apache-ranger-on-amazon-emr/)
 
 > **NOTE:** the code has gone through unit and functional test against a **few recent versions** of Amazon EMR. 
 > It is likely that it may not work with **all** EMR versions.
@@ -16,7 +20,6 @@ The repo contains code tied to [AWS Big Data Blog](https://aws.amazon.com/blogs/
 
 | Module | Description| Architecture | Details |
 | ------ | -------| --- |-------------------------------------------------------- |
-| V1 | [Open Source Ranger Plugins with LDAP](aws_emr_blog_v1) |  ![](images/simple-ad-setup.png) | Basic deployment using [AWS Simple AD](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_simple_ad.html), Hive and HDFS plugins and optional Presto Plugin|
 | V2 | [Open Source Ranger Plugins with Kerberos enabled cluster and AD](aws_emr_blog_v2) |  ![](images/emr-ranger-v2.png) | Deploy a Kerberos enabled EMR cluster using Windows AD, Hive and HDFS plugins and optional Presto and HBase Plugin|
 | V3 | [EMR Native plugins for Spark/S3 with Kerberos enabled cluster and AD](aws_emr_blog_v3) |  ![](images/emr-ranger-v3.png) | Deploy a Kerberos enabled EMR cluster with the Amazon EMR native integration of Apache Ranger - Supports Hive, Spark and Amazon S3|
 
@@ -40,11 +43,6 @@ The repo contains code tied to [AWS Big Data Blog](https://aws.amazon.com/blogs/
 ![](images/emr-ranger-s3.gif)
 
 ----
-
-### Module V1 (1.1) PrestoSQL Ranger plugin (EMR 6.1 & Ranger 2.2)
-Shows how the plugin can be used to enable column level access controls, column masking and row filter. Demo uses the [Presto Redshift connector](https://prestosql.io/docs/current/connector/redshift.html). The same functionality should work with other [Presto connectors](https://prestosql.io/docs/current/connector.html).
-
-![](images/prestosql_ranger_plugin.gif)
 
 Please open Git Issues if you would like to see updates/other plugin integrations. 
 ### References:
