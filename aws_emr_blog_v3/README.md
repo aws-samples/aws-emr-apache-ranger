@@ -10,6 +10,7 @@ The code deploys the following:
      * Amazon S3
      * Apache Spark
      * Apache Hive
+     * Apache Tino (> EMR 6.7)
 
 > **NOTE:** the code only run under us-east-1 (N. Virginia). You can copy to your regional bucket to deploy in a different region. Also, create [Issue](https://github.com/aws-samples/aws-emr-apache-ranger/issues/new) if you would like support for additional regions using this repo. 
 >
@@ -43,3 +44,17 @@ The code deploys the following:
 ## Cloudformation stack output
 
 ![](../images/emr-ranger-v3-cfn.png)
+
+## Features support by Amazon EMR Trino Plugin
+
+### Row filter and column masking
+
+![](../images/emr-ranger-v3-trino-row-filter-column-mask.png)
+
+### Authorize calls to trino connectors
+
+![](../images/emr-ranger-v3-trino-authorize-trino-connectors.png)
+
+### Dynamic row filters based on lookup table and user session
+
+![](../images/emr-ranger-v3-trino-dynamic-row-filters.png)
