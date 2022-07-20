@@ -8,9 +8,12 @@ The code deploys the following:
 - RDS MySQL database that is used for Apache Ranger and Hive Metastore on the EMR cluster
 - Kerberos Enabled Amazon EMR cluster (EMR 5.32) with AWS Managed Ranger Plugins
      * Amazon S3
-     * Apache Spark
      * Apache Hive
+        * Blog - [Introducing Amazon EMR integration with Apache Ranger](https://aws.amazon.com/blogs/big-data/introducing-amazon-emr-integration-with-apache-ranger/)
+     * Apache Spark
+        * Blog - [Authorize SparkSQL data manipulation on Amazon EMR using Apache Ranger](https://aws.amazon.com/blogs/big-data/authorize-sparksql-data-manipulation-on-amazon-emr-using-apache-ranger/)
      * Apache Tino (> EMR 6.7)
+       * Blog (**New!**) - [Enable federated governance using Trino and Apache Ranger on Amazon EMR](https://aws.amazon.com/blogs/big-data/enable-federated-governance-using-trino-and-apache-ranger-on-amazon-emr/)
 
 > **NOTE:** the code only run under us-east-1 (N. Virginia). You can copy to your regional bucket to deploy in a different region. Also, create [Issue](https://github.com/aws-samples/aws-emr-apache-ranger/issues/new) if you would like support for additional regions using this repo. 
 >
