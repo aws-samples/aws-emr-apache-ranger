@@ -1,4 +1,4 @@
-# Authorization and Auditing on Amazon EMR Using Apache Ranger 
+# Native Support for Authorization and Auditing on Amazon EMR Using Apache Ranger 
 
 The repo contains code tied to the AWS Big Data Blog introducing native Apache Ranger integration with Amazon EMR
 The code deploys the following:
