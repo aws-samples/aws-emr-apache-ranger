@@ -488,7 +488,7 @@ Resources:
         S3Bucket: !Ref S3Bucket
         S3Key: !Join ['', [!Ref S3Key, '/', !Ref ProjectVersion,
                            '/launch-cluster.zip']]
-      Runtime: python3.6
+      Runtime: python3.9
       Timeout: '300'
   LaunchKerberizedCluster:
     Type: AWS::CloudFormation::CustomResource
