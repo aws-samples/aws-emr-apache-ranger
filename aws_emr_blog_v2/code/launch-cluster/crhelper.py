@@ -1,7 +1,8 @@
 from __future__ import print_function
 import logging
 import boto3
-from botocore.vendored import requests
+# from botocore.vendored import requests
+import requests
 import json
 import time
 
