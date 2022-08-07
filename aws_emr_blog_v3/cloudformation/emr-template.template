@@ -489,7 +489,7 @@ Resources:
       Roles:
         - !Ref EmrEc2Role
 
-  AllowSecretsRetrievalPolivy:
+  AllowSecretsRetrievalPolicy:
     Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: AllowSecretsRetrieval
