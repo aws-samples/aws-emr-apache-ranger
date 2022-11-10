@@ -32,6 +32,10 @@ The code deploys the following:
     - NOTE: If you are launching this `outside US-East-1`, the `S3Bucket` parameter should be the new regional bucket you created on step 1: eg: test-emr-eu-north-1
  4. Setup the Ranger Server/RDS Instance/EMR Cluster (takes ~15 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/3.0/cloudformation/step2_ranger-rds-emr.template) 
     - NOTE: If you are launching this `outside US-East-1`, the `S3Bucket` parameter new regional bucket you created on step 1 : eg: test-emr-eu-north-1
+    - If you need to deploy each of the steps individually follow the steps below:
+     - Deploy RDS instace [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/3.0/cloudformation/rds-database.template)
+     - Deploy the Ranger server [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/3.0/cloudformation/ranger-server.template)
+     - Deploy the EMR server [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/3.0/cloudformation/emr-template.template)
 
 ## Test
  - Login to the cluster (Apache Zeppelin, Hue, Livy or SSH)
