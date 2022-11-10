@@ -35,7 +35,7 @@ The code deploys the following:
 
 ## Test
  - Login to the cluster (Apache Zeppelin, Hue, Livy or SSH)
- - ``> pyspark``
+    - ``> pyspark``
  - Spark access allowed by the policy: `spark.sql("select * from tblanalyst1 limit 10").show()`
  - Spark access that will fail due to permission error: `spark.sql("select * from tblanalyst2 limit 10").show()`
  - S3 access allowed by the policy: `productsFile = sqlContext.read.parquet("s3://aws-bigdata-blog/artifacts/aws-blog-emr-ranger/data/staging/products/")`
