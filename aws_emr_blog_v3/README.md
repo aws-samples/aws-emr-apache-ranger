@@ -25,7 +25,8 @@ The code deploys the following:
  1. If you need to launch this stack in a region `outside US-East-1`, run the following steps, else skip to the next step.
    - Create a regional S3 bucket in your account in the target region : eg S3 Bucket in eu-north-1: test-emr-eu-north-1
    - Run the Script [setup-regional-ranger-automation.sh](../aws_emr_blog_v3/scripts/setup-regional-ranger-automation.sh) to copy the required artifacts to the regional bucket (NOTE: this only copies the Lambda code and the EMR bootstrap script)
- 2 Create and Upload SSL keys and certs to AWS Secrets Manager. This is used to encrypt traffic between Ranger server/agents [Script](../aws_emr_blog_v3/scripts/emr-tls/create-tls-certs.sh) 
+  
+ 2. Create and Upload SSL keys and certs to AWS Secrets Manager. This is used to encrypt traffic between Ranger server/agents [Script](../aws_emr_blog_v3/scripts/emr-tls/create-tls-certs.sh) 
    - NOTE: DEFAULT_EC2_REALM parameter value should be "ec2.internal" if US-EAST-1 and "compute.internal" for other regions. AWS_REGION will be the other argument (eg: eu-north-1)
  3. Create VPC/AD server (takes ~10 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/3.0/cloudformation/step1_vpc-ec2-ad.template)
    - NOTE: If you are launching this `outside US-East-1`, the `S3Bucket` parameter should be the new regional bucket you created on step 1: eg: test-emr-eu-north-1
