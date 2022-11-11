@@ -188,10 +188,10 @@ Resources:
     #      - STEP0LogParser
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template'
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template.yaml'
       Parameters:
         AvailabilityZones: !Join [ ',', !Ref 'AvailabilityZones' ]
-        KeyPairName: !Ref 'KeyPairName'
+#        KeyPairName: !Ref 'KeyPairName' -- removed with the updated CFN
         NumberOfAZs: !Ref 'NumberOfAZs'
         PrivateSubnet1ACIDR: !FindInMap
           - DefaultConfiguration
@@ -227,7 +227,7 @@ Resources:
     DependsOn:
       - STEP1VPC
     Properties:
-      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-linux-bastion/templates/linux-bastion.template'
+      TemplateURL: !Sub 'https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-linux-bastion/templates/linux-bastion-entrypoint-existing-vpc.template.yaml'
       Parameters:
         BastionInstanceType: !FindInMap
           - DefaultConfiguration
