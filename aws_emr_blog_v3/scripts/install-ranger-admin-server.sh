@@ -153,9 +153,10 @@ yum install -y openldap openldap-clients openldap-servers
 #chmod +x create-users-using-ldap.sh
 #./create-users-using-ldap.sh $ldap_ip_address $ldap_admin_user@$ldap_domain_dns $ldap_admin_password $ldap_base_dn || true
 #Install mySQL
-yum -y install mysql-server
-service mysqld start
-chkconfig mysqld on
+#yum -y install mysql-server
+yum -y install mariadb-server mariadb-libs mariadb
+service mariadb start
+chkconfig mariadb on
 mysqladmin -u root password rangeradmin || true
 rm -rf $installpath
 mkdir -p $installpath/hadoop

@@ -84,7 +84,7 @@ Parameters:
     Description: The CIDR IP range that is permitted to access the instances. We recommend
       that you set this value to a trusted IP range.
     Type: String
-    Default: 0.0.0.0/0
+    Default: 10.0.0.0/16
   VPCCIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
@@ -144,6 +144,10 @@ Parameters:
     Description: Default Password for all users created in the AD server. Eg - analyst1, analyst2
     Type: String
     NoEcho: true
+  ADServerAMI:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-windows-latest/Windows_Server-2016-English-Full-Base'
+    Description: SSM Parameter alias of a Windows Server AMI
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -174,17 +178,17 @@ Conditions:
     - !Equals [!Ref NumberOfAZs, "2"]
     - !Equals [!Ref NumberOfAZs, "3"]
 Resources:
-  STEP0AMILookup:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion', '/cloudformation/', 'lambda-amilookup-win.template']]
-      Parameters:
-        ProjectVersion: !Ref 'ProjectVersion'
-        S3Bucket: !Ref 'S3Bucket'
-        S3Key: !Ref 'S3Key'
+#  STEP0AMILookup:
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion', '/cloudformation/', 'lambda-amilookup-win.template']]
+#      Parameters:
+#        ProjectVersion: !Ref 'ProjectVersion'
+#        S3Bucket: !Ref 'S3Bucket'
+#        S3Key: !Ref 'S3Key'
   STEP1VPC:
-    DependsOn:
-      - STEP0AMILookup
+#    DependsOn:
+#      - STEP0AMILookup
     #      - STEP0LogParser
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -245,7 +249,8 @@ Resources:
       TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion', '/cloudformation/', 'ec2-win-ad.template']]
       Parameters:
         KeyPairName: !Ref 'KeyPairName'
-        ImageId: !GetAtt 'STEP0AMILookup.Outputs.AMIID'
+#        ImageId: !GetAtt 'STEP0AMILookup.Outputs.AMIID'
+        ImageId: !Ref ADServerAMI
         Subnet: !GetAtt 'STEP1VPC.Outputs.PublicSubnet1ID'
         VPC: !GetAtt 'STEP1VPC.Outputs.VPCID'
         #        SecurityGroup: !GetAtt 'STEP1VPC.Outputs.SecurityGroup'

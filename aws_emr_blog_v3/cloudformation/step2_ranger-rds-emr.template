@@ -352,7 +352,12 @@ Resources:
         S3Key: !Ref 'S3ArtifactKey'
         ProjectVersion: !Ref 'ProjectVersion'
         VPC: !Ref VPC
-        Subnet: !If [ InstallEMRRangerinPublicSubnet, !Ref PublicSubnet1AID, !Ref PrivateSubnet1AID ]
+        Subnet1: !Ref 'PrivateSubnet1AID'
+        Subnet2: !If
+          - 2AZDeployment
+          - !Ref 'PrivateSubnet2AID'
+          - !Ref AWS::NoValue
+#        Subnet: !If [ InstallEMRRangerinPublicSubnet, !Ref PublicSubnet1AID, !Ref PrivateSubnet1AID ]
         DBHostName: !GetAtt 'RDSDatabase.Outputs.RDSInstanceAddress'
         DBRootPassword: !Ref DBRootPassword
         ADAdminUsername: !Ref 'DomainAdminUser'
@@ -405,7 +410,7 @@ Resources:
         LDAPGroupSearchBase: !Ref 'LDAPGroupSearchBase'
         LDAPGroupObjectClass: !Ref 'LDAPGroupObjectClass'
         LDAPMemberAttribute: !Ref 'LDAPMemberAttribute'
-        RangerHostname: !GetAtt 'RangerServer.Outputs.PrivateDNS'
+        RangerHostname: !GetAtt 'RangerServer.Outputs.RangerAdminHost'
         RangerVersion: !Ref RangerVersion
         RangerHttpProtocol: !Ref RangerHttpProtocol
         DBHostName: !GetAtt 'RDSDatabase.Outputs.RDSInstanceAddress'
@@ -422,10 +427,10 @@ Outputs:
   RDSInstanceAddress:
     Description: IP Address of the RDS instance
     Value: !GetAtt 'RDSDatabase.Outputs.RDSInstanceAddress'
-  RangerServerIP:
-    Value: !GetAtt 'RangerServer.Outputs.IPAddress'
-  RangerServerPrivateDNS:
-    Value: !GetAtt 'RangerServer.Outputs.PrivateDNS'
+#  RangerServerIP:
+#    Value: !GetAtt 'RangerServer.Outputs.IPAddress'
+  RangerAdminHost:
+    Value: !GetAtt 'RangerServer.Outputs.RangerAdminHost'
   HueIPAddress:
     Value: !GetAtt 'EMRCluster.Outputs.EMRClusterURL'
   EMRClusterURL:
