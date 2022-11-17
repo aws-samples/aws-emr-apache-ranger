@@ -25,7 +25,7 @@ except Exception as e:
 def create(event, context):
     apps = event["ResourceProperties"]["AppsEMR"]
     emrReleaseLabel = event["ResourceProperties"]["emrReleaseLabel"]
-    isTrinoAppRequested = True
+    isTrinoAppRequested = False
     formatted_applist = apps.split(",")
     applist = []
     for app in formatted_applist:
