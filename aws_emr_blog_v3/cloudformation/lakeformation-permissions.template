@@ -1,0 +1,20 @@
+Description: Add Lake Formation permissions when Glauecatalog is the metastore
+Parameters:
+  DataAccessRoleARN:
+    Description: ARN of the DataAccessRoleARN used on the EMR cluster
+    Default: ''
+    Type: String
+Resources:
+  DefaultCatalogPermission:
+    Type: AWS::LakeFormation::PrincipalPermissions
+    Properties:
+      Principal:
+        DataLakePrincipalIdentifier: !Ref DataAccessRoleARN
+      Resource:
+        Database:
+          CatalogId: !Ref AWS::AccountId
+          Name: "default"
+      Permissions:
+        - "ALL"
+      PermissionsWithGrantOption:
+        - "ALL"

@@ -295,6 +295,11 @@ Parameters:
     Type: String
     Default: emr/rangerGAservercert
     AllowedValues: ["emr/rangerGAservercert"]
+  EnableGlueSupport:
+    Description: (* Experimental feature * - Not recomended for production) Enable Glue support insted of default RDS based Hive metastore
+    Default: false
+    Type: String
+    AllowedValues: [ true, false ]
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -422,6 +427,7 @@ Resources:
         AttachAdditionalSourcePrefixToSG: !Ref AttachAdditionalSourcePrefixToSG
         CIDRAccessToPrivateSubnetResources: !Ref CIDRAccessToPrivateSubnetResources
         AdditionalSourcePrefixToSG: !Ref AdditionalSourcePrefixToSG
+        EnableGlueSupport: !Ref EnableGlueSupport
       TimeoutInMinutes: '60'
 Outputs:
   RDSInstanceAddress:

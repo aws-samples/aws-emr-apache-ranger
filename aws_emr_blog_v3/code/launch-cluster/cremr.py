@@ -293,10 +293,31 @@ def create(event, context):
                 "ADDomainJoinUser": event["ResourceProperties"]["ADDomainUser"],
                 "ADDomainJoinPassword": event["ResourceProperties"]["ADDomainJoinPassword"]
             }
+            cluster_parameters['Steps'].append({
+                "Name": "Kerberos Livy Name rule update",
+                "ActionOnFailure": "CONTINUE",
+                "HadoopJarStep": {
+                    "Jar": scriptRunnerJar,
+                    "Args": [
+                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/livy-update-kerberos-name-rules.sh"
+                    ]
+                }
+            })
 
-        cluster_parameters['Configurations'].append({
-            "Classification": "hive-site",
-            "Properties": {
+        # Set the default hive properties
+        if event["ResourceProperties"]["EnableGlueSupport"] == "true":
+            hive_site_properties = {
+                "hive.metastore.client.factory.class": "com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory",
+                "hive.metastore.schema.verification": "false"
+            }
+            cluster_parameters['Configurations'].append({
+                "Classification": "spark-hive-site",
+                "Properties": {
+                    "hive.metastore.client.factory.class": "com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory"
+                }
+            })
+        else:
+            hive_site_properties = {
                 "javax.jdo.option.ConnectionURL": "jdbc:mysql://" + event["ResourceProperties"][
                     "DBHostName"] + ":3306/hive?createDatabaseIfNotExist=true",
                 "javax.jdo.option.ConnectionDriverName": "org.mariadb.jdbc.Driver",
@@ -310,6 +331,39 @@ def create(event, context):
                     "DefaultDomain"],
                 "hive.server2.enable.doAs": "false"
             }
+
+        # If Glue support
+        if event["ResourceProperties"]["EnableGlueSupport"] == "true":
+            cluster_parameters['BootstrapActions'].append(
+                {
+                    "Name": "Enable Glue Support",
+                    "ScriptBootstrapAction": {
+                        "Path": "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" +
+                                event["ResourceProperties"][
+                                    "S3Key"] + "/" + event["ResourceProperties"][
+                                    "ProjectVersion"] + "/scripts/configure_ranger_glue_support_with_bootstrap.sh",
+                        "Args": [
+                            "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" +
+                            event["ResourceProperties"][
+                                "S3ArtifactKey"] + "/" + event["ResourceProperties"][
+                                "ProjectVersion"]
+                        ]
+                    }
+                });
+        # If Iceberg is set to true
+        if event["ResourceProperties"]["EnableIcebergSupport"] == "true":
+            cluster_parameters['Configurations'].append(
+                {
+                    "Classification": "iceberg-defaults",
+                    "Properties": {
+                        "iceberg.enabled":"true"
+                    }
+                });
+            hive_site_properties["iceberg.engine.hive.enabled"] = "true"
+
+        cluster_parameters['Configurations'].append({
+            "Classification": "hive-site",
+            "Properties": hive_site_properties
         })
 
         cluster_parameters['Configurations'].append({
@@ -335,6 +389,7 @@ def create(event, context):
                 "hadoop.proxyuser.hue_hive.groups": "*"
             }
         })
+
         if emrVersion.split(".")[0] == '6' and emrVersion.split(".")[1] == '7':
             cluster_parameters['BootstrapActions'].append({
                 "Name": "Remove Yum Package Name Validator",

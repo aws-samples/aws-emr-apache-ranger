@@ -344,11 +344,6 @@ Parameters:
     Default: true
     Type: String
     AllowedValues: [true, false]
-  EnableSparkDDLAndIceberg:
-    Description: Installs Spark DDL's and Iceberg configuration
-    Default: false
-    Type: String
-    AllowedValues: [ true, false ]
   RangerAgentKeySecretName:
     Description: Name of Ranger Agent Cert Secrets mgr resource
     Type: String
@@ -359,11 +354,22 @@ Parameters:
     Type: String
     Default: emr/rangerGAservercert
     AllowedValues: ["emr/rangerGAservercert"]
+  EnableIcebergSupport:
+    Description: Enable Iceberg configuration
+    Default: false
+    Type: String
+    AllowedValues: [ true, false ]
+  EnableGlueSupport:
+    Description: (* Experimental feature * - Not recomended for production) Enable Glue support insted of default RDS based Hive metastore
+    Default: false
+    Type: String
+    AllowedValues: [ true, false ]
 Conditions:
   USEastRegion: !Equals [ !Ref 'AWS::Region', "us-east-1" ]
   EnableKerberos: !Equals [true, !Ref EnableKerberos]
   CreateNonEMRResources: !Equals [true, !Ref CreateNonEMRResources]
   AttachAdditionalSourcePrefixToSG: !Equals [true, !Ref AttachAdditionalSourcePrefixToSG]
+  EnableGlueSupportCondition: !Equals [true, !Ref EnableGlueSupport]
 Resources:
   LogGroupRanger:
     Type: AWS::Logs::LogGroup
@@ -457,6 +463,8 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonS3FullAccess
         - arn:aws:iam::aws:policy/CloudWatchFullAccess
+        - !If [ EnableGlueSupportCondition, "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole", !Ref AWS::NoValue ]
+        - !If [ EnableGlueSupportCondition, "arn:aws:iam::aws:policy/AWSGlueSchemaRegistryFullAccess", !Ref AWS::NoValue ]
   UserRoleARN:
     Type: AWS::IAM::Role
     Properties:
@@ -625,8 +633,8 @@ Resources:
       CertLocationPath: !Join ['', ["s3://", !Ref S3ArtifactBucket, "/", !Ref S3ArtifactKey, "/", !Ref ProjectVersion]]
       RangerAdminPassword: !Ref RangerAdminPassword
       DefaultDomain: !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
-      EnableSparkDDLAndIceberg: !Ref EnableSparkDDLAndIceberg
-
+      EnableIcebergSupport: !Ref EnableIcebergSupport
+      EnableGlueSupport: !Ref EnableGlueSupport
   emrCreateWaitHandle:
     Type: AWS::CloudFormation::WaitConditionHandle
     Properties: {}
@@ -636,6 +644,13 @@ Resources:
     Properties:
       Handle: !Ref 'emrCreateWaitHandle'
       Timeout: '4500'
+  AssignLakeFormationPermission:
+    Condition: EnableGlueSupportCondition
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Join [ '', [ 'https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion','/cloudformation/', 'lakeformation-permissions.template' ] ]
+      Parameters:
+        DataAccessRoleARN: !GetAtt DataAccessRoleARN.Arn
 Outputs:
   StackName:
     Value: !Ref 'AWS::StackName'
