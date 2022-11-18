@@ -1,4 +1,4 @@
-Description: Add Lake Formation permissions when Glauecatalog is the metastore
+Description: Add Lake Formation permissions when Glue catalog is the metastore
 Parameters:
   DataAccessRoleARN:
     Description: ARN of the DataAccessRoleARN used on the EMR cluster
