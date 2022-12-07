@@ -15,12 +15,11 @@
 #%    arg1                          Pass the AWS profile to use -
 #                                   You can configure this using the documentation below
 #                                   https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html
-#%    arg2                          default ec2 realm (eg: ec2.internal for US-East-1 and compute.internal for all other regions)
-#%    arg3                          AWS_REGION (AWS region where you want to install the secrets)
+#%    arg2                          AWS_REGION (AWS region where you want to install the secrets)
 
 
 #% EXAMPLES
-#%    create-tls-certs.sh ranger_demo ec2.internal
+#%    create-tls-certs.sh ranger_demo us-east-1
 #%
 #================================================================
 #- IMPLEMENTATION
@@ -32,15 +31,21 @@
 #================================================================
 #================================================================
 
-[ $# -lt 3 ] && { echo "Usage: $0 AWS_CLI_profile DEFAULT_EC2_REALM AWS_REGION (To setup follow this link: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html)"; exit 1; }
+[ $# -lt 2 ] && { echo "Usage: $0 AWS_CLI_profile AWS_REGION (To setup follow this link: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html)"; exit 1; }
 
 set -euo pipefail
 set -x
 
 AWS_PROFILE=$1
-DEFAULT_EC2_REALM=$2
-AWS_REGION=$3
-#AWS_PROFILE=account4
+AWS_REGION=$2
+echo $(tr '[:upper:]' '[:lower:]' <<< "$AWS_REGION")
+if [[ $(tr '[:upper:]' '[:lower:]' <<< "$AWS_REGION") = "us-east-1" ]]; then
+  DEFAULT_EC2_REALM='ec2.internal'
+  echo "AWS region is us-east-1, will use EC2 realm as ec2.internal"
+else
+   DEFAULT_EC2_REALM='compute.internal'
+   echo "AWS region is NOT us-east-1, will use EC2 realm as compute.internal"
+fi
 ranger_agents_certs_path="./ranger-agents"
 solr_certs_path="./solr-client"
 keystore_location="./ranger-plugin-keystore.jks"
@@ -56,14 +61,22 @@ secret_mgr_ranger_admin_cert="emr/rangerGAservercert"
 certs_subject="/C=US/ST=TX/L=Dallas/O=EMR/OU=EMR/CN=*.$DEFAULT_EC2_REALM"
 
 generate_certs() {
-  rm -rf $1
-  mkdir -p $1
-  pushd $1
-  openssl req -x509 -newkey rsa:4096 -keyout privateKey.pem -out certificateChain.pem -days 1095 -nodes -subj ${certs_subject}
-  cp certificateChain.pem trustedCertificates.pem
-  zip -r -X ../$1-certs.zip certificateChain.pem privateKey.pem trustedCertificates.pem
-#  rm -rf *.pem
-  popd
+  DIR_EXISTS="false"
+  if [ -d "$1" ]; then
+    echo "$1 directory exists, will not recreate certs"
+    DIR_EXISTS="true"
+  fi
+#  rm -rf $1
+  if [[ $DIR_EXISTS = "false" ]]; then
+    rm -rf $1
+    mkdir -p $1
+    pushd $1
+    openssl req -x509 -newkey rsa:4096 -keyout privateKey.pem -out certificateChain.pem -days 1095 -nodes -subj ${certs_subject}
+    cp certificateChain.pem trustedCertificates.pem
+    zip -r -X ../$1-certs.zip certificateChain.pem privateKey.pem trustedCertificates.pem
+    #  rm -rf *.pem
+    popd
+  fi
 }
 rm -rf ${keystore_location}
 rm -rf ${truststore_location}
