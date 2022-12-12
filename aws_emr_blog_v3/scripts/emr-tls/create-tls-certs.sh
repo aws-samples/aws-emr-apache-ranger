@@ -71,9 +71,9 @@ generate_certs() {
     rm -rf $1
     mkdir -p $1
     pushd $1
-    openssl req -x509 -newkey rsa:4096 -keyout privateKey.pem -out certificateChain.pem -days 1095 -nodes -subj ${certs_subject}
-    cp certificateChain.pem trustedCertificates.pem
-    zip -r -X ../$1-certs.zip certificateChain.pem privateKey.pem trustedCertificates.pem
+    openssl req -x509 -newkey rsa:4096 -keyout privateKey.pem -out publiccertificate.pem -days 1095 -nodes -subj ${certs_subject}
+    cp publiccertificate.pem trustedCertificates.pem
+    zip -r -X ../$1-certs.zip publiccertificate.pem privateKey.pem trustedCertificates.pem
     #  rm -rf *.pem
     popd
   fi
@@ -89,12 +89,12 @@ generate_certs emr-certs
 
 # Generate KeyStore and TrustStore for the Ranger plugins
 # Keystore
-openssl pkcs12 -export -in ${ranger_agents_certs_path}/certificateChain.pem -inkey ${ranger_agents_certs_path}/privateKey.pem -chain -CAfile ${ranger_agents_certs_path}/trustedCertificates.pem -name ${keystore_alias} -out ${ranger_agents_certs_path}/keystore.p12 -password pass:${keystore_password}
+openssl pkcs12 -export -in ${ranger_agents_certs_path}/publiccertificate.pem -inkey ${ranger_agents_certs_path}/privateKey.pem -chain -CAfile ${ranger_agents_certs_path}/trustedCertificates.pem -name ${keystore_alias} -out ${ranger_agents_certs_path}/keystore.p12 -password pass:${keystore_password}
 keytool -importkeystore -deststorepass ${keystore_password} -destkeystore ${keystore_location} -srckeystore ${ranger_agents_certs_path}/keystore.p12 -srcstoretype PKCS12 -srcstorepass ${keystore_password} -noprompt
 
 # Truststore
 rm -rf ${truststore_location}
-keytool -import -file ${ranger_server_certs_path}/certificateChain.pem -alias ${truststore_ranger_server_alias} -keystore ${truststore_location} -storepass ${truststore_password} -noprompt
+keytool -import -file ${ranger_server_certs_path}/publiccertificate.pem -alias ${truststore_ranger_server_alias} -keystore ${truststore_location} -storepass ${truststore_password} -noprompt
 
 # Delete existing secrets
 aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_private_key} --force-delete-without-recovery --profile $AWS_PROFILE --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
@@ -103,14 +103,14 @@ aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_admin_cert} --f
 ## Basic wait for delete to be complete
 sleep 30
 
-cat ${ranger_agents_certs_path}/privateKey.pem ${ranger_agents_certs_path}/certificateChain.pem > ${ranger_agents_certs_path}/rangerGAagentKeyChain.pem
+cat ${ranger_agents_certs_path}/privateKey.pem ${ranger_agents_certs_path}/publiccertificate.pem > ${ranger_agents_certs_path}/rangerGAagentKeyChain.pem
 
 aws secretsmanager create-secret --name ${secret_mgr_ranger_private_key} \
           --description "X509 Ranger Agent Private Key to be used by EMR Security Config" --secret-string file://${ranger_agents_certs_path}/rangerGAagentKeyChain.pem --profile $AWS_PROFILE --region $AWS_REGION
 
 
 aws secretsmanager create-secret --name ${secret_mgr_ranger_admin_cert} \
-          --description "Ranger Server Cert" --secret-string file://${ranger_server_certs_path}/certificateChain.pem --profile $AWS_PROFILE --region $AWS_REGION
+          --description "Ranger Server Cert" --secret-string file://${ranger_server_certs_path}/publiccertificate.pem --profile $AWS_PROFILE --region $AWS_REGION
 
 
 ## Others that will be used by the Ranger Admin Server
@@ -123,7 +123,7 @@ aws secretsmanager delete-secret --secret-id emr/rangerSolrTrustedCert --force-d
 
 sleep 30
 aws secretsmanager create-secret --name emr/rangerServerPrivateKey --description "Ranger Server Private Key" --secret-string file://${ranger_server_certs_path}/privateKey.pem --profile $AWS_PROFILE --region $AWS_REGION
-aws secretsmanager create-secret --name emr/rangerPluginCert --description "Ranger Plugin Cert" --secret-string file://${ranger_agents_certs_path}/certificateChain.pem --profile $AWS_PROFILE --region $AWS_REGION
+aws secretsmanager create-secret --name emr/rangerPluginCert --description "Ranger Plugin Cert" --secret-string file://${ranger_agents_certs_path}/publiccertificate.pem --profile $AWS_PROFILE --region $AWS_REGION
 aws secretsmanager create-secret --name emr/rangerSolrCert --description "Ranger Solr Cert" --secret-string file://${solr_certs_path}/trustedCertificates.pem --profile $AWS_PROFILE --region $AWS_REGION
 aws secretsmanager create-secret --name emr/rangerSolrPrivateKey --description "Ranger Solr Private Key" --secret-string file://${solr_certs_path}/privateKey.pem --profile $AWS_PROFILE --region $AWS_REGION
-aws secretsmanager create-secret --name emr/rangerSolrTrustedCert --description "Ranger Solr Cert Chain" --secret-string file://${solr_certs_path}/certificateChain.pem --profile $AWS_PROFILE --region $AWS_REGION
+aws secretsmanager create-secret --name emr/rangerSolrTrustedCert --description "Ranger Solr Cert Chain" --secret-string file://${solr_certs_path}/publiccertificate.pem --profile $AWS_PROFILE --region $AWS_REGION
