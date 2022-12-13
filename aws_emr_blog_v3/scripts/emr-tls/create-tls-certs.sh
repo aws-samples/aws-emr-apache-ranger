@@ -75,13 +75,6 @@ generate_certs() {
     cp publiccertificate.pem trustedCertificates.pem
     zip -r -X ../$1-certs.zip publiccertificate.pem privateKey.pem trustedCertificates.pem
     #  rm -rf *.pem
-    #Use below code for ACM PCA 
-    #acm_pca_auth_arn='arn for pca'
-    # openssl req -newkey rsa:4096 -keyout privateKey.pem -out certSignRequestforacmpca.csr   -days 365 -nodes -subj ${certs_subject}
-    # get_certificate_arn=$(aws acm-pca issue-certificate --certificate-authority-arn $acm_pca_auth_arn --csr fileb://certSignRequestforacmpca.csr  --signing-algorithm "SHA256WITHRSA" --validity Value=365,Type="DAYS" --query "CertificateArn" --output=text --region $AWS_REGION)
-    # sleep 5
-    # aws acm-pca get-certificate --certificate-authority-arn $acm_pca_auth_arn --certificate-arn $get_certificate_arn --region $AWS_REGION --query "Certificate" --output=text > publiccertificate.pem
-    # aws acm-pca get-certificate --certificate-authority-arn $acm_pca_auth_arn --certificate-arn $get_certificate_arn --region $AWS_REGION --query "publiccertificate" --output=text > trustedCertificates.pem
     popd
   fi
 }
@@ -134,33 +127,3 @@ aws secretsmanager create-secret --name emr/rangerPluginCert --description "Rang
 aws secretsmanager create-secret --name emr/rangerSolrCert --description "Ranger Solr Cert" --secret-string file://${solr_certs_path}/trustedCertificates.pem --profile $AWS_PROFILE --region $AWS_REGION
 aws secretsmanager create-secret --name emr/rangerSolrPrivateKey --description "Ranger Solr Private Key" --secret-string file://${solr_certs_path}/privateKey.pem --profile $AWS_PROFILE --region $AWS_REGION
 aws secretsmanager create-secret --name emr/rangerSolrTrustedCert --description "Ranger Solr Cert Chain" --secret-string file://${solr_certs_path}/publiccertificate.pem --profile $AWS_PROFILE --region $AWS_REGION
-
-
-#below code base can be used for acm pca generated certificates 
-
-## Others that will be used by the Ranger Admin Server
-# aws secretsmanager delete-secret --secret-id emr/rangerServerPrivateKey --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
-# aws secretsmanager delete-secret --secret-id emr/rangerServerPublicCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
-# aws secretsmanager delete-secret --secret-id emr/rangerServerTrustCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
-
-# aws secretsmanager delete-secret --secret-id emr/rangerPluginPrivateKey --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
-# aws secretsmanager delete-secret --secret-id emr/rangerPluginPublicCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
-# aws secretsmanager delete-secret --secret-id emr/rangerPluginTrustCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
-
-# aws secretsmanager delete-secret --secret-id emr/rangerSolrPrivateKey --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
-# aws secretsmanager delete-secret --secret-id emr/rangerSolrPublicCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
-# aws secretsmanager delete-secret --secret-id emr/rangerSolrTrustCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
-
-# sleep 30
-
-# aws secretsmanager create-secret --name emr/rangerServerPrivateKey --description "Ranger Server Private Key" --secret-string file://${ranger_server_certs_path}/privateKey.pem --region $AWS_REGION
-# aws secretsmanager create-secret --name emr/rangerServerPublicCert --description "Ranger Server cert chain" --secret-string file://${ranger_server_certs_path}/publiccertificate.pem --region $AWS_REGION
-# aws secretsmanager create-secret --name emr/rangerServerTrustCert --description "Ranger Server trust cert" --secret-string file://${ranger_server_certs_path}/trustedCertificates.pem --region $AWS_REGION
-
-# aws secretsmanager create-secret --name emr/rangerPluginPrivateKey --description "Ranger Plugin Private Key" --secret-string file://${ranger_agents_certs_path}/privateKey.pem --region $AWS_REGION
-# aws secretsmanager create-secret --name emr/rangerPluginPublicCert --description "Ranger Plugin Cert" --secret-string file://${ranger_agents_certs_path}/publiccertificate.pem --region $AWS_REGION
-# aws secretsmanager create-secret --name emr/rangerPluginTrustCert --description "Ranger trust cert" --secret-string file://${ranger_agents_certs_path}/trustedCertificates.pem --region $AWS_REGION
-
-# aws secretsmanager create-secret --name emr/rangerSolrPrivateKey --description "Ranger Solr Private Key" --secret-string file://${solr_certs_path}/privateKey.pem --region $AWS_REGION
-# aws secretsmanager create-secret --name emr/rangerSolrPublicCert --description "Ranger Solr Cert" --secret-string file://${solr_certs_path}/publiccertificate.pem --region $AWS_REGION
-# aws secretsmanager create-secret --name emr/rangerSolrTrustCert --description "Ranger Solr Cert Chain" --secret-string file://${solr_certs_path}/trustedCertificates.pem --region $AWS_REGION
