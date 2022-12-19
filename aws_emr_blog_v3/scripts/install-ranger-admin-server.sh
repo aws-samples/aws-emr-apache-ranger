@@ -112,14 +112,14 @@ sudo yum install jq -y
 aws secretsmanager get-secret-value --secret-id emr/rangerServerPrivateKey --version-stage AWSCURRENT --region $default_region | jq -r ".SecretString"  > ${ranger_server_certs_path}/privateKey.pem
 aws secretsmanager get-secret-value --secret-id emr/rangerGAservercert --version-stage AWSCURRENT --region $default_region | jq -r ".SecretString"  > ${ranger_server_certs_path}/trustedCertificates.pem
 aws secretsmanager get-secret-value --secret-id emr/rangerPluginCert --version-stage AWSCURRENT --region $default_region | jq -r ".SecretString"  > ${ranger_agents_certs_path}/trustedCertificates.pem
-aws secretsmanager get-secret-value --secret-id emr/rangerSolrCert --version-stage AWSCURRENT --region $default_region | jq -r ".SecretString"  > ${solr_certs_path}/publiccertificate.pem
+aws secretsmanager get-secret-value --secret-id emr/rangerSolrCert --version-stage AWSCURRENT --region $default_region | jq -r ".SecretString"  > ${solr_certs_path}/certificateChain.pem
 aws secretsmanager get-secret-value --secret-id emr/rangerSolrPrivateKey --version-stage AWSCURRENT --region $default_region | jq -r ".SecretString"  > ${solr_certs_path}/privateKey.pem
 aws secretsmanager get-secret-value --secret-id emr/rangerSolrTrustedCert --version-stage AWSCURRENT --region $default_region | jq -r ".SecretString"  > ${solr_certs_path}/trustedCertificates.pem
 
 sudo mkdir -p /etc/ranger/admin/conf
 
 #Setup Keystore for RangerAdmin
-openssl pkcs12 -export -in ${ranger_server_certs_path}/publiccertificate.pem -inkey ${ranger_server_certs_path}/privateKey.pem -chain -CAfile ${ranger_server_certs_path}/trustedCertificates.pem -name ${ranger_admin_keystore_alias} -out ${ranger_server_certs_path}/keystore.p12 -password pass:${ranger_admin_keystore_password}
+openssl pkcs12 -export -in ${ranger_server_certs_path}/trustedCertificates.pem -inkey ${ranger_server_certs_path}/privateKey.pem -chain -CAfile ${ranger_server_certs_path}/trustedCertificates.pem -name ${ranger_admin_keystore_alias} -out ${ranger_server_certs_path}/keystore.p12 -password pass:${ranger_admin_keystore_password}
 keytool -delete -alias ${ranger_admin_keystore_alias} -keystore ${ranger_admin_keystore_location} -storepass ${ranger_admin_keystore_password} -noprompt || true
 sudo keytool -importkeystore -deststorepass ${ranger_admin_keystore_password} -destkeystore ${ranger_admin_keystore_location} -srckeystore ${ranger_server_certs_path}/keystore.p12 -srcstoretype PKCS12 -srcstorepass ${ranger_admin_keystore_password}
 #sudo chown ranger:ranger -R /etc/ranger
@@ -140,7 +140,7 @@ sudo keytool -import -file ${ranger_server_certs_path}/trustedCertificates.pem -
 
 sudo mkdir -p /etc/solr/conf
 
-openssl pkcs12 -export -in ${solr_certs_path}/publiccertificate.pem -inkey ${solr_certs_path}/privateKey.pem -chain -CAfile ${solr_certs_path}/trustedCertificates.pem -name ${solr_keystore_alias} -out ${solr_certs_path}/keystore.p12 -password pass:${solr_keystore_password}
+openssl pkcs12 -export -in ${solr_certs_path}/certificateChain.pem -inkey ${solr_certs_path}/privateKey.pem -chain -CAfile ${solr_certs_path}/trustedCertificates.pem -name ${solr_keystore_alias} -out ${solr_certs_path}/keystore.p12 -password pass:${solr_keystore_password}
 keytool -delete -alias ${solr_keystore_alias} -keystore ${solr_keystore_location} -storepass ${solr_keystore_password} -noprompt  || true
 sudo keytool -importkeystore -deststorepass ${solr_keystore_password} -destkeystore ${solr_keystore_location} -srckeystore ${solr_certs_path}/keystore.p12 -srcstoretype PKCS12 -srcstorepass ${solr_keystore_password}
 
