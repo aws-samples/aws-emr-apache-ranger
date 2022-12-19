@@ -1,8 +1,8 @@
 {
-  "name": "hue1",
+  "name": "hue",
   "firstName": "hue",
   "lastName": "",
-  "loginId": "hue1",
+  "loginId": "hue",
   "emailAddress" : null,
   "description" : "hue user",
   "password" : "user1pass",

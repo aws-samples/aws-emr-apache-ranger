@@ -25,7 +25,7 @@
     }
    ],
    "users": [
-    "trino"
+    "hue"
    ],
    "groups": [],
    "roles": [],
