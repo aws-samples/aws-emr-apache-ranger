@@ -301,6 +301,16 @@ Parameters:
     Default: false
     Type: String
     AllowedValues: [ true, false ]
+  CreateRegionalS3BucketAndCopyScripts:
+    Description: Creates a new S3 bucket and copies the required artifacts from US-East-1 to the current region.
+    Default: false
+    Type: String
+    AllowedValues: [ true, false ]
+  CreateTLSCerts:
+    Description: Flag to control if the Ranger admin server should run the script to create TLS certs
+    Default: false
+    Type: String
+    AllowedValues: [true, false]
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -323,6 +333,8 @@ Metadata:
           - PublicSubnet2AID
 Conditions:
   USEastRegion: !Equals [ !Ref 'AWS::Region', "us-east-1" ]
+  NotUSEastRegion: !Not [Condition: USEastRegion]
+  CreateRegionalS3BucketAndCopyScripts: !Equals [ !Ref CreateRegionalS3BucketAndCopyScripts, true ]
   EnableKerberos: !Equals [true, !Ref EnableKerberos]
   3AZDeployment: !Equals [!Ref NumberOfAZs, "3"]
   2AZDeployment: !Or
@@ -347,15 +359,25 @@ Resources:
         VPC: !Ref VPC
         MySQLDBPassword: !Ref DBRootPassword
         MySQLDBUserName: !Ref DBUserName
+  CopyS3Artifacts:
+    Condition: CreateRegionalS3BucketAndCopyScripts
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Join [ '', [ 'https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion','/cloudformation/', 'copy-artifacts-to-regional-s3bucket.template' ] ]
+      Parameters:
+        ProjectVersion: !Ref ProjectVersion
   RangerServer:
     DependsOn:
       - RDSDatabase
+      - CopyS3Artifacts
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion','/cloudformation/', 'ranger-server.template']]
       Parameters:
-        S3Bucket: !Ref 'S3ArtifactBucket'
+        S3Bucket: !If [ CreateRegionalS3BucketAndCopyScripts, !GetAtt 'CopyS3Artifacts.Outputs.RegionalS3Bucket', !Ref 'S3Bucket']
         S3Key: !Ref 'S3ArtifactKey'
+        S3ArtifactBucket: !Ref 'S3ArtifactBucket'
+        S3ArtifactKey: !Ref 'S3ArtifactKey'
         ProjectVersion: !Ref 'ProjectVersion'
         VPC: !Ref VPC
         Subnet1: !Ref 'PrivateSubnet1AID'
@@ -378,15 +400,18 @@ Resources:
         AttachAdditionalSourcePrefixToSG: !Ref AttachAdditionalSourcePrefixToSG
         CIDRAccessToPrivateSubnetResources: !Ref CIDRAccessToPrivateSubnetResources
         AdditionalSourcePrefixToSG: !Ref AdditionalSourcePrefixToSG
+        CreateTLSCerts: !Ref CreateTLSCerts
   EMRCluster:
     Type: AWS::CloudFormation::Stack
     DependsOn:
       - RangerServer
+      - CopyS3Artifacts
     Properties:
       TemplateURL: !Join ['', ['https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion', '/cloudformation/', 'emr-template.template']]
       Parameters:
         ProjectVersion: !Ref 'ProjectVersion'
-        S3Bucket: !Ref 'S3Bucket'
+        # S3Bucket: !Ref 'S3Bucket'
+        S3Bucket: !If [ CreateRegionalS3BucketAndCopyScripts, !GetAtt 'CopyS3Artifacts.Outputs.RegionalS3Bucket', !Ref 'S3Bucket']
         S3Key: !Ref 'S3Key'
         S3ArtifactBucket: !Ref 'S3ArtifactBucket'
         S3ArtifactKey: !Ref 'S3ArtifactKey'

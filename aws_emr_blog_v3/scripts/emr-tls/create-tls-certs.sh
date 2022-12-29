@@ -61,22 +61,22 @@ secret_mgr_ranger_admin_cert="emr/rangerGAservercert"
 certs_subject="/C=US/ST=TX/L=Dallas/O=EMR/OU=EMR/CN=*.$DEFAULT_EC2_REALM"
 
 generate_certs() {
-  DIR_EXISTS="false"
-  if [ -d "$1" ]; then
-    echo "$1 directory exists, will not recreate certs"
-    DIR_EXISTS="true"
-  fi
+#  DIR_EXISTS="false"
+#  if [ -d "$1" ]; then
+#    echo "$1 directory exists, will not recreate certs"
+#    DIR_EXISTS="true"
+#  fi
 #  rm -rf $1
-  if [[ $DIR_EXISTS = "false" ]]; then
-    rm -rf $1
-    mkdir -p $1
-    pushd $1
-    openssl req -x509 -newkey rsa:4096 -keyout privateKey.pem -out certificateChain.pem -days 1095 -nodes -subj ${certs_subject}
-    cp certificateChain.pem trustedCertificates.pem
-    zip -r -X ../$1-certs.zip certificateChain.pem privateKey.pem trustedCertificates.pem
-    #  rm -rf *.pem
-    popd
-  fi
+#  if [[ $DIR_EXISTS = "false" ]]; then
+  rm -rf $1
+  mkdir -p $1
+  pushd $1
+  openssl req -x509 -newkey rsa:4096 -keyout privateKey.pem -out certificateChain.pem -days 1095 -nodes -subj ${certs_subject}
+  cp certificateChain.pem trustedCertificates.pem
+  zip -r -X ../$1-certs.zip certificateChain.pem privateKey.pem trustedCertificates.pem
+  #  rm -rf *.pem
+  popd
+#  fi
 }
 rm -rf ${keystore_location}
 rm -rf ${truststore_location}
