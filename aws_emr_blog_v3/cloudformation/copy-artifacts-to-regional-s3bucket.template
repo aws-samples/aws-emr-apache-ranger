@@ -127,9 +127,10 @@ Resources:
               s3 = boto3.client('s3')
               objects = {'Objects': [{'Key':  prefix + '/' + project_version + '/' + o} for o in objects]}
               s3.delete_objects(Bucket=bucket, Delete=objects)
-              s3_bucket = s3.Bucket(bucket)
-              for key in s3_bucket.list(prefix=prefix + '/' + project_version + '/emr-tls/' ):
-                  key.delete()
+              s3_list_response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix + '/' + project_version + '/emr-tls/')
+              for object in s3_list_response['Contents']:
+                  print('Deleting', object['Key'])
+                  s3.delete_object(Bucket=bucket, Key=object['Key'])
 
           def timeout(event, context):
               logging.error('Execution is about to time out, sending failure response to CloudFormation')

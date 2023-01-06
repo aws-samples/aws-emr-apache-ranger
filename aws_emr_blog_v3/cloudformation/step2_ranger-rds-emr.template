@@ -463,6 +463,8 @@ Outputs:
 #    Value: !GetAtt 'RangerServer.Outputs.IPAddress'
   RangerAdminHost:
     Value: !GetAtt 'RangerServer.Outputs.RangerAdminHost'
+  RangerAdminUrl:
+    Value: !GetAtt 'RangerServer.Outputs.RangerAdminUrl'
   HueIPAddress:
     Value: !GetAtt 'EMRCluster.Outputs.EMRClusterURL'
   EMRClusterURL:
