@@ -105,40 +105,78 @@ keytool -importkeystore -deststorepass ${keystore_password} -destkeystore ${keys
 rm -rf ${truststore_location}
 keytool -import -file ${ranger_server_certs_path}/certificateChain.pem -alias ${truststore_ranger_server_alias} -keystore ${truststore_location} -storepass ${truststore_password} -noprompt
 
+ranger_private_key_exists="false"
+ranger_admin_cert_exists="false"
+ranger_plugin_cert_exists="false"
+ranger_solr_cert_exists="false"
+ranger_server_key_exists="false"
+ranger_solr_key_exists="false"
+ranger_solr_trust_store_exists="false"
+
 # Delete existing secrets
-aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_private_key} --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
-aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_admin_cert} --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+if ( aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_private_key} --no-cli-pager > /dev/null 2> /dev/null); then
+   echo "${secret_mgr_ranger_private_key} already exists. Will not delete and recreate"
+   ranger_private_key_exists="true"
+fi
+if ( aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_admin_cert} --no-cli-pager > /dev/null 2> /dev/null); then
+   echo "${secret_mgr_ranger_admin_cert} already exists. Will not delete and recreate"
+   ranger_admin_cert_exists="true"
+fi
+if ( aws secretsmanager describe-secret --secret-id emr/rangerServerPrivateKey --no-cli-pager > /dev/null 2> /dev/null); then
+   echo "emr/rangerServerPrivateKey already exists. Will not delete and recreate"
+   ranger_server_key_exists="true"
+fi
+if ( aws secretsmanager describe-secret --secret-id emr/rangerPluginCert --no-cli-pager > /dev/null 2> /dev/null); then
+   echo "emr/rangerPluginCert already exists. Will not delete and recreate"
+   ranger_plugin_cert_exists="true"
+fi
+if ( aws secretsmanager describe-secret --secret-id emr/rangerSolrCert --no-cli-pager > /dev/null 2> /dev/null); then
+   echo "emr/rangerSolrCert already exists. Will not delete and recreate"
+   ranger_solr_cert_exists="true"
+fi
+if ( aws secretsmanager describe-secret --secret-id emr/rangerSolrPrivateKey --no-cli-pager > /dev/null 2> /dev/null); then
+   echo "emr/rangerSolrPrivateKey already exists. Will not delete and recreate"
+   ranger_solr_key_exists="true"
+fi
+if ( aws secretsmanager describe-secret --secret-id emr/rangerSolrTrustedCert --no-cli-pager > /dev/null 2> /dev/null); then
+   echo "emr/rangerSolrTrustedCert already exists. Will not delete and recreate"
+   ranger_solr_trust_store_exists="true"
+fi
 
-## Basic wait for delete to be complete
-sleep 30
+if [[ $ranger_private_key_exists == "false" && $ranger_admin_cert_exists == "false"]]; then
+  aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_private_key} --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+  aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_admin_cert} --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
 
-cat ${ranger_agents_certs_path}/privateKey.pem ${ranger_agents_certs_path}/certificateChain.pem > ${ranger_agents_certs_path}/rangerGAagentKeyChain.pem
+  ## Basic wait for delete to be complete
+  sleep 30
 
-aws secretsmanager create-secret --name ${secret_mgr_ranger_private_key} \
-          --description "X509 Ranger Agent Private Key to be used by EMR Security Config" --secret-string file://${ranger_agents_certs_path}/rangerGAagentKeyChain.pem --region $AWS_REGION
+  cat ${ranger_agents_certs_path}/privateKey.pem ${ranger_agents_certs_path}/certificateChain.pem > ${ranger_agents_certs_path}/rangerGAagentKeyChain.pem
 
-
-aws secretsmanager create-secret --name ${secret_mgr_ranger_admin_cert} \
+  aws secretsmanager create-secret --name ${secret_mgr_ranger_private_key} \
+            --description "X509 Ranger Agent Private Key to be used by EMR Security Config" --secret-string file://${ranger_agents_certs_path}/rangerGAagentKeyChain.pem --region $AWS_REGION
+  aws secretsmanager create-secret --name ${secret_mgr_ranger_admin_cert} \
           --description "Ranger Server Cert" --secret-string file://${ranger_server_certs_path}/certificateChain.pem --region $AWS_REGION
-
+fi
 
 ## Others that will be used by the Ranger Admin Server
 
-aws secretsmanager delete-secret --secret-id emr/rangerServerPrivateKey --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
-aws secretsmanager delete-secret --secret-id emr/rangerPluginCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
-aws secretsmanager delete-secret --secret-id emr/rangerSolrCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
-aws secretsmanager delete-secret --secret-id emr/rangerSolrPrivateKey --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
-aws secretsmanager delete-secret --secret-id emr/rangerSolrTrustedCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+if [[ $ranger_server_key_exists == "false" && $ranger_plugin_cert_exists == "false" && $ranger_solr_cert_exists == "false"]]; then
+  aws secretsmanager delete-secret --secret-id emr/rangerServerPrivateKey --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+  aws secretsmanager delete-secret --secret-id emr/rangerPluginCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+  aws secretsmanager delete-secret --secret-id emr/rangerSolrCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+  aws secretsmanager delete-secret --secret-id emr/rangerSolrPrivateKey --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+  aws secretsmanager delete-secret --secret-id emr/rangerSolrTrustedCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
 
-sleep 30
-aws secretsmanager create-secret --name emr/rangerServerPrivateKey --description "Ranger Server Private Key" --secret-string file://${ranger_server_certs_path}/privateKey.pem --region $AWS_REGION
-aws secretsmanager create-secret --name emr/rangerPluginCert --description "Ranger Plugin Cert" --secret-string file://${ranger_agents_certs_path}/certificateChain.pem --region $AWS_REGION
-aws secretsmanager create-secret --name emr/rangerSolrCert --description "Ranger Solr Cert" --secret-string file://${solr_certs_path}/trustedCertificates.pem --region $AWS_REGION
-aws secretsmanager create-secret --name emr/rangerSolrPrivateKey --description "Ranger Solr Private Key" --secret-string file://${solr_certs_path}/privateKey.pem --region $AWS_REGION
-aws secretsmanager create-secret --name emr/rangerSolrTrustedCert --description "Ranger Solr Cert Chain" --secret-string file://${solr_certs_path}/certificateChain.pem --region $AWS_REGION
+  sleep 30
+  aws secretsmanager create-secret --name emr/rangerServerPrivateKey --description "Ranger Server Private Key" --secret-string file://${ranger_server_certs_path}/privateKey.pem --region $AWS_REGION
+  aws secretsmanager create-secret --name emr/rangerPluginCert --description "Ranger Plugin Cert" --secret-string file://${ranger_agents_certs_path}/certificateChain.pem --region $AWS_REGION
+  aws secretsmanager create-secret --name emr/rangerSolrCert --description "Ranger Solr Cert" --secret-string file://${solr_certs_path}/trustedCertificates.pem --region $AWS_REGION
+  aws secretsmanager create-secret --name emr/rangerSolrPrivateKey --description "Ranger Solr Private Key" --secret-string file://${solr_certs_path}/privateKey.pem --region $AWS_REGION
+  aws secretsmanager create-secret --name emr/rangerSolrTrustedCert --description "Ranger Solr Cert Chain" --secret-string file://${solr_certs_path}/certificateChain.pem --region $AWS_REGION
 
 
-if [[ $COPY_CERT_TO_LOCAL_S3_BUCKET == "true" ]]; then
-  cd /tmp/emr-tls/
-  aws s3 cp . s3://${S3_BUCKET}/${S3_KEY}/${CODE_TAG}/emr-tls/ --exclude '*' --include '*.zip' --include '*.jks' --recursive
+  if [[ $COPY_CERT_TO_LOCAL_S3_BUCKET == "true" ]]; then
+    cd /tmp/emr-tls/
+    aws s3 cp . s3://${S3_BUCKET}/${S3_KEY}/${CODE_TAG}/emr-tls/ --exclude '*' --include '*.zip' --include '*.jks' --recursive
+  fi
 fi
