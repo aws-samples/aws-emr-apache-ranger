@@ -128,9 +128,10 @@ Resources:
               objects = {'Objects': [{'Key':  prefix + '/' + project_version + '/' + o} for o in objects]}
               s3.delete_objects(Bucket=bucket, Delete=objects)
               s3_list_response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix + '/' + project_version + '/emr-tls/')
-              for object in s3_list_response['Contents']:
-                  print('Deleting', object['Key'])
-                  s3.delete_object(Bucket=bucket, Key=object['Key'])
+              if 'Contents' in s3_list_response:
+                for object in s3_list_response['Contents']:
+                    print('Deleting', object['Key'])
+                    s3.delete_object(Bucket=bucket, Key=object['Key'])
 
           def timeout(event, context):
               logging.error('Execution is about to time out, sending failure response to CloudFormation')
@@ -165,5 +166,5 @@ Resources:
 Outputs:
 
   RegionalS3Bucket:
-    Description:  Regional S3 bucket
+    Description:  Regional S3 bucket with artifacts required by the EMR cluster. This bucket can be reused as the 'S3Bucket' value for future EMR cluster stacks
     Value: !Ref S3BucketRegionSources

@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #================================================================
 # Script to create SSL private keys/certs and upload to AWS Secretes Manager
 #================================================================
@@ -29,7 +28,7 @@
 #================================================================
 #================================================================
 
-[ $# -lt 2 ] && { echo "Usage: $0 AWS_REGION"; exit 1; }
+[ $# -lt 2 ] && { echo "Usage: $0 AWS_REGION flag_to_copy_artifacts_to_local_s3"; exit 1; }
 
 set -euo pipefail
 set -x
@@ -42,10 +41,10 @@ sudo yum -y remove java-1.7.0-openjdk
 sudo yum -y install openssl-devel
 
 AWS_REGION=$1
-COPY_CERT_TO_LOCAL_S3_BUCKET=$2
-S3_BUCKET=$3
-S3_KEY=$4
-CODE_TAG=$5
+COPY_CERT_TO_LOCAL_S3_BUCKET=${2-'false'}
+S3_BUCKET=${3-'null'}
+S3_KEY=${4-'null'}
+CODE_TAG=${5-'null'}
 
 echo $(tr '[:upper:]' '[:lower:]' <<< "$AWS_REGION")
 if [[ $(tr '[:upper:]' '[:lower:]' <<< "$AWS_REGION") = "us-east-1" ]]; then
@@ -114,36 +113,51 @@ ranger_solr_key_exists="false"
 ranger_solr_trust_store_exists="false"
 
 # Delete existing secrets
-if ( aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_private_key} --no-cli-pager > /dev/null 2> /dev/null); then
-   echo "${secret_mgr_ranger_private_key} already exists. Will not delete and recreate"
-   ranger_private_key_exists="true"
-fi
-if ( aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_admin_cert} --no-cli-pager > /dev/null 2> /dev/null); then
-   echo "${secret_mgr_ranger_admin_cert} already exists. Will not delete and recreate"
-   ranger_admin_cert_exists="true"
-fi
-if ( aws secretsmanager describe-secret --secret-id emr/rangerServerPrivateKey --no-cli-pager > /dev/null 2> /dev/null); then
-   echo "emr/rangerServerPrivateKey already exists. Will not delete and recreate"
-   ranger_server_key_exists="true"
-fi
-if ( aws secretsmanager describe-secret --secret-id emr/rangerPluginCert --no-cli-pager > /dev/null 2> /dev/null); then
-   echo "emr/rangerPluginCert already exists. Will not delete and recreate"
-   ranger_plugin_cert_exists="true"
-fi
-if ( aws secretsmanager describe-secret --secret-id emr/rangerSolrCert --no-cli-pager > /dev/null 2> /dev/null); then
-   echo "emr/rangerSolrCert already exists. Will not delete and recreate"
-   ranger_solr_cert_exists="true"
-fi
-if ( aws secretsmanager describe-secret --secret-id emr/rangerSolrPrivateKey --no-cli-pager > /dev/null 2> /dev/null); then
-   echo "emr/rangerSolrPrivateKey already exists. Will not delete and recreate"
-   ranger_solr_key_exists="true"
-fi
-if ( aws secretsmanager describe-secret --secret-id emr/rangerSolrTrustedCert --no-cli-pager > /dev/null 2> /dev/null); then
-   echo "emr/rangerSolrTrustedCert already exists. Will not delete and recreate"
-   ranger_solr_trust_store_exists="true"
+if (aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_private_key} --region $AWS_REGION > /dev/null 2>&1); then
+  if [[ $(aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_private_key} --query "DeletedDate" --region $AWS_REGION) == "null" ]]; then
+     echo "${secret_mgr_ranger_private_key} already exists. Will not delete and recreate"
+     ranger_private_key_exists="true"
+  fi
 fi
 
-if [[ $ranger_private_key_exists == "false" && $ranger_admin_cert_exists == "false"]]; then
+if (aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_admin_cert} --region $AWS_REGION > /dev/null 2>&1); then
+  if [[ $(aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_admin_cert} --query "DeletedDate" --region $AWS_REGION) == "null" ]]; then
+     echo "${secret_mgr_ranger_admin_cert} already exists. Will not delete and recreate"
+     ranger_admin_cert_exists="true"
+  fi
+fi
+if (aws secretsmanager describe-secret --secret-id emr/rangerServerPrivateKey --region $AWS_REGION > /dev/null 2>&1); then
+  if [[ $(aws secretsmanager describe-secret --secret-id emr/rangerServerPrivateKey --query "DeletedDate" --region $AWS_REGION) == "null" ]]; then
+     echo "emr/rangerServerPrivateKey already exists. Will not delete and recreate"
+     ranger_server_key_exists="true"
+  fi
+fi
+if (aws secretsmanager describe-secret --secret-id emr/rangerPluginCert --region $AWS_REGION > /dev/null 2>&1); then
+  if [[ $(aws secretsmanager describe-secret --secret-id emr/rangerPluginCert --query "DeletedDate" --region $AWS_REGION) == "null" ]]; then
+    echo "emr/rangerPluginCert already exists. Will not delete and recreate"
+    ranger_plugin_cert_exists="true"
+  fi
+fi
+if (aws secretsmanager describe-secret --secret-id emr/rangerSolrCert --region $AWS_REGION > /dev/null 2>&1); then
+  if [[ $(aws secretsmanager describe-secret --secret-id emr/rangerSolrCert --query "DeletedDate" --region $AWS_REGION) == "null" ]]; then
+     echo "emr/rangerSolrCert already exists. Will not delete and recreate"
+     ranger_solr_cert_exists="true"
+  fi
+fi
+if (aws secretsmanager describe-secret --secret-id emr/rangerSolrPrivateKey --region $AWS_REGION > /dev/null 2>&1); then
+  if [[ $(aws secretsmanager describe-secret --secret-id emr/rangerSolrPrivateKey --query "DeletedDate" --region $AWS_REGION) == "null" ]]; then
+     echo "emr/rangerSolrPrivateKey already exists. Will not delete and recreate"
+     ranger_solr_key_exists="true"
+  fi
+fi
+if (aws secretsmanager describe-secret --secret-id emr/rangerSolrTrustedCert --region $AWS_REGION > /dev/null 2>&1); then
+  if [[ $(aws secretsmanager describe-secret --secret-id emr/rangerSolrTrustedCert --query "DeletedDate" --region $AWS_REGION) == "null" ]]; then
+    echo "emr/rangerSolrTrustedCert already exists. Will not delete and recreate"
+    ranger_solr_trust_store_exists="true"
+  fi
+fi
+
+if [ $ranger_private_key_exists == "false" ] && [ $ranger_admin_cert_exists == "false" ]; then
   aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_private_key} --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
   aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_admin_cert} --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
 
@@ -160,7 +174,7 @@ fi
 
 ## Others that will be used by the Ranger Admin Server
 
-if [[ $ranger_server_key_exists == "false" && $ranger_plugin_cert_exists == "false" && $ranger_solr_cert_exists == "false"]]; then
+if [ $ranger_server_key_exists == "false" ] && [ $ranger_plugin_cert_exists == "false" ] && [ $ranger_solr_cert_exists == "false" ]; then
   aws secretsmanager delete-secret --secret-id emr/rangerServerPrivateKey --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
   aws secretsmanager delete-secret --secret-id emr/rangerPluginCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
   aws secretsmanager delete-secret --secret-id emr/rangerSolrCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
@@ -173,7 +187,6 @@ if [[ $ranger_server_key_exists == "false" && $ranger_plugin_cert_exists == "fal
   aws secretsmanager create-secret --name emr/rangerSolrCert --description "Ranger Solr Cert" --secret-string file://${solr_certs_path}/trustedCertificates.pem --region $AWS_REGION
   aws secretsmanager create-secret --name emr/rangerSolrPrivateKey --description "Ranger Solr Private Key" --secret-string file://${solr_certs_path}/privateKey.pem --region $AWS_REGION
   aws secretsmanager create-secret --name emr/rangerSolrTrustedCert --description "Ranger Solr Cert Chain" --secret-string file://${solr_certs_path}/certificateChain.pem --region $AWS_REGION
-
 
   if [[ $COPY_CERT_TO_LOCAL_S3_BUCKET == "true" ]]; then
     cd /tmp/emr-tls/
