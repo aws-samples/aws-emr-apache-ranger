@@ -302,7 +302,7 @@ Parameters:
     Type: String
     AllowedValues: [ true, false ]
   CreateRegionalS3BucketAndCopyScripts:
-    Description: Creates a new S3 bucket and copies the required artifacts from US-East-1 to the current region.
+    Description: Creates a new S3 bucket and copies the required artifacts from US-East-1 to the current regional S3 bucket. The newly created bucket is used in place of 'S3Bucket' value
     Default: false
     Type: String
     AllowedValues: [ true, false ]
