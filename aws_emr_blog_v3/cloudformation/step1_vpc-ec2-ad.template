@@ -98,13 +98,15 @@ Parameters:
     Default: "3"
     Description: Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.
   S3Bucket:
-    Description: S3Bucket for the code [update this is you want to run this stack in a region other than US-EAST-1]
+    Description: S3Bucket for the code [works for all AWS regions - no update required]
     Type: String
     Default: aws-bigdata-blog
+    AllowedValues: [ "aws-bigdata-blog" ]
   S3Key:
-    Description: S3Key of the code [update this is you want to run this stack in a region other than US-EAST-1]
+    Description: S3Key of the code [works for all AWS regions - no update required]
     Type: String
     Default: artifacts/aws-blog-emr-ranger
+    AllowedValues: [ "artifacts/aws-blog-emr-ranger" ]
   S3ArtifactBucket:
     Description: S3Bucket where artifacts are stored
     Type: String
@@ -148,6 +150,15 @@ Parameters:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: '/aws/service/ami-windows-latest/Windows_Server-2016-English-Full-Base'
     Description: SSM Parameter alias of a Windows Server AMI
+  AttachAdditionalSourcePrefixToSG:
+    Description: (Optional) Attaches additional sources prefix lists to Bastion Host and AD server
+    Default: false
+    Type: String
+    AllowedValues: [ true, false ]
+  AdditionalSourcePrefixToSG:
+    Description: (Optional) Sources that are allowd to access to Bastion Host and AD server. Should be a source prefix
+      e.g., pl-xxx
+    Type: String
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -177,6 +188,7 @@ Conditions:
   2AZDeployment: !Or
     - !Equals [!Ref NumberOfAZs, "2"]
     - !Equals [!Ref NumberOfAZs, "3"]
+  AttachAdditionalSourcePrefixToSG: !Equals [true, !Ref AttachAdditionalSourcePrefixToSG]
 Resources:
   STEP1VPC:
     Type: AWS::CloudFormation::Stack
@@ -230,6 +242,13 @@ Resources:
         PublicSubnet1ID: !GetAtt 'STEP1VPC.Outputs.PublicSubnet1ID'
         PublicSubnet2ID: !GetAtt 'STEP1VPC.Outputs.PublicSubnet2ID'
         VPCID: !GetAtt 'STEP1VPC.Outputs.VPCID'
+  BastionHostAdditionalInboundRule:
+    Condition: AttachAdditionalSourcePrefixToSG
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: '-1'
+      SourcePrefixListId: !Ref AdditionalSourcePrefixToSG
+      GroupId: !GetAtt [STEP1aBastionHost, Outputs.BastionSecurityGroupID]
   STEP2WinAD:
     DependsOn: STEP1VPC
     Type: AWS::CloudFormation::Stack
@@ -247,6 +266,13 @@ Resources:
         LDAPBindPassword: !Ref 'LDAPBindPassword'
         DefaultADUserPassword: !Ref 'DefaultADUserPassword'
         CrossRealmTrustPrincipalPassword: !Ref 'CrossRealmTrustPrincipalPassword'
+  ADAdditionalInboundRule:
+    Condition: AttachAdditionalSourcePrefixToSG
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: '-1'
+      SourcePrefixListId: !Ref AdditionalSourcePrefixToSG
+      GroupId: !GetAtt [ STEP2WinAD, Outputs.ADSecurityGroupID ]
 Outputs:
   LDAPHostPrivateIP:
     Value: !GetAtt [STEP2WinAD, Outputs.LDAPHostPrivateIP]

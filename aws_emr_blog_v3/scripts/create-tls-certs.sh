@@ -162,7 +162,7 @@ if [ $ranger_private_key_exists == "false" ] && [ $ranger_admin_cert_exists == "
   aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_admin_cert} --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
 
   ## Basic wait for delete to be complete
-  sleep 30
+  sleep 60
 
   cat ${ranger_agents_certs_path}/privateKey.pem ${ranger_agents_certs_path}/certificateChain.pem > ${ranger_agents_certs_path}/rangerGAagentKeyChain.pem
 
@@ -170,26 +170,38 @@ if [ $ranger_private_key_exists == "false" ] && [ $ranger_admin_cert_exists == "
             --description "X509 Ranger Agent Private Key to be used by EMR Security Config" --secret-string file://${ranger_agents_certs_path}/rangerGAagentKeyChain.pem --region $AWS_REGION
   aws secretsmanager create-secret --name ${secret_mgr_ranger_admin_cert} \
           --description "Ranger Server Cert" --secret-string file://${ranger_server_certs_path}/certificateChain.pem --region $AWS_REGION
+
+  if [[ $COPY_CERT_TO_LOCAL_S3_BUCKET == "true" ]]; then
+    cd /tmp/emr-tls/
+    aws s3 cp . s3://${S3_BUCKET}/${S3_KEY}/${CODE_TAG}/emr-tls/ --exclude '*' --include '*.zip' --include '*.jks' --exclude 'emr-certs-certs.zip' --recursive
+  fi
 fi
 
 ## Others that will be used by the Ranger Admin Server
 
-if [ $ranger_server_key_exists == "false" ] && [ $ranger_plugin_cert_exists == "false" ] && [ $ranger_solr_cert_exists == "false" ]; then
+if [ $ranger_server_key_exists == "false" ] && [ $ranger_plugin_cert_exists == "false" ]; then
   aws secretsmanager delete-secret --secret-id emr/rangerServerPrivateKey --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
   aws secretsmanager delete-secret --secret-id emr/rangerPluginCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+
+  sleep 60
+  aws secretsmanager create-secret --name emr/rangerServerPrivateKey --description "Ranger Server Private Key" --secret-string file://${ranger_server_certs_path}/privateKey.pem --region $AWS_REGION
+  aws secretsmanager create-secret --name emr/rangerPluginCert --description "Ranger Plugin Cert" --secret-string file://${ranger_agents_certs_path}/certificateChain.pem --region $AWS_REGION
+
+fi
+
+if [ $ranger_solr_cert_exists == "false" ] && [ $ranger_solr_key_exists == "false" ] && [ $ranger_solr_trust_store_exists == "false" ]; then
   aws secretsmanager delete-secret --secret-id emr/rangerSolrCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
   aws secretsmanager delete-secret --secret-id emr/rangerSolrPrivateKey --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
   aws secretsmanager delete-secret --secret-id emr/rangerSolrTrustedCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
 
-  sleep 30
-  aws secretsmanager create-secret --name emr/rangerServerPrivateKey --description "Ranger Server Private Key" --secret-string file://${ranger_server_certs_path}/privateKey.pem --region $AWS_REGION
-  aws secretsmanager create-secret --name emr/rangerPluginCert --description "Ranger Plugin Cert" --secret-string file://${ranger_agents_certs_path}/certificateChain.pem --region $AWS_REGION
+  sleep 60
+
   aws secretsmanager create-secret --name emr/rangerSolrCert --description "Ranger Solr Cert" --secret-string file://${solr_certs_path}/trustedCertificates.pem --region $AWS_REGION
   aws secretsmanager create-secret --name emr/rangerSolrPrivateKey --description "Ranger Solr Private Key" --secret-string file://${solr_certs_path}/privateKey.pem --region $AWS_REGION
   aws secretsmanager create-secret --name emr/rangerSolrTrustedCert --description "Ranger Solr Cert Chain" --secret-string file://${solr_certs_path}/certificateChain.pem --region $AWS_REGION
+fi
 
-  if [[ $COPY_CERT_TO_LOCAL_S3_BUCKET == "true" ]]; then
+if [[ $COPY_CERT_TO_LOCAL_S3_BUCKET == "true" ]]; then
     cd /tmp/emr-tls/
-    aws s3 cp . s3://${S3_BUCKET}/${S3_KEY}/${CODE_TAG}/emr-tls/ --exclude '*' --include '*.zip' --include '*.jks' --recursive
-  fi
+    aws s3 cp . s3://${S3_BUCKET}/${S3_KEY}/${CODE_TAG}/emr-tls/ --exclude '*' --include 'emr-certs-certs.zip' --recursive
 fi

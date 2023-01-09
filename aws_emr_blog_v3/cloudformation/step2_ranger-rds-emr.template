@@ -22,7 +22,7 @@ Parameters:
     Type: String
     AllowedValues: [true, false]
   AttachAdditionalSourcePrefixToSG:
-    Description: (Optional) Attaches additional sources prefix lists to EMR Master Security Group
+    Description: (Optional) Attaches additional sources prefix lists to Ranger server load balancer and EMR Master Security Group
     Default: false
     Type: String
     AllowedValues: [true, false]
@@ -36,7 +36,7 @@ Parameters:
     Default: 10.0.0.0/16
     ConstraintDescription: must be a valid CIDR range of the form x.x.x.x/x
   AdditionalSourcePrefixToSG:
-    Description: (Optional) Sources that are allowd to access the Ranger Instance. Should be a source prefix
+    Description: (Optional) Sources that are allowd to access the Ranger ELB and EMR master node. Should be a source prefix
       e.g., pl-xxx
     Type: String
   NumberOfAZs:
@@ -235,11 +235,11 @@ Parameters:
       - emr-6.4.0
       - emr-6.7.0
   S3Bucket:
-    Description: S3Bucket for the code [update this is you want to run this stack in a region other than US-EAST-1]
+    Description: S3Bucket for the code [Important!! for non US-East-1 regions the code needs to be in a regional bucket. Either pass the regional bucket name with the EMR bootstrap scripts and Lambda function code, or set 'CreateRegionalS3BucketAndCopyScripts' parameter to 'true']
     Type: String
     Default: aws-bigdata-blog
   S3Key:
-    Description: S3Key of the code [update this is you want to run this stack in a region other than US-EAST-1]
+    Description: S3Key of the code [Important!! for non US-East-1 regions the code needs to be in a regional bucket. Either pass the regional bucket name with the EMR bootstrap scripts and Lambda function code, or set 'CreateRegionalS3BucketAndCopyScripts' parameter to 'true']
     Type: String
     Default: artifacts/aws-blog-emr-ranger
   S3ArtifactBucket:

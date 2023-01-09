@@ -491,3 +491,8 @@ Outputs:
   ADDomainJoinUser:
     Description: The DomainAdminUser
     Value: !Ref 'DomainAdminUser'
+  ADSecurityGroupID:
+    Description: AD security group ID.
+    Value: !Ref SecurityGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-ADSecurityGroupID
