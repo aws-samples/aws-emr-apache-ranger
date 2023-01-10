@@ -49,6 +49,9 @@ Steps to deploy the Beta stack:
     - **CreateRegionalS3BucketAndCopyScripts: 'true'** -- Will create a regional bucket and copy the required files
     - **CreateTLSCerts: 'true'** -- Will create self-signed certs and upload to Secrets manager
     
+    ![image](https://user-images.githubusercontent.com/1559391/211591074-7260e5f7-3fd0-4e82-9d81-fbdc93350d70.png)
+    ![image](https://user-images.githubusercontent.com/1559391/211591175-45e592ca-7207-47f6-8f79-77cda7154d2d.png)
+
 
 ## Test
  - Login to the cluster (Apache Zeppelin, Hue, Livy or SSH)
