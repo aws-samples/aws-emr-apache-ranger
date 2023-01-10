@@ -42,9 +42,9 @@ The code currenlty in beta removes the need to 1/ create local S3 bucket in non 
 
 Steps to deploy the Beta stack:
 
- 1. Create VPC/AD server (takes ~10 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/beta/cloudformation/step1_vpc-ec2-ad.template)
+ 1. Create VPC/AD server (takes ~10 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/beta/cloudformation/step1_vpc-ec2-ad.template){:target="_blank"}
     - NOTE: The 'beta' code supports multi-region deployment by creating a new regional bucket
- 2. Setup the Ranger Server/RDS Instance/EMR Cluster (takes ~15 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/beta/cloudformation/step2_ranger-rds-emr.template) 
+ 2. Setup the Ranger Server/RDS Instance/EMR Cluster (takes ~15 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/beta/cloudformation/step2_ranger-rds-emr.template){:target="_blank"}
   - NOTE: The 'beta' code supports multi-region deployment by creating a new regional bucket. Make sure you select the following parameter values:
     - **CreateRegionalS3BucketAndCopyScripts: 'true'** -- Will create a regional bucket and copy the required files
     - **CreateTLSCerts: 'true'** -- Will create self-signed certs and upload to Secrets manager
