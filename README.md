@@ -10,6 +10,7 @@ The repo contains code tied to following AWS Big data blogs:
  - [Authorize SparkSQL data manipulation on Amazon EMR using Apache Ranger](https://aws.amazon.com/blogs/big-data/authorize-sparksql-data-manipulation-on-amazon-emr-using-apache-ranger/).
  - [Enable federated governance using Trino and Apache Ranger on Amazon EMR](https://aws.amazon.com/blogs/big-data/enable-federated-governance-using-trino-and-apache-ranger-on-amazon-emr/) (**New!**)
  - [Implementing Authorization and Auditing using Apache Ranger on Amazon EMR](https://aws.amazon.com/blogs/big-data/implementing-authorization-and-auditing-using-apache-ranger-on-amazon-emr/)
+ - Implement Fine Grained Access Control in Amazon SageMaker Studio and Amazon EMR using Apache Ranger and Microsoft AD [In-progress] - will show how users can control access to AWS S3 and Catalog tables centrally using Apache Ranger, Sagemaker and EMR
 
 > **NOTE:** the code has gone through unit and functional test against a **few recent versions** of Amazon EMR. 
 > It is likely that it may not work with **all** EMR versions.
