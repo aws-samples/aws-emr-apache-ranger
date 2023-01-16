@@ -63,6 +63,18 @@ def create(event, context):
                               'Applications': applist,
                               'Steps': [
                                   {
+                                      "Name": "InstallHiveHDFSRangerPlugin",
+                                      "ActionOnFailure": "CONTINUE",
+                                      "HadoopJarStep": {
+                                          "Jar": scriptRunnerJar,
+                                          "Args": [
+                                              "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-hdfs-ranger-plugin.sh",
+                                              event["ResourceProperties"]["RangerHostname"],
+                                              event["ResourceProperties"]["StackRegion"]
+                                          ]
+                                      }
+                                  },
+                                  {
                                       "Name": "CreateDefaultHiveTables",
                                       "ActionOnFailure": "CONTINUE",
                                       "HadoopJarStep": {
@@ -299,7 +311,8 @@ def create(event, context):
                 "HadoopJarStep": {
                     "Jar": scriptRunnerJar,
                     "Args": [
-                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/livy-update-kerberos-name-rules.sh"
+                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/livy-update-kerberos-name-rules.sh",
+                        event["ResourceProperties"]["StackRegion"]
                     ]
                 }
             })
@@ -383,7 +396,9 @@ def create(event, context):
                 "hadoop.proxyuser.livy.groups": "*",
                 "hadoop.proxyuser.livy.hosts": "*",
                 "hadoop.proxyuser.hive.hosts": "*",
+                "hadoop.proxyuser.hue.hosts": "*",
                 "hadoop.proxyuser.hive.groups": "*",
+                "hadoop.proxyuser.hue.groups": "*",
                 "hadoop.proxyuser.trino.hosts": "*",
                 "hadoop.proxyuser.trino.groups": "*",
                 "hadoop.proxyuser.hue_hive.groups": "*"
