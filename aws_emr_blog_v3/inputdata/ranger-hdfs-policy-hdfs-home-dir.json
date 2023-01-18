@@ -1,6 +1,6 @@
 {
  "service": "hadoopdev",
- "name": "User home dir in HDFS",
+ "name": "Access to /user for home dir",
  "policyType": 0,
  "policyPriority": 0,
  "description": "",
@@ -8,25 +8,17 @@
  "resources": {
   "path": {
    "values": [
-    "/user/{USER}"
+    "/user"
    ],
    "isExcludes": false,
-   "isRecursive": true
+   "isRecursive": false
   }
  },
  "policyItems": [
   {
    "accesses": [
     {
-     "type": "read",
-     "isAllowed": true
-    },
-    {
      "type": "write",
-     "isAllowed": true
-    },
-    {
-     "type": "execute",
      "isAllowed": true
     }
    ],

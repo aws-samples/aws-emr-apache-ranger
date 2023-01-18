@@ -76,7 +76,7 @@ aws secretsmanager get-secret-value --secret-id emr/rangerGAagentkey --version-s
 
 openssl pkcs12 -export -in ${ranger_agents_certs_path}/certificateChain.pem -inkey ${ranger_agents_certs_path}/privateKey.pem -chain -CAfile ${ranger_agents_certs_path}/certificateChain.pem -name ${keystore_alias} -out ${ranger_agents_certs_path}/keystore.p12 -password pass:${keystore_password}
 keytool -delete -alias ${keystore_alias} -keystore ${keystore_location} -storepass ${keystore_password} -noprompt || true
-sudo keytool -importkeystore -deststorepass ${keystore_password} -destkeystore ${keystore_location} -srckeystore ${ranger_agents_certs_path}/keystore.p12 -srcstoretype PKCS12 -srcstorepass ${keystore_password}
+sudo keytool -importkeystore -deststorepass ${keystore_password} -destkeystore ${keystore_location} -srckeystore ${ranger_agents_certs_path}/keystore.p12 -srcstoretype PKCS12 -srcstorepass ${keystore_password} -noprompt || true
 sudo chmod 444 ${keystore_location}
 # -----
 
@@ -101,17 +101,12 @@ cd $installpath/$ranger_hdfs_plugin
 
 ## Updates for new Ranger
 mkdir -p /usr/lib/ranger/hadoop/etc
-sudo ln -s /etc/hadoop /usr/lib/ranger/hadoop/etc/
+sudo ln -s /etc/hadoop /usr/lib/ranger/hadoop/etc/ || true
 sudo ln -s /usr/lib/ranger/hadoop/etc/hadoop/conf/hdfs-site.xml /usr/lib/ranger/hadoop/etc/hadoop/hdfs-site.xml || true
 sudo cp -r $installpath/$ranger_hdfs_plugin/lib/* /usr/lib/hadoop-hdfs/lib/
 sudo cp /usr/lib/hadoop-hdfs/lib/ranger-hdfs-plugin-impl/*.jar /usr/lib/hadoop-hdfs/lib/ || true
-sudo ln -s /etc/hadoop/ /usr/lib/ranger/hadoop/
+sudo ln -s /etc/hadoop/ /usr/lib/ranger/hadoop/ || true
 
-## Copy the keystore and strustone information
-sudo cp /etc/hive/conf/ranger-plugin-keystore.jks /etc/hadoop/conf/
-sudo cp /etc/hive/conf/ranger-keystore-creds.jceks /etc/hadoop/conf/
-sudo cp /etc/hive/conf/ranger-plugin-truststore.jks /etc/hadoop/conf/
-sudo cp /etc/hive/conf/ranger-truststore-creds.jceks /etc/hadoop/conf/
 #SSL configs
 sudo sed -i "s|POLICY_MGR_URL=.*|POLICY_MGR_URL=$RANGER_HTTP_URL|g" install.properties
 sudo sed -i "s|SSL_TRUSTSTORE_FILE_PATH=.*|SSL_TRUSTSTORE_FILE_PATH=${truststore_location}|g" install.properties

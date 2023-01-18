@@ -290,6 +290,22 @@ Resources:
                   - !Ref 'DefaultADUserPassword'
                   - "' -Force)\n"
                   - "Enable-ADAccount -Identity \"analyst2\"\n"
+                  - "New-ADUser -Name \"tina\" -OtherAttributes @{'title'=\"tina\";'mail'=\"tina@"
+                  - !Ref 'DomainDNSName'
+                  - "\"}\n"
+                  - "Enable-ADAccount -Identity \"tina\"\n"
+                  - "Set-ADAccountPassword -Identity 'tina' -Reset -NewPassword (ConvertTo-SecureString -AsPlainText '"
+                  - !Ref 'DefaultADUserPassword'
+                  - "' -Force)\n"
+                  - "Enable-ADAccount -Identity \"tina\"\n"
+                  - "New-ADUser -Name \"alex\" -OtherAttributes @{'title'=\"alex\";'mail'=\"alex@"
+                  - !Ref 'DomainDNSName'
+                  - "\"}\n"
+                  - "Enable-ADAccount -Identity \"alex\"\n"
+                  - "Set-ADAccountPassword -Identity 'alex' -Reset -NewPassword (ConvertTo-SecureString -AsPlainText '"
+                  - !Ref 'DefaultADUserPassword'
+                  - "' -Force)\n"
+                  - "Enable-ADAccount -Identity \"alex\"\n"
           services:
             windows:
               cfn-hup:

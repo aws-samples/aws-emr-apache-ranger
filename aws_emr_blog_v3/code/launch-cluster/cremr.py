@@ -63,18 +63,6 @@ def create(event, context):
                               'Applications': applist,
                               'Steps': [
                                   {
-                                      "Name": "InstallHiveHDFSRangerPlugin",
-                                      "ActionOnFailure": "CONTINUE",
-                                      "HadoopJarStep": {
-                                          "Jar": scriptRunnerJar,
-                                          "Args": [
-                                              "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-hdfs-ranger-plugin.sh",
-                                              event["ResourceProperties"]["RangerHostname"],
-                                              event["ResourceProperties"]["StackRegion"]
-                                          ]
-                                      }
-                                  },
-                                  {
                                       "Name": "CreateDefaultHiveTables",
                                       "ActionOnFailure": "CONTINUE",
                                       "HadoopJarStep": {
@@ -317,6 +305,19 @@ def create(event, context):
                 }
             })
 
+        if event["ResourceProperties"]["InstallRangerHDFSPlugin"] == "true":
+            cluster_parameters['Steps'].append({
+                "Name": "InstallHiveHDFSRangerPlugin",
+                "ActionOnFailure": "CONTINUE",
+                "HadoopJarStep": {
+                    "Jar": scriptRunnerJar,
+                    "Args": [
+                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-hdfs-ranger-plugin.sh",
+                        event["ResourceProperties"]["RangerHostname"],
+                        event["ResourceProperties"]["StackRegion"]
+                    ]
+                }
+            },)
         # Set the default hive properties
         if event["ResourceProperties"]["EnableGlueSupport"] == "true":
             hive_site_properties = {

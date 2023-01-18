@@ -311,6 +311,11 @@ Parameters:
     Default: false
     Type: String
     AllowedValues: [ true, false ]
+  InstallRangerHDFSPlugin:
+    Description: Flag to control if the Ranger HDFS plugin will be added
+    Default: false
+    Type: String
+    AllowedValues: [ true, false ]
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -417,6 +422,7 @@ Resources:
         VPC: !Ref VPC
         emrReleaseLabel: !Ref emrReleaseLabel
         CreateNonEMRResources: !Ref CreateNonEMRResources
+        InstallRangerHDFSPlugin: !Ref InstallRangerHDFSPlugin
         ClusterSubnetID: !If [ InstallEMRRangerinPublicSubnet, !Ref PublicSubnet1AID, !Ref PrivateSubnet1AID ]
         EMRLogDir: !Ref EMRLogDir
         MasterInstanceCount: !Ref 'MasterInstanceCount'
