@@ -367,6 +367,11 @@ Parameters:
     Default: false
     Type: String
     AllowedValues: [ true, false ]
+  InstallRangerHDFSPlugin:
+    Description: Flag to control if the Ranger HDFS plugin will be added
+    Default: false
+    Type: String
+    AllowedValues: [ true, false ]
 Conditions:
   USEastRegion: !Equals [ !Ref 'AWS::Region', "us-east-1" ]
   EnableKerberos: !Equals [true, !Ref EnableKerberos]
@@ -639,6 +644,7 @@ Resources:
       DefaultDomain: !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
       EnableIcebergSupport: !Ref EnableIcebergSupport
       EnableGlueSupport: !Ref EnableGlueSupport
+      InstallRangerHDFSPlugin: !Ref InstallRangerHDFSPlugin
   emrCreateWaitHandle:
     Type: AWS::CloudFormation::WaitConditionHandle
     Properties: {}
