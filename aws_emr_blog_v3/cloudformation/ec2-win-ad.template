@@ -306,6 +306,12 @@ Resources:
                   - !Ref 'DefaultADUserPassword'
                   - "' -Force)\n"
                   - "Enable-ADAccount -Identity \"alex\"\n"
+                  - "$domain='"
+                  - !Ref 'DomainDNSName'
+                  - "'\n"
+                  - "Get-ADUser -Filter * -SearchBase ('DC={0},DC={1}'  -f $domain.split(\".\")[0],$domain.split(\".\")[1]) -Properties userPrincipalName | foreach { Set-ADUser $_ -UserPrincipalName (\"{0}@{1}\" -f $_.name,$domain)}\n"
+                  - "New-ADGroup -Name \"DataScience\" -SamAccountName DataScience -GroupCategory Security -GroupScope Global -DisplayName \"DataScience\" -Path ('CN=Users,DC={0},DC={1}' -f $domain.split(\".\")[0],$domain.split(\".\")[1]) -Description \"Members of this group have access to data science resources and data sets\"\n"
+                  - "Add-ADGroupMember -Identity \"DataScience\" -Members alex,tina \n"
           services:
             windows:
               cfn-hup:
