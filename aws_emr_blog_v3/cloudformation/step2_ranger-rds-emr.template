@@ -302,12 +302,12 @@ Parameters:
     Type: String
     AllowedValues: [ true, false ]
   CreateRegionalS3BucketAndCopyScripts:
-    Description: Creates a new S3 bucket and copies the required artifacts from US-East-1 to the current regional S3 bucket. The newly created bucket is used in place of 'S3Bucket' value
+    Description: This flag controls the creation of a new S3 bucket in the current region that will contain copies of the artifacts required for the cluster setup. The newly created bucket is used in place of 'S3Bucket' value. NOTE - For non US-EAST-1 regions, this will default to "true"
     Default: false
     Type: String
     AllowedValues: [ true, false ]
   CreateTLSCerts:
-    Description: Flag to control if the Ranger admin server should run the script to create TLS certs
+    Description: This flag controls creation of certs used for Ranger setup. This includes Ranger admin certs, plugin certs/keys used for mutual TLS.  Additionally, if a new regional bucket is created using 'CreateRegionalS3BucketAndCopyScripts', certificates required by Elastic MapReduce (EMR) for In-Transit Encryption will also get created.
     Default: false
     Type: String
     AllowedValues: [ true, false ]
@@ -339,7 +339,7 @@ Metadata:
 Conditions:
   USEastRegion: !Equals [ !Ref 'AWS::Region', "us-east-1" ]
   NotUSEastRegion: !Not [ Condition: USEastRegion ]
-  CreateRegionalS3BucketAndCopyScriptsCondition: !Equals [ !Ref CreateRegionalS3BucketAndCopyScripts, true ]
+  CreateRegionalS3BucketAndCopyScriptsCondition: !Or [!Equals [ !Ref CreateRegionalS3BucketAndCopyScripts, true ], Condition: NotUSEastRegion ]
   EnableKerberos: !Equals [ true, !Ref EnableKerberos ]
   3AZDeployment: !Equals [ !Ref NumberOfAZs, "3" ]
   2AZDeployment: !Or
@@ -404,6 +404,7 @@ Resources:
         AttachAdditionalSourcePrefixToSG: !Ref AttachAdditionalSourcePrefixToSG
         CIDRAccessToPrivateSubnetResources: !Ref CIDRAccessToPrivateSubnetResources
         AdditionalSourcePrefixToSG: !Ref AdditionalSourcePrefixToSG
+        IsRegionalBucketCreated: !If [ CreateRegionalS3BucketAndCopyScriptsCondition, true, false ]
         CreateTLSCerts: !Ref CreateTLSCerts
   EMRCluster:
     Type: AWS::CloudFormation::Stack

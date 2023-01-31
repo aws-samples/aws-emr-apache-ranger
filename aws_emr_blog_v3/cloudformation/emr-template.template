@@ -248,7 +248,6 @@ Parameters:
       - emr-6.4.0
       - emr-6.7.0
       - emr-6.8.0
-      - emr-6.9.0
     Description: Release label for the EMR cluster
   AppsEMR:
     Description: 'Comma separated list of applications to install on the cluster e.g., '
