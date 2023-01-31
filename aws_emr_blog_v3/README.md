@@ -22,6 +22,8 @@ The code deploys the following:
 
 ## Cloudformation Launch Steps:
 
+Review these active items currenlty in under the V3 main branch [https://github.com/aws-samples/aws-emr-apache-ranger/projects/1?card_filter_query=label%3Av3]
+
  1. If you need to launch this stack in a region `outside US-East-1`, run the following steps, else skip to the next step.
     - Create a regional S3 bucket in your account in the target region : eg S3 Bucket in eu-north-1: test-emr-eu-north-1
     - Run the Script [setup-regional-ranger-automation.sh](../aws_emr_blog_v3/scripts/setup-regional-ranger-automation.sh) to copy the required artifacts to the regional bucket (NOTE: this only copies the Lambda code and the EMR bootstrap script)
