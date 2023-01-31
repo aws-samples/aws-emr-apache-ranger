@@ -37,8 +37,8 @@ The code deploys the following:
       - Deploy the Ranger server [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/3.0/cloudformation/ranger-server.template)
       - Deploy the EMR server [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/3.0/cloudformation/emr-template.template)
 
-## (Beta) Cloudformation Launch Steps:
-All active development code is under the Beta branch. Review these active items currenlty in Beta (https://github.com/aws-samples/aws-emr-apache-ranger/projects/1?card_filter_query=label%3Abeta). 
+## (BETA code) Cloudformation Launch Steps:
+All active development code is under the Beta branch. Review these active items currenlty in Beta (https://github.com/aws-samples/aws-emr-apache-ranger/projects/1?card_filter_query=label%3Abeta). NOTE: It may not be fully tested and may not work with all EMR versions.
 
 Steps to deploy the Beta stack:
 
