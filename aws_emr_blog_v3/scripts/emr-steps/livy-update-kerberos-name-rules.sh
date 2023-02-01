@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 set -x
-AWS_REGION={$1-'us-east-1'}
+AWS_REGION=${1-'us-east-1'}
 DEFAULT_EC2_REALM='EC2\.INTERNAL'
 echo $(tr '[:upper:]' '[:lower:]' <<< "$AWS_REGION")
 if [[ $(tr '[:upper:]' '[:lower:]' <<< "$AWS_REGION") = "us-east-1" ]]; then
