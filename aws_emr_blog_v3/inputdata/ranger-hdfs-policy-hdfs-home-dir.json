@@ -1,0 +1,48 @@
+{
+ "service": "hadoopdev",
+ "name": "Access to /user for home dir",
+ "policyType": 0,
+ "policyPriority": 0,
+ "description": "",
+ "isAuditEnabled": true,
+ "resources": {
+  "path": {
+   "values": [
+    "/user"
+   ],
+   "isExcludes": false,
+   "isRecursive": false
+  }
+ },
+ "policyItems": [
+  {
+   "accesses": [
+    {
+     "type": "write",
+     "isAllowed": true
+    }
+   ],
+   "users": [
+    "{USER}"
+   ],
+   "groups": [],
+   "roles": [],
+   "conditions": [],
+   "delegateAdmin": false
+  }
+ ],
+ "denyPolicyItems": [],
+ "allowExceptions": [],
+ "denyExceptions": [],
+ "dataMaskPolicyItems": [],
+ "rowFilterPolicyItems": [],
+ "serviceType": "hdfs",
+ "options": {},
+ "validitySchedules": [],
+ "policyLabels": [],
+ "zoneName": "",
+ "isDenyAllElse": false,
+ "id": 108,
+ "isEnabled": true,
+ "version": 1
+}

@@ -247,6 +247,7 @@ Parameters:
       - emr-6.3.0
       - emr-6.4.0
       - emr-6.7.0
+      - emr-6.8.0
     Description: Release label for the EMR cluster
   AppsEMR:
     Description: 'Comma separated list of applications to install on the cluster e.g., '
@@ -365,6 +366,11 @@ Parameters:
     Default: false
     Type: String
     AllowedValues: [ true, false ]
+  InstallRangerHDFSPlugin:
+    Description: Flag to control if the Ranger HDFS plugin will be added
+    Default: false
+    Type: String
+    AllowedValues: [ true, false ]
 Conditions:
   USEastRegion: !Equals [ !Ref 'AWS::Region', "us-east-1" ]
   EnableKerberos: !Equals [true, !Ref EnableKerberos]
@@ -449,6 +455,23 @@ Resources:
         - arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceforEC2Role
         - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
         - arn:aws:iam::aws:policy/CloudWatchFullAccess
+  AllowSecretsRetrievalPolicy:
+    Type: 'AWS::IAM::Policy'
+    DependsOn: EmrEc2Role
+    Properties:
+      PolicyName: AllowSecretsRetrievalPolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - secretsmanager:GetSecretValue
+              - secretsmanager:ListSecrets
+              - secretsmanager:DescribeSecret
+            Resource:
+              - !Join [ '', [ 'arn:aws:secretsmanager:', !Ref "AWS::Region", ':', !Ref "AWS::AccountId", ':secret:emr/ranger*' ] ]
+      Roles:
+        - !Ref EmrEc2Role
   DataAccessRoleARN:
     Type: AWS::IAM::Role
     Properties:
@@ -495,22 +518,6 @@ Resources:
             Resource:
               - !GetAtt 'UserRoleARN.Arn'
               - !GetAtt 'DataAccessRoleARN.Arn'
-      Roles:
-        - !Ref EmrEc2Role
-
-  AllowSecretsRetrievalPolicy:
-    Type: 'AWS::IAM::Policy'
-    Properties:
-      PolicyName: AllowSecretsRetrieval
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Action:
-              - secretsmanager:GetSecretValue
-            Resource:
-              - !Join ['', ['arn:aws:secretsmanager:', !Ref "AWS::Region", ':', !Ref "AWS::AccountId", ':secret:', !Ref RangerAgentKeySecretName, '*']]
-              - !Join ['', ['arn:aws:secretsmanager:', !Ref "AWS::Region", ':', !Ref "AWS::AccountId", ':secret:', !Ref RangerServerCertSecretName, '*']]
       Roles:
         - !Ref EmrEc2Role
   EMRInstanceProfile:
@@ -563,7 +570,7 @@ Resources:
           InTransitEncryptionConfiguration:
             TLSCertificateConfiguration:
               CertificateProviderType: PEM
-              S3Object: !Join ['', ["s3://", !Ref S3ArtifactBucket, "/", !Ref S3ArtifactKey, "/", !Ref ProjectVersion, "/emr-tls/", "emr-certs-certs.zip"]]
+              S3Object: !Join ['', ["s3://", !Ref S3Bucket, "/", !Ref S3Key, "/", !Ref ProjectVersion, "/emr-tls/", "emr-certs-certs.zip"]]
   LaunchEMRClusterFunction:
     Type: AWS::Lambda::Function
     DependsOn: LambdaExecutionRole
@@ -636,6 +643,7 @@ Resources:
       DefaultDomain: !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
       EnableIcebergSupport: !Ref EnableIcebergSupport
       EnableGlueSupport: !Ref EnableGlueSupport
+      InstallRangerHDFSPlugin: !Ref InstallRangerHDFSPlugin
   emrCreateWaitHandle:
     Type: AWS::CloudFormation::WaitConditionHandle
     Properties: {}

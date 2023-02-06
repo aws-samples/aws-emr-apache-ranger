@@ -299,11 +299,25 @@ def create(event, context):
                 "HadoopJarStep": {
                     "Jar": scriptRunnerJar,
                     "Args": [
-                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/livy-update-kerberos-name-rules.sh"
+                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/livy-update-kerberos-name-rules.sh",
+                        event["ResourceProperties"]["StackRegion"]
                     ]
                 }
             })
 
+        if event["ResourceProperties"]["InstallRangerHDFSPlugin"] == "true":
+            cluster_parameters['Steps'].append({
+                "Name": "InstallHiveHDFSRangerPlugin",
+                "ActionOnFailure": "CONTINUE",
+                "HadoopJarStep": {
+                    "Jar": scriptRunnerJar,
+                    "Args": [
+                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/install-hdfs-ranger-plugin.sh",
+                        event["ResourceProperties"]["RangerHostname"],
+                        event["ResourceProperties"]["StackRegion"]
+                    ]
+                }
+            },)
         # Set the default hive properties
         if event["ResourceProperties"]["EnableGlueSupport"] == "true":
             hive_site_properties = {
@@ -383,7 +397,9 @@ def create(event, context):
                 "hadoop.proxyuser.livy.groups": "*",
                 "hadoop.proxyuser.livy.hosts": "*",
                 "hadoop.proxyuser.hive.hosts": "*",
+                "hadoop.proxyuser.hue.hosts": "*",
                 "hadoop.proxyuser.hive.groups": "*",
+                "hadoop.proxyuser.hue.groups": "*",
                 "hadoop.proxyuser.trino.hosts": "*",
                 "hadoop.proxyuser.trino.groups": "*",
                 "hadoop.proxyuser.hue_hive.groups": "*"

@@ -290,6 +290,28 @@ Resources:
                   - !Ref 'DefaultADUserPassword'
                   - "' -Force)\n"
                   - "Enable-ADAccount -Identity \"analyst2\"\n"
+                  - "New-ADUser -Name \"tina\" -OtherAttributes @{'title'=\"tina\";'mail'=\"tina@"
+                  - !Ref 'DomainDNSName'
+                  - "\"}\n"
+                  - "Enable-ADAccount -Identity \"tina\"\n"
+                  - "Set-ADAccountPassword -Identity 'tina' -Reset -NewPassword (ConvertTo-SecureString -AsPlainText '"
+                  - !Ref 'DefaultADUserPassword'
+                  - "' -Force)\n"
+                  - "Enable-ADAccount -Identity \"tina\"\n"
+                  - "New-ADUser -Name \"alex\" -OtherAttributes @{'title'=\"alex\";'mail'=\"alex@"
+                  - !Ref 'DomainDNSName'
+                  - "\"}\n"
+                  - "Enable-ADAccount -Identity \"alex\"\n"
+                  - "Set-ADAccountPassword -Identity 'alex' -Reset -NewPassword (ConvertTo-SecureString -AsPlainText '"
+                  - !Ref 'DefaultADUserPassword'
+                  - "' -Force)\n"
+                  - "Enable-ADAccount -Identity \"alex\"\n"
+                  - "$domain='"
+                  - !Ref 'DomainDNSName'
+                  - "'\n"
+                  - "Get-ADUser -Filter * -SearchBase ('DC={0},DC={1}'  -f $domain.split(\".\")[0],$domain.split(\".\")[1]) -Properties userPrincipalName | foreach { Set-ADUser $_ -UserPrincipalName (\"{0}@{1}\" -f $_.name,$domain)}\n"
+                  - "New-ADGroup -Name \"DataScience\" -SamAccountName DataScience -GroupCategory Security -GroupScope Global -DisplayName \"DataScience\" -Path ('CN=Users,DC={0},DC={1}' -f $domain.split(\".\")[0],$domain.split(\".\")[1]) -Description \"Members of this group have access to data science resources and data sets\"\n"
+                  - "Add-ADGroupMember -Identity \"DataScience\" -Members alex,tina \n"
           services:
             windows:
               cfn-hup:
@@ -491,3 +513,8 @@ Outputs:
   ADDomainJoinUser:
     Description: The DomainAdminUser
     Value: !Ref 'DomainAdminUser'
+  ADSecurityGroupID:
+    Description: AD security group ID.
+    Value: !Ref SecurityGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-ADSecurityGroupID
