@@ -54,7 +54,7 @@ else
    DEFAULT_EC2_REALM='compute.internal'
    echo "AWS region is NOT us-east-1, will use EC2 realm as compute.internal"
 fi
-ranger_agents_certs_path="./ranger-agents"
+ranger_plugin_certs_path="./ranger-agents"
 solr_certs_path="./solr-client"
 keystore_location="./ranger-plugin-keystore.jks"
 keystore_alias=rangerplugin
@@ -63,8 +63,17 @@ truststore_location="./ranger-plugin-truststore.jks"
 ranger_server_certs_path="./ranger-server"
 truststore_password="changeit"
 truststore_ranger_server_alias="rangeradmin"
-secret_mgr_ranger_private_key="emr/rangerGAagentkey"
-secret_mgr_ranger_admin_cert="emr/rangerGAservercert"
+secret_mgr_ranger_plugin_private_key="emr/rangerGAagentkey"
+secret_mgr_ranger_plugin_cert="emr/rangerPluginCert"
+secret_mgr_ranger_admin_private_key="emr/rangerServerPrivateKey"
+secret_mgr_ranger_admin_server_cert="emr/rangerGAservercert"
+ranger_admin_server_private_key_exists="false"
+ranger_admin_server_cert_exists="false"
+ranger_plugin_private_key_exists="false"
+ranger_plugin_cert_exists="false"
+ranger_solr_cert_exists="false"
+ranger_solr_key_exists="false"
+ranger_solr_trust_store_exists="false"
 
 certs_subject="/C=US/ST=TX/L=Dallas/O=EMR/OU=EMR/CN=*.$DEFAULT_EC2_REALM"
 
@@ -97,47 +106,42 @@ generate_certs emr-certs
 
 # Generate KeyStore and TrustStore for the Ranger plugins
 # Keystore
-openssl pkcs12 -export -in ${ranger_agents_certs_path}/certificateChain.pem -inkey ${ranger_agents_certs_path}/privateKey.pem -chain -CAfile ${ranger_agents_certs_path}/trustedCertificates.pem -name ${keystore_alias} -out ${ranger_agents_certs_path}/keystore.p12 -password pass:${keystore_password}
-keytool -importkeystore -deststorepass ${keystore_password} -destkeystore ${keystore_location} -srckeystore ${ranger_agents_certs_path}/keystore.p12 -srcstoretype PKCS12 -srcstorepass ${keystore_password} -noprompt
+openssl pkcs12 -export -in ${ranger_plugin_certs_path}/certificateChain.pem -inkey ${ranger_plugin_certs_path}/privateKey.pem -chain -CAfile ${ranger_plugin_certs_path}/trustedCertificates.pem -name ${keystore_alias} -out ${ranger_plugin_certs_path}/keystore.p12 -password pass:${keystore_password}
+keytool -importkeystore -deststorepass ${keystore_password} -destkeystore ${keystore_location} -srckeystore ${ranger_plugin_certs_path}/keystore.p12 -srcstoretype PKCS12 -srcstorepass ${keystore_password} -noprompt
 
 # Truststore
 rm -rf ${truststore_location}
 keytool -import -file ${ranger_server_certs_path}/certificateChain.pem -alias ${truststore_ranger_server_alias} -keystore ${truststore_location} -storepass ${truststore_password} -noprompt
 
-ranger_private_key_exists="false"
-ranger_admin_cert_exists="false"
-ranger_plugin_cert_exists="false"
-ranger_solr_cert_exists="false"
-ranger_server_key_exists="false"
-ranger_solr_key_exists="false"
-ranger_solr_trust_store_exists="false"
 
 # Delete existing secrets
-if (aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_private_key} --region $AWS_REGION > /dev/null 2>&1); then
-  if [[ $(aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_private_key} --query "DeletedDate" --region $AWS_REGION) == "null" ]]; then
-     echo "${secret_mgr_ranger_private_key} already exists. Will not delete and recreate"
-     ranger_private_key_exists="true"
+if (aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_plugin_private_key} --region $AWS_REGION > /dev/null 2>&1); then
+  if [[ $(aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_plugin_private_key} --query "DeletedDate" --region $AWS_REGION) == "null" ]]; then
+     echo "${secret_mgr_ranger_plugin_private_key} already exists. Will not delete and recreate"
+     ranger_plugin_private_key_exists="true"
+  fi
+fi
+if (aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_plugin_cert} --region $AWS_REGION > /dev/null 2>&1); then
+  if [[ $(aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_plugin_cert} --query "DeletedDate" --region $AWS_REGION) == "null" ]]; then
+     echo "${secret_mgr_ranger_plugin_cert} already exists. Will not delete and recreate"
+     ranger_plugin_cert_exists="true"
   fi
 fi
 
-if (aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_admin_cert} --region $AWS_REGION > /dev/null 2>&1); then
-  if [[ $(aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_admin_cert} --query "DeletedDate" --region $AWS_REGION) == "null" ]]; then
-     echo "${secret_mgr_ranger_admin_cert} already exists. Will not delete and recreate"
-     ranger_admin_cert_exists="true"
+if (aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_admin_private_key} --region $AWS_REGION > /dev/null 2>&1); then
+  if [[ $(aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_admin_private_key} --query "DeletedDate" --region $AWS_REGION) == "null" ]]; then
+     echo "${secret_mgr_ranger_admin_private_key} already exists. Will not delete and recreate"
+     ranger_admin_server_private_key_exists="true"
   fi
 fi
-if (aws secretsmanager describe-secret --secret-id emr/rangerServerPrivateKey --region $AWS_REGION > /dev/null 2>&1); then
-  if [[ $(aws secretsmanager describe-secret --secret-id emr/rangerServerPrivateKey --query "DeletedDate" --region $AWS_REGION) == "null" ]]; then
-     echo "emr/rangerServerPrivateKey already exists. Will not delete and recreate"
-     ranger_server_key_exists="true"
+
+if (aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_admin_server_cert} --region $AWS_REGION > /dev/null 2>&1); then
+  if [[ $(aws secretsmanager describe-secret --secret-id ${secret_mgr_ranger_admin_server_cert} --query "DeletedDate" --region $AWS_REGION) == "null" ]]; then
+     echo "${secret_mgr_ranger_admin_server_cert} already exists. Will not delete and recreate"
+     ranger_admin_server_cert_exists="true"
   fi
 fi
-if (aws secretsmanager describe-secret --secret-id emr/rangerPluginCert --region $AWS_REGION > /dev/null 2>&1); then
-  if [[ $(aws secretsmanager describe-secret --secret-id emr/rangerPluginCert --query "DeletedDate" --region $AWS_REGION) == "null" ]]; then
-    echo "emr/rangerPluginCert already exists. Will not delete and recreate"
-    ranger_plugin_cert_exists="true"
-  fi
-fi
+
 if (aws secretsmanager describe-secret --secret-id emr/rangerSolrCert --region $AWS_REGION > /dev/null 2>&1); then
   if [[ $(aws secretsmanager describe-secret --secret-id emr/rangerSolrCert --query "DeletedDate" --region $AWS_REGION) == "null" ]]; then
      echo "emr/rangerSolrCert already exists. Will not delete and recreate"
@@ -157,18 +161,16 @@ if (aws secretsmanager describe-secret --secret-id emr/rangerSolrTrustedCert --r
   fi
 fi
 
-if [ $ranger_private_key_exists == "false" ] && [ $ranger_admin_cert_exists == "false" ]; then
-  aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_private_key} --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
-  aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_admin_cert} --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+if [ $ranger_admin_server_private_key_exists == "false" ] && [ $ranger_admin_server_cert_exists == "false" ]; then
+  aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_admin_private_key} --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+  aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_admin_server_cert} --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
 
   ## Basic wait for delete to be complete
   sleep 60
 
-  cat ${ranger_agents_certs_path}/privateKey.pem ${ranger_agents_certs_path}/certificateChain.pem > ${ranger_agents_certs_path}/rangerGAagentKeyChain.pem
 
-  aws secretsmanager create-secret --name ${secret_mgr_ranger_private_key} \
-            --description "X509 Ranger Agent Private Key to be used by EMR Security Config" --secret-string file://${ranger_agents_certs_path}/rangerGAagentKeyChain.pem --region $AWS_REGION
-  aws secretsmanager create-secret --name ${secret_mgr_ranger_admin_cert} \
+  aws secretsmanager create-secret --name ${secret_mgr_ranger_admin_private_key} --description "Ranger Server Private Key" --secret-string file://${ranger_server_certs_path}/privateKey.pem --region $AWS_REGION
+  aws secretsmanager create-secret --name ${secret_mgr_ranger_admin_server_cert} \
           --description "Ranger Server Cert" --secret-string file://${ranger_server_certs_path}/certificateChain.pem --region $AWS_REGION
 
   if [[ $COPY_CERT_TO_LOCAL_S3_BUCKET == "true" ]]; then
@@ -179,13 +181,15 @@ fi
 
 ## Others that will be used by the Ranger Admin Server
 
-if [ $ranger_server_key_exists == "false" ] && [ $ranger_plugin_cert_exists == "false" ]; then
-  aws secretsmanager delete-secret --secret-id emr/rangerServerPrivateKey --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
-  aws secretsmanager delete-secret --secret-id emr/rangerPluginCert --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+if [ $ranger_plugin_private_key_exists == "false" ] && [ $ranger_plugin_cert_exists == "false" ]; then
+  aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_plugin_private_key} --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
+  aws secretsmanager delete-secret --secret-id ${secret_mgr_ranger_plugin_cert} --force-delete-without-recovery --region $AWS_REGION --cli-read-timeout 10 --cli-connect-timeout 10
 
   sleep 60
-  aws secretsmanager create-secret --name emr/rangerServerPrivateKey --description "Ranger Server Private Key" --secret-string file://${ranger_server_certs_path}/privateKey.pem --region $AWS_REGION
-  aws secretsmanager create-secret --name emr/rangerPluginCert --description "Ranger Plugin Cert" --secret-string file://${ranger_agents_certs_path}/certificateChain.pem --region $AWS_REGION
+  cat ${ranger_plugin_certs_path}/privateKey.pem ${ranger_plugin_certs_path}/certificateChain.pem > ${ranger_plugin_certs_path}/rangerGAagentKeyChain.pem
+  aws secretsmanager create-secret --name ${secret_mgr_ranger_plugin_private_key} \
+            --description "X509 Ranger Agent Private Key to be used by EMR Security Config" --secret-string file://${ranger_plugin_certs_path}/rangerGAagentKeyChain.pem --region $AWS_REGION
+  aws secretsmanager create-secret --name ${secret_mgr_ranger_plugin_cert} --description "Ranger Plugin Cert" --secret-string file://${ranger_plugin_certs_path}/certificateChain.pem --region $AWS_REGION
 
 fi
 
