@@ -9,7 +9,7 @@ The code deploys the following:
 - Kerberos Enabled Amazon EMR cluster (EMR 5.32) with AWS Managed Ranger Plugins
      * Amazon S3
      * Apache Hive
-        * Blog - [Introducing Amazon EMR integration with Apache Ranger](https://aws.amazon.com/blogs/big-data/introducing-amazon-emr-integration-with-apache-ranger/){:target="_blank"}
+        * Blog -  <a href="https://aws.amazon.com/blogs/big-data/introducing-amazon-emr-integration-with-apache-ranger/" target="_blank">Introducing Amazon EMR integration with Apache Ranger</a>
      * Apache Spark
         * Blog - [Authorize SparkSQL data manipulation on Amazon EMR using Apache Ranger](https://aws.amazon.com/blogs/big-data/authorize-sparksql-data-manipulation-on-amazon-emr-using-apache-ranger/){:target="_blank"}
      * Apache Tino (> EMR 6.7)
