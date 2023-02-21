@@ -15,10 +15,10 @@ The code deploys the following:
      * Apache Tino (> EMR 6.7)
        * Blog (**New!**) - [Enable federated governance using Trino and Apache Ranger on Amazon EMR](https://aws.amazon.com/blogs/big-data/enable-federated-governance-using-trino-and-apache-ranger-on-amazon-emr/)
 
-> **NOTE:** the code only run under us-east-1 (N. Virginia). You can copy to your regional bucket to deploy in a different region. Also, create [Issue](https://github.com/aws-samples/aws-emr-apache-ranger/issues/new) if you would like support for additional regions using this repo. 
+> **NOTE:** the code currenlty resides in a us-east-1 (N. Virginia) bucket. The CFN supports automatic creation of regional bucket required for the Lambda code and the EMR bootstrap scripts.
 >
 
-### NOTE: Apache Ranger plugins and Apache Ranger Admin Server SSL Keys and Certs have to be uploaded to AWS Secrets Manager for Cloudformation scripts to work
+### NOTE: Apache Ranger plugins and Apache Ranger Admin Server SSL Keys and Certs have to be uploaded to AWS Secrets Manager for Cloudformation scripts to work. The CFN automates the creation and upload of certs.
 
 ## Cloudformation Launch Steps:
 
