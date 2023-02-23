@@ -363,6 +363,7 @@ Resources:
           - !Ref 'PrivateSubnet2AID'
           - !Ref AWS::NoValue
         VPC: !Ref VPC
+        ClientIP: !Ref CIDRAccessToPrivateSubnetResources
         MySQLDBPassword: !Ref DBRootPassword
         MySQLDBUserName: !Ref DBUserName
   CopyS3Artifacts:
