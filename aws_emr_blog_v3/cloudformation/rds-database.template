@@ -45,7 +45,7 @@ Parameters:
     Description: ' The RDS MySQL database password'
     MaxLength: '41'
     MinLength: '8'
-    NoEcho: 'true'
+    NoEcho: true
     Type: String
   MySQLDBAllocatedStorage:
     Description: ' The RDS MySQL database size (Gb)'
