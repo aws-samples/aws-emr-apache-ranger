@@ -10,6 +10,16 @@ Parameters:
   Subnet2:
       Description: ID of an existing subnet for the domain controller
       Type: AWS::EC2::Subnet::Id
+  VPCCIDR:
+    Description: VPC CIDR block
+    Type: String
+    MinLength: '9'
+    MaxLength: '18'
+    Default: 10.0.0.0/16
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: It must be a valid IP CIDR range of the form x.x.x.x/x.
+      Suggest to enable access to your IP address only. Pls get your address using
+      checkip.amazonaws.com or whatsmyip.org.
   ClientIP:
     Description: The IP address range that can be used to connect to the RDS instances
       and EC2 instance from your local machine.It must be a valid IP CIDR range of
@@ -76,9 +86,9 @@ Resources:
         ToPort: -1
       SecurityGroupIngress:
       - IpProtocol: tcp
-        CidrIp: !Ref 'ClientIP'
-        FromPort: '22'
-        ToPort: '22'
+        CidrIp: !Ref 'VPCCIDR'
+        FromPort: '3306'
+        ToPort: '3306'
       - IpProtocol: tcp
         CidrIp: !Ref 'ClientIP'
         FromPort: '3306'

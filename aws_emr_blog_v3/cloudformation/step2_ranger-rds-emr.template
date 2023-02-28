@@ -351,6 +351,14 @@ Mappings:
   DefaultConfiguration:
     MachineConfiguration:
       BastionInstanceType: t2.small
+    NetworkConfiguration:
+      VPCCIDR: 10.0.0.0/16
+      PublicSubnet1CIDR: 10.0.1.0/24
+      PrivateSubnet1CIDR: 10.0.2.0/24
+      PublicSubnet2CIDR: 10.0.3.0/24
+      PrivateSubnet2CIDR: 10.0.4.0/24
+      PublicSubnet3CIDR: 10.0.5.0/24
+      PrivateSubnet3CIDR: 10.0.6.0/24
 Resources:
   RDSDatabase:
     Type: AWS::CloudFormation::Stack
@@ -363,7 +371,14 @@ Resources:
           - !Ref 'PrivateSubnet2AID'
           - !Ref AWS::NoValue
         VPC: !Ref VPC
-        ClientIP: !Ref CIDRAccessToPrivateSubnetResources
+        ClientIP: !FindInMap
+          - DefaultConfiguration
+          - NetworkConfiguration
+          - PrivateSubnet1CIDR
+        VPCCIDR: !FindInMap
+          - DefaultConfiguration
+          - NetworkConfiguration
+          - VPCCIDR
         MySQLDBPassword: !Ref DBRootPassword
         MySQLDBUserName: !Ref DBUserName
   CopyS3Artifacts:
