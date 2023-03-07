@@ -109,6 +109,16 @@
 			"itemId": 5,
 			"name": "write",
 			"label": "write"
+		},
+		{
+			"itemId": 6,
+			"name": "create",
+			"label": "create"
+		},
+		{
+			"itemId": 7,
+			"name": "drop",
+			"label": "drop"
 		}
 	],
 	"configs":
