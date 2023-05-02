@@ -407,6 +407,7 @@ Resources:
           - !Ref 'PrivateSubnet2AID'
           - !Ref AWS::NoValue
         #        Subnet: !If [ InstallEMRRangerinPublicSubnet, !Ref PublicSubnet1AID, !Ref PrivateSubnet1AID ]
+        InstanceType: !Ref RangerInstanceType
         DBHostName: !GetAtt 'RDSDatabase.Outputs.RDSInstanceAddress'
         DBRootPassword: !Ref DBRootPassword
         ADAdminUsername: !Ref 'DomainAdminUser'
