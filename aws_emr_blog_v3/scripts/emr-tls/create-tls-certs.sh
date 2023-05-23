@@ -1,13 +1,13 @@
 #!/bin/bash
 
 #================================================================
-# Script to create SSL private keys/certs and upload to AWS Secretes Manager
+# Script to create SSL private keys/certs and upload to AWS Secrets Manager
 #================================================================
 #% SYNOPSIS
 #+    create-tls-certs.sh args ...
 #%
 #% DESCRIPTION
-#%    Uses openssl to create self-signed keys/certs and uploads to AWS Secretes Manager to
+#%    Uses openssl to create self-signed keys/certs and uploads to AWS Secrets Manager to
 #%    be used for Ranger Admin server and EMR security configuration
 #%    Requirements: openssl, aws cli with profile (profile should have IAM permissions to create and delete AWS secrets)
 #%
