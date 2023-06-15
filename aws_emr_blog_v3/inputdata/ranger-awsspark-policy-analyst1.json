@@ -52,7 +52,7 @@
  "denyExceptions": [],
  "dataMaskPolicyItems": [],
  "rowFilterPolicyItems": [],
- "serviceType": "hive",
+ "serviceType": "amazon-emr-spark",
  "options": {},
  "validitySchedules": [],
  "policyLabels": [],

@@ -25,6 +25,10 @@ set -x
 
 # Define variables
 awsregion=$1
+
+#hardcoded as not every region had this dataset
+awsregion="us-east-1"
+
 installpath=/tmp
 hdfs_data_location=s3://$awsregion.elasticmapreduce.samples/freebase/data
 cd $installpath

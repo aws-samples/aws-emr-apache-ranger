@@ -1,51 +1,51 @@
 #!/bin/bash
+#==============================================================================
+#!# create-tls-certs.sh - Script to create SSL private keys/certs and upload to AWS Secretes Manager and S3
+#!#
+#!#  version         3.0
+#!#  author          Varun Bhamidimarri, Stefano Sandonà
+#!#  license         MIT license
+#!#
+#==============================================================================
+#?#
+#?# usage:    ./create-tls-certs.sh <AWS_CLI_PROFILE> <AWS_REGION> <S3_BUCKET> <S3_PREFIX> <PROJECT_VERSION>
+#?# example:  ./create-tls-certs.sh default us-east-1 mybucket myfolder1/myfolder2 3.0
+#?#
+#?#  AWS_CLI_PROFILE            AWS CLI profile eg: default
+#?#  AWS_REGION                 AWS region where you want to install the secrets eg: us-east-1
+#?#  S3_BUCKET                  Amazon S3 bucket where to copy the generated certificates eg: mybucket
+#?#  S3_PREFIX                  Amazon S3 bucket prefix where to copy the generated certificates eg: myfolder1/myfolder2
+#?#  PROJECT_VERSION            Project version eg: 3.0
+#?#
+#==============================================================================
 
-#================================================================
-# Script to create SSL private keys/certs and upload to AWS Secretes Manager
-#================================================================
-#% SYNOPSIS
-#+    create-tls-certs.sh args ...
-#%
-#% DESCRIPTION
-#%    Uses openssl to create self-signed keys/certs and uploads to AWS Secretes Manager to
-#%    be used for Ranger Admin server and EMR security configuration
-#%    Requirements: openssl, aws cli with profile (profile should have IAM permissions to create and delete AWS secrets)
-#%
-#% ARGUMENTS
-#%    arg1                          Pass the AWS profile to use -
-#                                   You can configure this using the documentation below
-#                                   https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html
-#%    arg2                          AWS_REGION (AWS region where you want to install the secrets)
+function usage() {
+	[ "$*" ] && echo "$0: $*"
+	sed -n '/^#?#/,/^$/s/^#?# \{0,1\}//p' "$0"
+	exit 1
+}
 
-
-#% EXAMPLES
-#%    create-tls-certs.sh ranger_demo us-east-1
-#%
-#================================================================
-#- IMPLEMENTATION
-#-    version         create-tls-certs.sh 2.0
-#-    author          Varun Bhamidimarri, Stefano Sandonà
-#-    license         MIT license
-#-
-#
-#================================================================
-#================================================================
-
-[ $# -lt 2 ] && { echo "Usage: $0 AWS_CLI_profile AWS_REGION (To setup follow this link: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html)"; exit 1; }
+[[ $# -ne 5 ]] && echo "error: missing parameters" && usage
 
 set -euo pipefail
 set -x
 
 AWS_PROFILE=$1
 AWS_REGION=$2
-echo $(tr '[:upper:]' '[:lower:]' <<< "$AWS_REGION")
-if [[ $(tr '[:upper:]' '[:lower:]' <<< "$AWS_REGION") = "us-east-1" ]]; then
+S3_BUCKET=${3}
+S3_KEY=${4}
+CODE_TAG=${5}
+
+configured_region=$(tr '[:upper:]' '[:lower:]' <<< "$AWS_REGION")
+echo "Using region $configured_region"
+if [[ $configured_region = "us-east-1" ]]; then
   DEFAULT_EC2_REALM='ec2.internal'
-  echo "AWS region is us-east-1, will use EC2 realm as ec2.internal"
+  echo "AWS region is us-east-1, will use EC2 realm as $DEFAULT_EC2_REALM"
 else
-   DEFAULT_EC2_REALM='compute.internal'
-   echo "AWS region is NOT us-east-1, will use EC2 realm as compute.internal"
+   DEFAULT_EC2_REALM="$configured_region.compute.internal"
+   echo "AWS region is NOT us-east-1, will use EC2 realm as $DEFAULT_EC2_REALM"
 fi
+
 ranger_agents_certs_path="./ranger-agents"
 solr_certs_path="./solr-client"
 keystore_location="./ranger-plugin-keystore.jks"
@@ -73,7 +73,7 @@ generate_certs() {
   pushd $1
   openssl req -x509 -newkey rsa:4096 -keyout privateKey.pem -out certificateChain.pem -days 1095 -nodes -subj ${certs_subject}
   cp certificateChain.pem trustedCertificates.pem
-  zip -r -X ../$1-certs.zip certificateChain.pem privateKey.pem trustedCertificates.pem
+  zip -r -X ../$1.zip certificateChain.pem privateKey.pem trustedCertificates.pem
   #  rm -rf *.pem
   popd
 #  fi
@@ -127,3 +127,5 @@ aws secretsmanager create-secret --name emr/rangerPluginCert --description "Rang
 aws secretsmanager create-secret --name emr/rangerSolrCert --description "Ranger Solr Cert" --secret-string file://${solr_certs_path}/trustedCertificates.pem --profile $AWS_PROFILE --region $AWS_REGION
 aws secretsmanager create-secret --name emr/rangerSolrPrivateKey --description "Ranger Solr Private Key" --secret-string file://${solr_certs_path}/privateKey.pem --profile $AWS_PROFILE --region $AWS_REGION
 aws secretsmanager create-secret --name emr/rangerSolrTrustedCert --description "Ranger Solr Cert Chain" --secret-string file://${solr_certs_path}/certificateChain.pem --profile $AWS_PROFILE --region $AWS_REGION
+
+aws s3 cp . s3://${S3_BUCKET}/${S3_KEY}/${CODE_TAG}/emr-tls/ --exclude '*' --include 'emr-certs.zip' --recursive --profile $AWS_PROFILE --region $AWS_REGION

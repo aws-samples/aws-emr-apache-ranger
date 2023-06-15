@@ -89,12 +89,10 @@ Parameters:
     Description: S3Bucket where artifacts are stored
     Type: String
     Default: aws-bigdata-blog
-    AllowedValues: ["aws-bigdata-blog"]
   S3Key:
     Description: S3Key of the Lambda code
     Type: String
     Default: artifacts/aws-blog-emr-ranger
-    AllowedValues: ["artifacts/aws-blog-emr-ranger"]
   ProjectVersion:
     Default: 3.0
     Description: Project version

@@ -1,0 +1,50 @@
+{
+  "service": "hivedev",
+  "name": "Admin1Policy",
+  "policyType": 0,
+  "description": "Hive Policy",
+  "isAuditEnabled": true,
+  "resources": {
+    "column": {
+      "values": [
+        "*"
+      ],
+      "isExcludes": false,
+      "isRecursive": false
+    },
+    "table": {
+      "values": [
+        "*"
+      ],
+      "isExcludes": false,
+      "isRecursive": false
+    },
+    "database": {
+      "values": [
+        "default"
+      ],
+      "isExcludes": false,
+      "isRecursive": false
+    }
+  },
+  "policyItems": [{
+    "accesses": [{
+      "type": "all",
+      "isAllowed": true
+    }],
+    "users": [
+      "admin1"
+    ],
+    "groups": [],
+    "conditions": [],
+    "delegateAdmin": false
+  }],
+  "denyPolicyItems": [],
+  "allowExceptions": [],
+  "denyExceptions": [],
+  "dataMaskPolicyItems": [],
+  "rowFilterPolicyItems": [],
+  "id": 8,
+  "isEnabled": true,
+  "version": 1
+}

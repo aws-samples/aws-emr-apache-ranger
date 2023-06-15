@@ -411,17 +411,17 @@ Resources:
               command: !Join
                 - ''
                 - - 'powershell.exe -Command '
-                  - '"ksetup /addkdc '
-                  - !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
-                  - '"'
+                  - '"ksetup /addkdc \"'
+                  - !If [ USEastRegion, 'EC2.INTERNAL', !Join ['', [!Ref "AWS::Region", '.COMPUTE.INTERNAL']] ]
+                  - '\".toUpper()"'
               waitAfterCompletion: '0'
             b-add-trust:
               command: !Join
                 - ''
                 - - 'powershell.exe -Command '
-                  - '"netdom trust '
-                  - !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
-                  - ' '
+                  - '"netdom trust \"'
+                  - !If [ USEastRegion, 'EC2.INTERNAL', !Join ['', [!Ref "AWS::Region", '.COMPUTE.INTERNAL']] ]
+                  - '\".toUpper() '
                   - '/Domain:'
                   - !Ref 'DomainDNSName'
                   - ' '
@@ -433,9 +433,9 @@ Resources:
               command: !Join
                 - ''
                 - - 'powershell.exe -Command '
-                  - '"ksetup /SetEncTypeAttr '
-                  - !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
-                  - ' '
+                  - '"ksetup /SetEncTypeAttr \"'
+                  - !If [ USEastRegion, 'EC2.INTERNAL', !Join ['', [!Ref "AWS::Region", '.COMPUTE.INTERNAL']] ]
+                  - '\".toUpper() '
                   - AES256-CTS-HMAC-SHA1-96"
               waitAfterCompletion: '0'
         finalize:
@@ -502,8 +502,8 @@ Outputs:
     Description: The DomainDNSName
     Value: !Ref 'DomainDNSName'
   Realm:
-    Description: The KerberosRealm
-    Value: !If [ USEastRegion, 'EC2.INTERNAL', 'COMPUTE.INTERNAL' ]
+    Description: The KerberosRealm (this will be ALL in uppercase)
+    Value: !If [ USEastRegion, 'ec2.internal', !Join ['', [!Ref "AWS::Region", '.compute.internal']] ]
   AdminServer:
     Description: The DomainDNSName
     Value: !Ref 'DomainDNSName'

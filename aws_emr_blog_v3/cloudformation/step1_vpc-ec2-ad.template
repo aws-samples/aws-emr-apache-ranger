@@ -5,8 +5,6 @@ Parameters:
     Description: The list of Availability Zones to use for the subnets in the VPC. Three
       Availability Zones are used for this deployment, and the logical order of your
       selections is preserved.
-    Default: us-east-1a,us-east-1b,us-east-1c
-    #    AllowedValues: ["us-east-1a,us-east-1b,us-east-1c"]
     Type: List<AWS::EC2::AvailabilityZone::Name>
   KeyPairName:
     Description: The name of an existing public/private key pair, which allows you
@@ -85,6 +83,11 @@ Parameters:
       that you set this value to a trusted IP range.
     Type: String
     Default: 10.0.0.0/16
+  EnableTCPForwarding:
+    Type: String
+    Description: Choose "true" to enable TCP forwarding on the bastion instance. This is needed to enable SSH tunnelling and accessing privately hosted  WebUIs (i.e., Ranger Admin server, Hue)
+    AllowedValues: [ 'true', 'false' ]
+    Default: 'true'
   VPCCIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
@@ -94,29 +97,17 @@ Parameters:
     Type: String
   NumberOfAZs:
     Type: String
-    AllowedValues: [ "2", "3" ]
+    AllowedValues: [ "3" ]
     Default: "3"
     Description: Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.
-  S3Bucket:
-    Description: S3Bucket for the code [works for all AWS regions - no update required]
-    Type: String
-    Default: aws-bigdata-blog
-    AllowedValues: [ "aws-bigdata-blog" ]
-  S3Key:
-    Description: S3Key of the code [works for all AWS regions - no update required]
-    Type: String
-    Default: artifacts/aws-blog-emr-ranger
-    AllowedValues: [ "artifacts/aws-blog-emr-ranger" ]
   S3ArtifactBucket:
-    Description: S3Bucket where artifacts are stored
+    Description: S3Bucket where artifacts are stored (if you did not copy the resources inside a custom bucket leave this)
     Type: String
     Default: aws-bigdata-blog
-    AllowedValues: [ "aws-bigdata-blog" ]
   S3ArtifactKey:
-    Description: S3Key of the Lambda code
+    Description: S3Key where artifacts are stored (if you did not copy the resources inside a custom bucket leave this)
     Type: String
     Default: artifacts/aws-blog-emr-ranger
-    AllowedValues: [ "artifacts/aws-blog-emr-ranger" ]
   ProjectVersion:
     Default: 3.0
     Description: Project version
@@ -242,6 +233,7 @@ Resources:
         PublicSubnet1ID: !GetAtt 'STEP1VPC.Outputs.PublicSubnet1ID'
         PublicSubnet2ID: !GetAtt 'STEP1VPC.Outputs.PublicSubnet2ID'
         VPCID: !GetAtt 'STEP1VPC.Outputs.VPCID'
+        EnableTCPForwarding: !Ref 'EnableTCPForwarding'
   BastionHostAdditionalInboundRule:
     Condition: AttachAdditionalSourcePrefixToSG
     Type: AWS::EC2::SecurityGroupIngress

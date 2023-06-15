@@ -1,0 +1,55 @@
+{
+  "service": "hivedev",
+  "name": "MastRequestTime",
+  "policyType": 1,
+  "description": "",
+  "isAuditEnabled": true,
+  "resources": {
+    "column": {
+      "values": [
+        "request_begin_time"
+      ],
+      "isExcludes": false,
+      "isRecursive": false
+    },
+    "table": {
+      "values": [
+        "tblanalyst1"
+      ],
+      "isExcludes": false,
+      "isRecursive": false
+    },
+    "database": {
+      "values": [
+        "default"
+      ],
+      "isExcludes": false,
+      "isRecursive": false
+    }
+  },
+  "policyItems": [],
+  "denyPolicyItems": [],
+  "allowExceptions": [],
+  "denyExceptions": [],
+  "dataMaskPolicyItems": [{
+    "dataMaskInfo": {
+      "dataMaskType": "MASK_SHOW_FIRST_4",
+      "conditionExpr": "",
+      "valueExpr": ""
+    },
+    "accesses": [{
+      "type": "select",
+      "isAllowed": true
+    }],
+    "users": [
+      "analyst1"
+    ],
+    "groups": [],
+    "conditions": [],
+    "delegateAdmin": false
+  }],
+  "rowFilterPolicyItems": [],
+  "id": 9,
+  "isEnabled": true,
+  "version": 3
+}

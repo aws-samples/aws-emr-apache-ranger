@@ -25,7 +25,7 @@
     {
       "itemId": 1,
       "name": "sthreeresource",
-      "type": "path",
+      "type": "string",
       "level": 10,
       "parent": "",
       "mandatory": true,

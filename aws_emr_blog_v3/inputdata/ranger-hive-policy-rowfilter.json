@@ -1,0 +1,46 @@
+{
+  "service": "hivedev",
+  "name": "FileByPageSource",
+  "policyType": 2,
+  "description": "",
+  "isAuditEnabled": true,
+  "resources": {
+    "table": {
+      "values": [
+        "tblanalyst1"
+      ],
+      "isExcludes": false,
+      "isRecursive": false
+    },
+    "database": {
+      "values": [
+        "default"
+      ],
+      "isExcludes": false,
+      "isRecursive": false
+    }
+  },
+  "policyItems": [],
+  "denyPolicyItems": [],
+  "allowExceptions": [],
+  "denyExceptions": [],
+  "dataMaskPolicyItems": [],
+  "rowFilterPolicyItems": [{
+    "rowFilterInfo": {
+      "filterExpr": "page='awempire.com'"
+    },
+    "accesses": [{
+      "type": "select",
+      "isAllowed": true
+    }],
+    "users": [
+      "analyst1"
+    ],
+    "groups": [],
+    "conditions": [],
+    "delegateAdmin": false
+  }],
+  "id": 10,
+  "isEnabled": true,
+  "version": 1
+}

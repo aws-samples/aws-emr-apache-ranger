@@ -9,14 +9,12 @@ Parameters:
     MaxLength: 63
     MinLength: 3
     Default: aws-bigdata-blog
-    AllowedValues: ["aws-bigdata-blog"]
   S3SourcesPrefix:
     Type: String
     Description: S3 prefix with sources WITH ending slash
     MaxLength: 63
     MinLength: 3
     Default: artifacts/aws-blog-emr-ranger
-    AllowedValues: ["artifacts/aws-blog-emr-ranger"]
   ProjectVersion:
     Default: 3.0
     Description: Project version
@@ -24,15 +22,32 @@ Parameters:
     AllowedValues:
       - 3.0
       - beta
+  ExistingS3BucketName:
+      Default: ""
+      Description: The bucket name where to copy the artifacts. If empty a new bucket will be created and artifacts will be copied there.
+      Type: String
+  S3Key:
+      Description: S3Key of the code. See considerations of the ExistingS3BucketName property.
+      Type: String
+      Default: artifacts/aws-blog-emr-ranger
   S3Objects:
     Type: CommaDelimitedList
     Description: S3 Object to be copied
-    Default: launch-cluster.zip, scripts/download-scripts.sh, scripts/remove-yum-package-name-validator.sh, scripts/configure_ranger_glue_support_with_bootstrap.sh, scripts/enable-glue-catalog-support.sh, scripts/create-hdfs-home-ba.sh, scripts/setup-trino-redshift-connector.sh
+    Default: launch-cluster.zip, scripts/download-scripts.sh, scripts/remove-yum-package-name-validator.sh, scripts/configure_ranger_glue_support_with_bootstrap.sh, scripts/enable-glue-catalog-support.sh, scripts/create-hdfs-home-ba.sh, scripts/replace-trino-plugin-emr-6.9.0.sh, scripts/setup-trino-redshift-connector.sh
+  CreateTLSCerts:
+      Description: This flag indicates if certificates will be created inside this bucket. This will be used at deletion phase.
+      Default: false
+      Type: String
+      AllowedValues: [ true, false ]
+
+Conditions:
+    CreateNewBucket: !Equals [!Ref "ExistingS3BucketName", ""]
 
 Resources:
 
   S3BucketRegionSources:
     Type: AWS::S3::Bucket
+    Condition: CreateNewBucket
     Properties:
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -40,16 +55,33 @@ Resources:
               SSEAlgorithm: AES256
     DeletionPolicy: Delete
 
+  S3BucketWaitHandle:
+      Condition: CreateNewBucket
+      DependsOn: S3BucketRegionSources
+      Type: "AWS::CloudFormation::WaitConditionHandle"
+
+  WaitHandle:
+      Type: "AWS::CloudFormation::WaitConditionHandle"
+
+  WaitCondition:
+      Type: "AWS::CloudFormation::WaitCondition"
+      Properties:
+        Handle: !If [CreateNewBucket, !Ref S3BucketWaitHandle, !Ref WaitHandle]
+        Timeout: "1"
+        Count: 0
+
   CopyZips:
     Type: AWS::CloudFormation::CustomResource
     DependsOn:
-      - S3BucketRegionSources
+      - WaitCondition
     Properties:
       ServiceToken: !GetAtt 'CopyZipsFunction.Arn'
-      DestBucket:  !Ref 'S3BucketRegionSources'
+      DestBucket: !If [ CreateNewBucket, !Ref 'S3BucketRegionSources', !Ref 'ExistingS3BucketName' ]
+      DestPrefix: !Ref 'S3Key'
       SourceBucket: !Ref 'S3BucketSources'
       SourcePrefix: !Ref 'S3SourcesPrefix'
       ProjectVersion: !Ref 'ProjectVersion'
+      CreateTLSCerts: !Ref 'CreateTLSCerts'
       Counter: "1"
       Objects: !Ref S3Objects
 
@@ -86,14 +118,14 @@ Resources:
                 Action:
                   - s3:ListBucket
                 Resource:
-                  - !Sub 'arn:aws:s3:::${S3BucketRegionSources}'
+                  - !Join [ '', [ 'arn:aws:s3:::', !If [ CreateNewBucket, !Ref 'S3BucketRegionSources', !Ref 'ExistingS3BucketName' ]]]
               - Effect: Allow
                 Action:
                   - s3:PutObject
                   - s3:DeleteObject
                   - s3:PutObjectTagging
                 Resource:
-                  - !Sub 'arn:aws:s3:::${S3BucketRegionSources}/*'
+                  - !Join [ '', [ 'arn:aws:s3:::', !If [ CreateNewBucket, !Ref 'S3BucketRegionSources', !Ref 'ExistingS3BucketName' ], '/*']]
 
   CopyZipsFunction:
     Type: AWS::Lambda::Function
@@ -112,7 +144,7 @@ Resources:
           import boto3
           import cfnresponse
 
-          def copy_objects(source_bucket, dest_bucket, objects, prefix, project_version):
+          def copy_objects(source_bucket, dest_bucket, objects, prefix, dest_prefix, project_version):
               s3 = boto3.client('s3')
               for o in objects:
                   key =  prefix + '/' + project_version + '/' + o
@@ -120,18 +152,21 @@ Resources:
                       'Bucket': source_bucket,
                       'Key': key
                   }
-                  print('copy source_bucket:' + source_bucket + ' destination_bucket: '+ dest_bucket + '  key: ' + key)
-                  s3.copy_object(CopySource=copy_source, Bucket=dest_bucket, Key=key)
+                  dest_key = dest_prefix + '/' + project_version + '/' + o
+                  print('copy source_bucket:' + source_bucket + ' destination_bucket: '+ dest_bucket + '  source_key: ' + key + '  destination_key: ' + dest_key)
+                  s3.copy_object(CopySource=copy_source, Bucket=dest_bucket, Key=dest_key)
 
-          def delete_objects(bucket, objects, prefix, project_version):
+          def delete_objects(bucket, objects, prefix, project_version, create_tls_certs):
               s3 = boto3.client('s3')
               objects = {'Objects': [{'Key':  prefix + '/' + project_version + '/' + o} for o in objects]}
               s3.delete_objects(Bucket=bucket, Delete=objects)
-              s3_list_response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix + '/' + project_version + '/emr-tls/')
-              if 'Contents' in s3_list_response:
-                for object in s3_list_response['Contents']:
-                    print('Deleting', object['Key'])
-                    s3.delete_object(Bucket=bucket, Key=object['Key'])
+              #We want to delete certs only if they were created by the stack
+              if create_tls_certs == 'true':
+                  s3_list_response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix + '/' + project_version + '/emr-tls/')
+                  if 'Contents' in s3_list_response:
+                    for object in s3_list_response['Contents']:
+                        print('Deleting', object['Key'])
+                        s3.delete_object(Bucket=bucket, Key=object['Key'])
 
           def timeout(event, context):
               logging.error('Execution is about to time out, sending failure response to CloudFormation')
@@ -149,13 +184,15 @@ Resources:
                   source_prefix = event['ResourceProperties']['SourcePrefix']
                   project_version = event['ResourceProperties']['ProjectVersion']
                   dest_bucket = event['ResourceProperties']['DestBucket']
+                  dest_prefix = event['ResourceProperties']['DestPrefix']
+                  create_tls_certs = event['ResourceProperties']['CreateTLSCerts']
                   if source_bucket == dest_bucket:
                     return
                   objects = event['ResourceProperties']['Objects']
                   if event['RequestType'] == 'Delete':
-                      delete_objects(dest_bucket,  objects, source_prefix, project_version)
+                      delete_objects(dest_bucket, objects, dest_prefix, project_version, create_tls_certs)
                   else:
-                      copy_objects(source_bucket, dest_bucket,  objects, source_prefix, project_version)
+                      copy_objects(source_bucket, dest_bucket, objects, source_prefix, dest_prefix, project_version)
               except Exception as e:
                   logging.error('Exception: %s' % e, exc_info=True)
                   status = cfnresponse.FAILED
@@ -167,4 +204,4 @@ Outputs:
 
   RegionalS3Bucket:
     Description:  Regional S3 bucket with artifacts required by the EMR cluster. This bucket can be reused as the 'S3Bucket' value for future EMR cluster stacks
-    Value: !Ref S3BucketRegionSources
+    Value: !If [ CreateNewBucket, !Ref 'S3BucketRegionSources', !Ref 'ExistingS3BucketName' ]
