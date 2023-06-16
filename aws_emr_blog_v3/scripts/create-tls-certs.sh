@@ -14,7 +14,7 @@
 #?#  AWS_REGION                 AWS region where you want to install the secrets eg: us-east-1
 #?#  S3_BUCKET                  Amazon S3 bucket where to copy the generated certificates eg: mybucket
 #?#  S3_PREFIX                  Amazon S3 bucket prefix where to copy the generated certificates eg: myfolder1/myfolder2
-#?#  PROJECT_VERSION            Project version eg: 3.0
+#?#  PROJECT_VERSION            Project version eg: emr_ranger_native
 #?#
 #==============================================================================
 

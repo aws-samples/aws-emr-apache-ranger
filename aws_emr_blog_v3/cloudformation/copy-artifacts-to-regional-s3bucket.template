@@ -16,12 +16,11 @@ Parameters:
     MinLength: 3
     Default: artifacts/aws-blog-emr-ranger
   ProjectVersion:
-    Default: 3.0
+    Default: emr_ranger_native
     Description: Project version
     Type: String
     AllowedValues:
-      - 3.0
-      - beta
+      - emr_ranger_native
   ExistingS3BucketName:
       Default: ""
       Description: The bucket name where to copy the artifacts. If empty a new bucket will be created and artifacts will be copied there.

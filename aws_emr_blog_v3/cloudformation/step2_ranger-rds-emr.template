@@ -246,9 +246,9 @@ Parameters:
     Type: String
     Default: ""
   S3Key:
-    Description: S3Key where to copy the needed artifacts and eventually to create EMR tls certificates. See considerations of the S3Bucket property. Everything will end up under s3://[S3Bucket]/[S3Key]/[ProjectVersion]/
+    Description: S3Key where to copy the needed artifacts and eventually to create EMR tls certificates. See considerations of the S3Bucket property. Everything will end up under s3://[S3Bucket]/[S3Key]/[ProjectVersion]/ . Important - s3://[S3Bucket]/[S3Key] should be different than s3://[S3ArtifactBucket]/[S3ArtifactKey]
     Type: String
-    Default: artifacts/aws-blog-emr-ranger
+    Default: copied_artifacts/aws-blog-emr-ranger
   S3ArtifactBucket:
     Description: S3Bucket where needed artifacts are currently stored (if you did not copy the resources inside a custom bucket leave this)
     Type: String
@@ -258,12 +258,11 @@ Parameters:
     Type: String
     Default: artifacts/aws-blog-emr-ranger
   ProjectVersion:
-    Default: 3.0
+    Default: emr_ranger_native
     Description: Project version
     Type: String
     AllowedValues:
-      - 3.0
-      - beta
+      - emr_ranger_native
   KeyPairName:
     Description: Name of an existing EC2 key pair to access the Amazon EMR cluster
     Type: AWS::EC2::KeyPair::KeyName

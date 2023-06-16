@@ -107,12 +107,11 @@ Parameters:
     Type: String
     Default: artifacts/aws-blog-emr-ranger
   ProjectVersion:
-    Default: 3.0
+    Default: emr_ranger_native
     Description: Project version
     Type: String
     AllowedValues:
-      - 3.0
-      - beta
+      - emr_ranger_native
   EMRLogDir:
     Description: Log directory for EMR. Eg - s3://xxx
     Type: String
