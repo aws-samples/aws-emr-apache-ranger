@@ -369,6 +369,12 @@ def create(event, context):
             "Classification": "hue-ini",
             "Configurations": [
               {
+                    "Classification": "notebook",
+                    "Properties": {
+                      "interpreters_shown_on_wheel": "hive"
+                    }
+              },
+              {
                       "Classification": "beeswax",
                       "Configurations": [
                         {
@@ -426,6 +432,12 @@ def create(event, context):
             {
             "Classification": "hue-ini",
             "Configurations": [
+              {
+                  "Classification": "notebook",
+                  "Properties": {
+                    "interpreters_shown_on_wheel": "hive"
+                  }
+              },
               {
                   "Classification": "desktop",
                   "Configurations": [

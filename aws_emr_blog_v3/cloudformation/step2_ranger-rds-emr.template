@@ -242,7 +242,7 @@ Parameters:
       - emr-6.9.0
       - emr-6.10.0
   S3Bucket:
-    Description: The bucket name where to copy the needed artifacts and eventually to create EMR tls certificates. If leaving the value empty a new bucket will be created and artifacts will be copied there. Important - If you specify a bucket name and you did not enable the TLS option, be sure to have proper Ranger secrets in Secrets Manager and proper EMR certificates inside 's3://[S3Bucket]/[S3Key]/[ProjectVersion]/emr-tls/emr-certs-certs.zip'. Important - If this value is left empty, CreateTLSCerts will be automatically set to true. Important - This bucket must be in the same region where you are deploying this stack.
+    Description: The bucket name where to copy the needed artifacts and eventually to create EMR tls certificates. If leaving the value empty a new bucket will be created and artifacts will be copied there. Important - If you specify a bucket name and you did not enable the TLS option, be sure to have proper Ranger secrets in Secrets Manager and proper EMR certificates inside 's3://[S3Bucket]/[S3Key]/[ProjectVersion]/emr-tls/emr-certs.zip'. Important - If this value is left empty, CreateTLSCerts will be automatically set to true. Important - This bucket must be in the same region where you are deploying this stack.
     Type: String
     Default: ""
   S3Key:
@@ -305,7 +305,7 @@ Parameters:
     Type: String
     AllowedValues: [ true, false ]
   CreateTLSCerts:
-    Description: This flag controls creation of certs used for Ranger setup. This includes Ranger admin certs, plugin certs/keys used for mutual TLS. If you set this to false, be sure to have proper Ranger secrets in Secrets Manager and proper EMR certificates inside 's3://[S3Bucket]/[S3Key]/[ProjectVersion]/emr-tls/emr-certs-certs.zip' . This will be setup automatically to true if the S3Bucket value is left empty.
+    Description: This flag controls creation of certs used for Ranger setup. This includes Ranger admin certs, plugin certs/keys used for mutual TLS. If you set this to false, be sure to have proper Ranger secrets in Secrets Manager and proper EMR certificates inside 's3://[S3Bucket]/[S3Key]/[ProjectVersion]/emr-tls/emr-certs.zip' . This will be setup automatically to true if the S3Bucket value is left empty.
     Default: true
     Type: String
     AllowedValues: [ true , false]
