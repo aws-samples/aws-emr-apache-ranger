@@ -41,8 +41,8 @@ Parameters:
     Type: String
   NumberOfAZs:
     Type: String
-    AllowedValues: [ "3" ]
-    Default: "3"
+    AllowedValues: [ "2" ]
+    Default: "2"
     Description: Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.
   DomainAdminPassword:
     AllowedPattern: (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*

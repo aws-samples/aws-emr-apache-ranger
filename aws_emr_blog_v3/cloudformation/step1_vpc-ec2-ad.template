@@ -97,8 +97,8 @@ Parameters:
     Type: String
   NumberOfAZs:
     Type: String
-    AllowedValues: [ "3" ]
-    Default: "3"
+    AllowedValues: [ "2"]
+    Default: "2"
     Description: Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.
   S3ArtifactBucket:
     Description: S3Bucket where artifacts are stored (if you did not copy the resources inside a custom bucket leave this)
