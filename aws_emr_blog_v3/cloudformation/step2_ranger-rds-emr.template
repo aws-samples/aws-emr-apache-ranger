@@ -242,9 +242,10 @@ Parameters:
       - emr-6.9.0
       - emr-6.10.0
   S3Bucket:
-    Description: The bucket name where to copy the needed artifacts and eventually to create EMR tls certificates. If leaving the value empty a new bucket will be created and artifacts will be copied there. Important - If you specify a bucket name and you did not enable the TLS option, be sure to have proper Ranger secrets in Secrets Manager and proper EMR certificates inside 's3://[S3Bucket]/[S3Key]/[ProjectVersion]/emr-tls/emr-certs.zip'. Important - If this value is left empty, CreateTLSCerts will be automatically set to true. Important - This bucket must be in the same region where you are deploying this stack.
+    Description: The bucket name (i.e., mybucket) where to copy the needed artifacts and eventually to create EMR tls certificates. If leaving the value empty a new bucket will be created and artifacts will be copied there. Important - If you specify a bucket name and you did not enable the TLS option, be sure to have proper Ranger secrets in Secrets Manager and proper EMR certificates inside 's3://[S3Bucket]/[S3Key]/[ProjectVersion]/emr-tls/emr-certs.zip'. Important - If this value is left empty, CreateTLSCerts will be automatically set to true. Important - This bucket must be in the same region where you are deploying this stack.
     Type: String
     Default: ""
+    "AllowedPattern": "^[a-zA-Z0-9\\-\\.]{3,63}$|^$"
   S3Key:
     Description: S3Key where to copy the needed artifacts and eventually to create EMR tls certificates. See considerations of the S3Bucket property. Everything will end up under s3://[S3Bucket]/[S3Key]/[ProjectVersion]/ . Important - s3://[S3Bucket]/[S3Key] should be different than s3://[S3ArtifactBucket]/[S3ArtifactKey]
     Type: String
