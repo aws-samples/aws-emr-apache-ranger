@@ -340,8 +340,13 @@ sudo sed -i "s|SYNC_LDAP_SEARCH_BASE =.*|SYNC_LDAP_SEARCH_BASE=$ldap_base_dn|g" 
 sudo sed -i "s|SYNC_LDAP_USER_SEARCH_BASE =.*|SYNC_LDAP_USER_SEARCH_BASE=$ldap_base_dn|g" install.properties
 sudo sed -i "s|SYNC_LDAP_USER_SEARCH_FILTER =.*|SYNC_LDAP_USER_SEARCH_FILTER=sAMAccountName=*|g" install.properties
 sudo sed -i "s|SYNC_LDAP_USER_NAME_ATTRIBUTE =.*|SYNC_LDAP_USER_NAME_ATTRIBUTE=sAMAccountName|g" install.properties
-sudo sed -i "s|SYNC_INTERVAL =.*|SYNC_INTERVAL=2|g" install.properties
+
+#With LDAP provider the min sync interval is one hour
+sudo sed -i "s|SYNC_INTERVAL =.*|SYNC_INTERVAL=60|g" install.properties
 # SSL conf
+
+#AUTH_SSL_ENABLED enables the ranger.usersync.enabled property
+sudo sed -i "s|AUTH_SSL_ENABLED=.*|AUTH_SSL_ENABLED=true|g" install.properties
 sudo sed -i "s|AUTH_SSL_TRUSTSTORE_FILE=.*|AUTH_SSL_TRUSTSTORE_FILE=$ranger_admin_truststore_location|g" install.properties
 sudo sed -i "s|AUTH_SSL_TRUSTSTORE_PASSWORD=.*|AUTH_SSL_TRUSTSTORE_PASSWORD=$ranger_admin_truststore_password|g" install.properties
 
