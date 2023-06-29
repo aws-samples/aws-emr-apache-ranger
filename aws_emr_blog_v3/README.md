@@ -24,10 +24,10 @@ The code deploys the following:
 
 Review these active items currenlty in under the V3 main branch [https://github.com/aws-samples/aws-emr-apache-ranger/projects/1?card_filter_query=label%3Av3]
 
- 1. Create VPC/AD server (takes ~10 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/v3/cloudformation/step1_vpc-ec2-ad.template)
+ 1. Create VPC/AD server (takes ~10 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlog-Step1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/emr_ranger_native/cloudformation/step1_vpc-ec2-ad.template)
     - NOTE: The 'beta' code supports multi-region deployment by creating a new regional bucket
- 2. Setup the Ranger Server/RDS Instance/EMR Cluster (takes ~15 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/v3/cloudformation/step2_ranger-rds-emr.template)
-  - NOTE: The 'V3' code now supports multi-region deployment by creating a new regional bucket. Make sure you select the following parameter values to allow multi-region deployment (required is cluster in not in US-EAST-1) and automatic creation of the self-signed certs required by EMR for Ranger integration. 
+ 2. Setup the Ranger Server/RDS Instance/EMR Cluster (takes ~15 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlog-Step2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/emr_ranger_native/cloudformation/step2_ranger-rds-emr.template)
+  - NOTE: The 'emr_ranger_native' code now supports multi-region deployment by creating a new regional bucket. Make sure you select the following parameter values to allow multi-region deployment (required is cluster in not in US-EAST-1) and automatic creation of the self-signed certs required by EMR for Ranger integration. 
     - **CreateRegionalS3BucketAndCopyScripts: 'true'** -- Will create a regional bucket and copy the required files
     - **CreateTLSCerts: 'true'** -- Will create self-signed certs and upload to Secrets manager
     
@@ -39,9 +39,9 @@ All active development code is under the Beta branch. Review these active items 
 
 Steps to deploy the Beta stack:
 
- 1. Create VPC/AD server (takes ~10 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/beta/cloudformation/step1_vpc-ec2-ad.template)
+ 1. Create VPC/AD server (takes ~10 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlog-Step1&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/beta/cloudformation/step1_vpc-ec2-ad.template)
     - NOTE: The 'beta' code supports multi-region deployment by creating a new regional bucket
- 2. Setup the Ranger Server/RDS Instance/EMR Cluster (takes ~15 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlogV3-Step2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/beta/cloudformation/step2_ranger-rds-emr.template)
+ 2. Setup the Ranger Server/RDS Instance/EMR Cluster (takes ~15 min to run) [![Foo](../images/launch_stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=EMRSecurityWithRangerBlog-Step2&templateURL=https://s3.amazonaws.com/aws-bigdata-blog/artifacts/aws-blog-emr-ranger/beta/cloudformation/step2_ranger-rds-emr.template)
   - NOTE: The 'beta' code supports multi-region deployment by creating a new regional bucket. Make sure you select the following parameter values:
     - **CreateRegionalS3BucketAndCopyScripts: 'true'** -- Will create a regional bucket and copy the required files
     - **CreateTLSCerts: 'true'** -- Will create self-signed certs and upload to Secrets manager
