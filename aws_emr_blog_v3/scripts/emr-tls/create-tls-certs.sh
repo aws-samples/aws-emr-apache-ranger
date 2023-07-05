@@ -84,7 +84,7 @@ rm -rf ${keystore_location}
 generate_certs ranger-server
 generate_certs ranger-agents
 generate_certs solr-client
-generate_certs emr-certs
+generate_certs emr
 
 
 # Generate KeyStore and TrustStore for the Ranger plugins
