@@ -102,6 +102,7 @@ Resources:
       ToPort: '-1'
       SourceSecurityGroupId: !GetAtt [resSGBase, GroupId]
   resMySQLDB:
+    DependsOn: resMySQLSubnetGroup
     Type: AWS::RDS::DBInstance
     Properties:
       DBName: !Ref 'MySQLDBName'

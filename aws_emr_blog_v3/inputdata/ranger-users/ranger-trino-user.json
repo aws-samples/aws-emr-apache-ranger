@@ -5,7 +5,7 @@
   "loginId": "trino",
   "emailAddress": null,
   "description": "trino user",
-  "password" : "user1pass",
+  "password" : "TrinoPassword1",
   "groupIdList": [],
   "groupNameList": [],
   "status": 1,

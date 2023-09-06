@@ -1,0 +1,72 @@
+{
+  "service": "hivedev",
+  "name": "all - database, udf",
+  "policyType": 0,
+  "description": "Policy for all - database, udf",
+  "isAuditEnabled": true,
+  "resources": {
+    "udf": {
+      "values": [
+        "*"
+      ],
+      "isExcludes": false,
+      "isRecursive": false
+    },
+    "database": {
+      "values": [
+        "*"
+      ],
+      "isExcludes": false,
+      "isRecursive": false
+    }
+  },
+  "policyItems": [{
+    "accesses": [{
+      "type": "select",
+      "isAllowed": true
+    },
+      {
+        "type": "update",
+        "isAllowed": true
+      },
+      {
+        "type": "create",
+        "isAllowed": true
+      },
+      {
+        "type": "drop",
+        "isAllowed": true
+      },
+      {
+        "type": "alter",
+        "isAllowed": true
+      },
+      {
+        "type": "index",
+        "isAllowed": true
+      },
+      {
+        "type": "lock",
+        "isAllowed": true
+      },
+      {
+        "type": "all",
+        "isAllowed": true
+      }
+    ],
+    "users": [
+      "policymgr_hive"
+    ],
+    "groups": [],
+    "conditions": [],
+    "delegateAdmin": true
+  }],
+  "denyPolicyItems": [],
+  "allowExceptions": [],
+  "denyExceptions": [],
+  "dataMaskPolicyItems": [],
+  "rowFilterPolicyItems": [],
+  "id": 3,
+  "isEnabled": true,
+  "version": 1
+}

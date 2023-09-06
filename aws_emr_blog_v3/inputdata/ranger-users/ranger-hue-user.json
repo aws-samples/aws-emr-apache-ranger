@@ -5,7 +5,7 @@
   "loginId": "hue",
   "emailAddress" : null,
   "description" : "hue user",
-  "password" : "user1pass",
+  "password" : "HuePassword1",
   "groupIdList": [],
   "groupNameList": [],
   "status": 1,

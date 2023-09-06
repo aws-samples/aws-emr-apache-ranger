@@ -2,19 +2,19 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Creates an RDS instance
 Parameters:
   VPC:
-    Description: Select the Virtual Private Cloud (VPC) that was created
+    Description: Select the Virtual Private Cloud (VPC) where to deploy the resources (this is present on the output of the previous Stack Step1 - VPC Key)
     Type: AWS::EC2::VPC::Id
   PrivateSubnet1AID:
-    Description: ID of an existing subnet for the domain controller
+    Description: ID of an existing subnet for the domain controller (this is present on the output of the previous Stack Step1 - PrivateSubnet1AID Key)
     Type: AWS::EC2::Subnet::Id
   PrivateSubnet2AID:
-    Description: ID of an existing subnet for the domain controller
+    Description: ID of an existing subnet for the domain controller (this is present on the output of previous Stack Step1 - PrivateSubnet2AID Key)
     Type: AWS::EC2::Subnet::Id
   PublicSubnet1AID:
-    Description: Public Subnet1.
+    Description: Public Subnet1. (this is present on the output of the previous Stack Step1 - PublicSubnet1AID Key)
     Type: AWS::EC2::Subnet::Id
   PublicSubnet2AID:
-    Description: Public Subnet1.
+    Description: Public Subnet1. (this is present on the output of the previous Stack Step1 - PublicSubnet2AID Key)
     Type: AWS::EC2::Subnet::Id
   InstallEMRRangerinPublicSubnet:
     Description: Flag to indicate if Ranger and EMR servers should be run in the Public subnet
@@ -36,18 +36,18 @@ Parameters:
     Default: 10.0.0.0/16
     ConstraintDescription: must be a valid CIDR range of the form x.x.x.x/x
   AdditionalSourcePrefixToSG:
-    Description: (Optional) Sources that are allowd to access the Ranger ELB and EMR master node. Should be a source prefix
+    Description: (Optional) Sources that are allowed to access the Ranger ELB and EMR master node. Should be a source prefix
       e.g., pl-xxx
     Type: String
   NumberOfAZs:
     Type: String
-    AllowedValues: [ "2", "3" ]
-    Default: "3"
+    AllowedValues: [ "2" ]
+    Default: "2"
     Description: Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.
   DomainAdminPassword:
     AllowedPattern: (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
     Description: Password for the domain admin user. Must be at least 8 characters
-      containing letters, numbers and symbols
+      containing letters, numbers and symbols (Should be the sames used in the previous Stack - Step1)
     MaxLength: '32'
     MinLength: '8'
     NoEcho: 'true'
@@ -58,7 +58,7 @@ Parameters:
     Type: String
     NoEcho: 'true'
   LDAPHostPrivateIP:
-    Description: IP Address of the AD server
+    Description: IP Address of the AD server (this is present on the output of the previous Stack Step1 - LDAPHostPrivateIP Key)
     Type: String
   LDAPSearchBase:
     Description: Ldap search base
@@ -105,6 +105,8 @@ Parameters:
       - m4.xlarge
       - m4.2xlarge
       - m4.4xlarge
+      - m5.xlarge
+      - m5.2xlarge
       - r5.2xlarge
   CoreInstanceType:
     Description: Instance type for the cluster nodes
@@ -115,9 +117,11 @@ Parameters:
       - m4.xlarge
       - m4.2xlarge
       - m4.4xlarge
+      - m5.xlarge
+      - m5.2xlarge
       - r5.2xlarge
   RangerInstanceType:
-    Default: r5.xlarge
+    Default: m5.xlarge
     Description: Instance Type of the core node
     Type: String
     AllowedValues:
@@ -132,7 +136,7 @@ Parameters:
     Description: Cluster name for the EMR
     Type: String
   EMRLogDir:
-    Description: 'Log Dir for the EMR cluster. Eg: s3://xxx'
+    Description: 'Log Dir for the EMR cluster. Eg: s3://xxx - the bucket must be in the same region where you are deploying this stack'
     Type: String
     AllowedPattern: ^s3://.*
   DomainDNSName:
@@ -201,14 +205,13 @@ Parameters:
     AllowedValues:
       - binduser
   RangerVersion:
-    Description: 'RangerVersion. Expected values are : 0.6,0.7,1.0,2.0. NOTE: Use Ranger 0.6 if
-      EMR version is 5.0'
+    Description: 'RangerVersion. At the moment only 2.0 is accepted'
     AllowedValues:
       - '2.0'
     Type: String
     Default: '2.0'
   RangerHttpProtocol:
-    Description: Ranger HTTP protocol
+    Description: Ranger HTTP protocol. Only https is accepted
     Type: String
     Default: 'https'
     AllowedValues:
@@ -228,7 +231,7 @@ Parameters:
     AllowedValues: [ true ]
   emrReleaseLabel:
     Type: String
-    Default: emr-5.32.0
+    Default: emr-6.10.0
     AllowedValues:
       - emr-5.32.0
       - emr-5.36.0
@@ -236,31 +239,31 @@ Parameters:
       - emr-6.4.0
       - emr-6.7.0
       - emr-6.8.0
+      - emr-6.9.0
+      - emr-6.10.0
   S3Bucket:
-    Description: S3Bucket for the code [Important!! for non US-East-1 regions the code needs to be in a regional bucket. Either pass the regional bucket name with the EMR bootstrap scripts and Lambda function code, or set 'CreateRegionalS3BucketAndCopyScripts' parameter to 'true']
+    Description: The bucket name (i.e., mybucket) where to copy the needed artifacts and eventually to create EMR tls certificates. If leaving the value empty a new bucket will be created and artifacts will be copied there. Important - If you specify a bucket name and you did not enable the TLS option, be sure to have proper Ranger secrets in Secrets Manager and proper EMR certificates inside 's3://[S3Bucket]/[S3Key]/[ProjectVersion]/emr-tls/emr-certs.zip'. Important - If this value is left empty, CreateTLSCerts will be automatically set to true. Important - This bucket must be in the same region where you are deploying this stack.
     Type: String
-    Default: aws-bigdata-blog
+    Default: ""
+    "AllowedPattern": "^[a-zA-Z0-9\\-\\.]{3,63}$|^$"
   S3Key:
-    Description: S3Key of the code [Important!! for non US-East-1 regions the code needs to be in a regional bucket. Either pass the regional bucket name with the EMR bootstrap scripts and Lambda function code, or set 'CreateRegionalS3BucketAndCopyScripts' parameter to 'true']
+    Description: S3Key where to copy the needed artifacts and eventually to create EMR tls certificates. See considerations of the S3Bucket property. Everything will end up under s3://[S3Bucket]/[S3Key]/[ProjectVersion]/ . Important - s3://[S3Bucket]/[S3Key] should be different than s3://[S3ArtifactBucket]/[S3ArtifactKey]
     Type: String
-    Default: artifacts/aws-blog-emr-ranger
+    Default: copied_artifacts/aws-blog-emr-ranger
   S3ArtifactBucket:
-    Description: S3Bucket where artifacts are stored
+    Description: S3Bucket where needed artifacts are currently stored (if you did not copy the resources inside a custom bucket leave this)
     Type: String
-    Default: aws-bigdata-blog
-    AllowedValues: [ "aws-bigdata-blog" ]
+    Default: "aws-bigdata-blog"
   S3ArtifactKey:
-    Description: S3Key of the Lambda code
+    Description: S3Key where needed artifacts are currently stored (if you did not copy the resources inside a custom bucket leave this)
     Type: String
     Default: artifacts/aws-blog-emr-ranger
-    AllowedValues: [ "artifacts/aws-blog-emr-ranger" ]
   ProjectVersion:
-    Default: 3.0
+    Default: emr_ranger_native
     Description: Project version
     Type: String
     AllowedValues:
-      - 3.0
-      - beta
+      - emr_ranger_native
   KeyPairName:
     Description: Name of an existing EC2 key pair to access the Amazon EMR cluster
     Type: AWS::EC2::KeyPair::KeyName
@@ -271,17 +274,16 @@ Parameters:
     AllowedValues:
       - root
   DBRootPassword:
-    Description: The RDS MySQL database password (Should be the sames used in the previous Stack - Step1)
+    Description: The RDS MySQL database password
     MaxLength: '41'
     MinLength: '8'
     NoEcho: 'true'
     Type: String
   RangerAdminPassword:
-    Description: Password of the Ranger Admin server
+    Description: Password of the Ranger Admin server (default is admin, if changing password should be minimum 8 characters, at least one uppercase letter, one lowercase letter and one numeric.)
     NoEcho: 'true'
     Default: admin
     Type: String
-    AllowedValues: [ "admin" ]
   CreateNonEMRResources:
     Description: Only Install EMR cluster, Other resources which might have been created with previous stacks will be ignored. Eg- CloudWatch Log Groups
       Allows you to re-run the same stack multiple times.
@@ -303,16 +305,11 @@ Parameters:
     Default: false
     Type: String
     AllowedValues: [ true, false ]
-  CreateRegionalS3BucketAndCopyScripts:
-    Description: This flag controls the creation of a new S3 bucket in the current region that will contain copies of the artifacts required for the cluster setup. The newly created bucket is used in place of 'S3Bucket' value. NOTE - For non US-EAST-1 regions, this will default to "true"
-    Default: false
-    Type: String
-    AllowedValues: [ true, false ]
   CreateTLSCerts:
-    Description: This flag controls creation of certs used for Ranger setup. This includes Ranger admin certs, plugin certs/keys used for mutual TLS.  Additionally, if a new regional bucket is created using 'CreateRegionalS3BucketAndCopyScripts', certificates required by Elastic MapReduce (EMR) for In-Transit Encryption will also get created.
-    Default: false
+    Description: This flag controls creation of certs used for Ranger setup. This includes Ranger admin certs, plugin certs/keys used for mutual TLS. If you set this to false, be sure to have proper Ranger secrets in Secrets Manager and proper EMR certificates inside 's3://[S3Bucket]/[S3Key]/[ProjectVersion]/emr-tls/emr-certs.zip' . This will be setup automatically to true if the S3Bucket value is left empty.
+    Default: true
     Type: String
-    AllowedValues: [ true, false ]
+    AllowedValues: [ true , false]
   InstallRangerHDFSPlugin:
     Description: Flag to control if the Ranger HDFS plugin will be added
     Default: false
@@ -340,8 +337,8 @@ Metadata:
           - PublicSubnet2AID
 Conditions:
   USEastRegion: !Equals [ !Ref 'AWS::Region', "us-east-1" ]
+  CreateTLSCertsCondition: !Or [!Equals [ !Ref CreateTLSCerts, true ], !Equals [ !Ref "S3Bucket", "" ] ]
   NotUSEastRegion: !Not [ Condition: USEastRegion ]
-  CreateRegionalS3BucketAndCopyScriptsCondition: !Or [!Equals [ !Ref CreateRegionalS3BucketAndCopyScripts, true ], Condition: NotUSEastRegion ]
   EnableKerberos: !Equals [ true, !Ref EnableKerberos ]
   3AZDeployment: !Equals [ !Ref NumberOfAZs, "3" ]
   2AZDeployment: !Or
@@ -384,11 +381,15 @@ Resources:
         MySQLDBUserName: !Ref DBUserName
   CopyS3Artifacts:
     Type: AWS::CloudFormation::Stack
-    Condition: CreateRegionalS3BucketAndCopyScriptsCondition
     Properties:
       TemplateURL: !Join [ '', [ 'https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion','/cloudformation/', 'copy-artifacts-to-regional-s3bucket.template' ] ]
       Parameters:
+        S3BucketSources: !Ref S3ArtifactBucket
+        S3SourcesPrefix: !Ref S3ArtifactKey
         ProjectVersion: !Ref ProjectVersion
+        ExistingS3BucketName: !Ref S3Bucket
+        S3Key: !Ref S3Key
+        CreateTLSCerts: !If [ CreateTLSCertsCondition, true, false ]
   RangerServer:
     DependsOn:
       - RDSDatabase
@@ -396,8 +397,8 @@ Resources:
     Properties:
       TemplateURL: !Join [ '', [ 'https://s3.amazonaws.com/', !Ref 'S3ArtifactBucket', '/', !Ref 'S3ArtifactKey', '/', !Ref 'ProjectVersion','/cloudformation/', 'ranger-server.template' ] ]
       Parameters:
-        S3Bucket: !If [ CreateRegionalS3BucketAndCopyScriptsCondition, !GetAtt 'CopyS3Artifacts.Outputs.RegionalS3Bucket', !Ref 'S3Bucket' ]
-        S3Key: !Ref 'S3ArtifactKey'
+        S3Bucket: !GetAtt 'CopyS3Artifacts.Outputs.RegionalS3Bucket'
+        S3Key: !Ref 'S3Key'
         S3ArtifactBucket: !Ref 'S3ArtifactBucket'
         S3ArtifactKey: !Ref 'S3ArtifactKey'
         ProjectVersion: !Ref 'ProjectVersion'
@@ -411,6 +412,7 @@ Resources:
         InstanceType: !Ref RangerInstanceType
         DBHostName: !GetAtt 'RDSDatabase.Outputs.RDSInstanceAddress'
         DBRootPassword: !Ref DBRootPassword
+        RangerAdminPassword: !Ref RangerAdminPassword
         ADAdminUsername: !Ref 'DomainAdminUser'
         ADAdminPassword: !Ref 'DomainAdminPassword'
         LDAPHostPrivateIP: !Ref LDAPHostPrivateIP
@@ -423,8 +425,8 @@ Resources:
         AttachAdditionalSourcePrefixToSG: !Ref AttachAdditionalSourcePrefixToSG
         CIDRAccessToPrivateSubnetResources: !Ref CIDRAccessToPrivateSubnetResources
         AdditionalSourcePrefixToSG: !Ref AdditionalSourcePrefixToSG
-        IsRegionalBucketCreated: !If [ CreateRegionalS3BucketAndCopyScriptsCondition, true, false ]
-        CreateTLSCerts: !Ref CreateTLSCerts
+        IsRegionalBucketCreated: !If [ CreateTLSCertsCondition, true, false ]
+        CreateTLSCerts: !If [ CreateTLSCertsCondition, true, false ]
   EMRCluster:
     Type: AWS::CloudFormation::Stack
     DependsOn:
@@ -434,7 +436,7 @@ Resources:
       Parameters:
         ProjectVersion: !Ref 'ProjectVersion'
         # S3Bucket: !Ref 'S3Bucket'
-        S3Bucket: !If [ CreateRegionalS3BucketAndCopyScriptsCondition, !GetAtt 'CopyS3Artifacts.Outputs.RegionalS3Bucket', !Ref 'S3Bucket' ]
+        S3Bucket: !GetAtt 'CopyS3Artifacts.Outputs.RegionalS3Bucket'
         S3Key: !Ref 'S3Key'
         S3ArtifactBucket: !Ref 'S3ArtifactBucket'
         S3ArtifactKey: !Ref 'S3ArtifactKey'

@@ -213,49 +213,6 @@ def create(event, context):
                                       ],
                                       "Properties": {
                                       }
-                                  },
-                                  {
-                                      "Classification": "hue-ini",
-                                      "Configurations": [
-                                          {
-                                              "Classification": "desktop",
-                                              "Configurations": [
-                                                  {
-                                                      "Classification": "auth",
-                                                      "Properties": {
-                                                          "backend": "desktop.auth.backend.LdapBackend"
-                                                      }
-                                                  },
-                                                  {
-                                                      "Classification": "ldap",
-                                                      "Properties": {
-                                                          "base_dn": event["ResourceProperties"]["LDAPGroupSearchBase"],
-                                                          "bind_dn": event["ResourceProperties"][
-                                                                         "LDAPBindUserName"] + '@' +
-                                                                     event["ResourceProperties"]["DomainDNSName"],
-                                                          "bind_password": event["ResourceProperties"][
-                                                              "LDAPBindPassword"],
-                                                          "debug": "true",
-                                                          "force_username_lowercase": "true",
-                                                          "ignore_username_case": "true",
-                                                          "ldap_url": "ldap://" + event["ResourceProperties"][
-                                                              "LDAPHostPrivateIP"],
-                                                          "ldap_username_pattern": "uid:<username>," +
-                                                                                   event["ResourceProperties"][
-                                                                                       "LDAPSearchBase"],
-                                                          "nt_domain": event["ResourceProperties"]["DomainDNSName"],
-                                                          "search_bind_authentication": "true",
-                                                          "trace_level": "0",
-                                                          "sync_groups_on_login": "true",
-                                                          "create_users_on_login": "true",
-                                                          "use_start_tls": "false"
-                                                      }
-                                                  }
-                                              ]
-                                          }
-                                      ],
-                                      "Properties": {
-                                      }
                                   }
                               ], 'Instances': {
                 "InstanceGroups": [
@@ -287,7 +244,7 @@ def create(event, context):
         if event["ResourceProperties"]["EMRSecurityConfig"] != "false":
             cluster_parameters['SecurityConfiguration'] = event["ResourceProperties"]["EMRSecurityConfig"]
             cluster_parameters['KerberosAttributes'] = {
-                "Realm": event["ResourceProperties"]["KerberosRealm"],
+                "Realm": str(event["ResourceProperties"]["KerberosRealm"]).upper(),
                 "KdcAdminPassword": event["ResourceProperties"]["KdcAdminPassword"],
                 "CrossRealmTrustPrincipalPassword": event["ResourceProperties"]["CrossRealmTrustPrincipalPassword"],
                 "ADDomainJoinUser": event["ResourceProperties"]["ADDomainUser"],
@@ -341,8 +298,7 @@ def create(event, context):
                 "hive.server2.thrift.http.path": "cliservice",
                 "hive.server2.transport.mode": "binary",
                 "hive.server2.allow.user.substitution": "true",
-                "hive.server2.authentication.kerberos.principal": "hive/_HOST@" + event["ResourceProperties"][
-                    "DefaultDomain"],
+                "hive.server2.authentication.kerberos.principal": "hive/_HOST@" + str(event["ResourceProperties"]["DefaultDomain"]).upper(),
                 "hive.server2.enable.doAs": "false"
             }
 
@@ -406,6 +362,124 @@ def create(event, context):
             }
         })
 
+        #we need this as per a Hue issue in 6.10 not properly configuring SSL for Hive
+        if emrVersion.split(".")[0] == '6' and (emrVersion.split(".")[1] in ['9','10'] ):
+            cluster_parameters['Configurations'].append(
+            {
+            "Classification": "hue-ini",
+            "Configurations": [
+              {
+                    "Classification": "notebook",
+                    "Properties": {
+                      "interpreters_shown_on_wheel": "hive"
+                    }
+              },
+              {
+                      "Classification": "beeswax",
+                      "Configurations": [
+                        {
+                          "Classification": "ssl",
+                          "Properties": {
+                            "enabled": "true",
+                            "validate": "false"
+                          }
+                        }
+                      ],
+                      "Properties": {}
+              },
+              {
+                  "Classification": "desktop",
+                  "Configurations": [
+                      {
+                          "Classification": "auth",
+                          "Properties": {
+                              "backend": "desktop.auth.backend.LdapBackend"
+                          }
+                      },
+                      {
+                          "Classification": "ldap",
+                          "Properties": {
+                              "base_dn": event["ResourceProperties"]["LDAPGroupSearchBase"],
+                              "bind_dn": event["ResourceProperties"][
+                                             "LDAPBindUserName"] + '@' +
+                                         event["ResourceProperties"]["DomainDNSName"],
+                              "bind_password": event["ResourceProperties"][
+                                  "LDAPBindPassword"],
+                              "debug": "true",
+                              "force_username_lowercase": "true",
+                              "ignore_username_case": "true",
+                              "ldap_url": "ldap://" + event["ResourceProperties"][
+                                  "LDAPHostPrivateIP"],
+                              "ldap_username_pattern": "uid:<username>," +
+                                                       event["ResourceProperties"][
+                                                           "LDAPSearchBase"],
+                              "nt_domain": event["ResourceProperties"]["DomainDNSName"],
+                              "search_bind_authentication": "true",
+                              "trace_level": "0",
+                              "sync_groups_on_login": "true",
+                              "create_users_on_login": "true",
+                              "use_start_tls": "false"
+                          }
+                      }
+                  ]
+              }
+                ],
+                "Properties": {
+                }
+            })
+        else:
+            cluster_parameters['Configurations'].append(
+            {
+            "Classification": "hue-ini",
+            "Configurations": [
+              {
+                  "Classification": "notebook",
+                  "Properties": {
+                    "interpreters_shown_on_wheel": "hive"
+                  }
+              },
+              {
+                  "Classification": "desktop",
+                  "Configurations": [
+                      {
+                          "Classification": "auth",
+                          "Properties": {
+                              "backend": "desktop.auth.backend.LdapBackend"
+                          }
+                      },
+                      {
+                          "Classification": "ldap",
+                          "Properties": {
+                              "base_dn": event["ResourceProperties"]["LDAPGroupSearchBase"],
+                              "bind_dn": event["ResourceProperties"][
+                                             "LDAPBindUserName"] + '@' +
+                                         event["ResourceProperties"]["DomainDNSName"],
+                              "bind_password": event["ResourceProperties"][
+                                  "LDAPBindPassword"],
+                              "debug": "true",
+                              "force_username_lowercase": "true",
+                              "ignore_username_case": "true",
+                              "ldap_url": "ldap://" + event["ResourceProperties"][
+                                  "LDAPHostPrivateIP"],
+                              "ldap_username_pattern": "uid:<username>," +
+                                                       event["ResourceProperties"][
+                                                           "LDAPSearchBase"],
+                              "nt_domain": event["ResourceProperties"]["DomainDNSName"],
+                              "search_bind_authentication": "true",
+                              "trace_level": "0",
+                              "sync_groups_on_login": "true",
+                              "create_users_on_login": "true",
+                              "use_start_tls": "false"
+                          }
+                      }
+                  ]
+              }
+                ],
+                "Properties": {
+                }
+            })
+
+
         if emrVersion.split(".")[0] == '6' and emrVersion.split(".")[1] == '7':
             cluster_parameters['BootstrapActions'].append({
                 "Name": "Remove Yum Package Name Validator",
@@ -416,6 +490,36 @@ def create(event, context):
                                 "ProjectVersion"] + "/scripts/remove-yum-package-name-validator.sh"
                 }
             })
+
+        if emrVersion.split(".")[0] == '6' and emrVersion.split(".")[1] == '9':
+                    cluster_parameters['BootstrapActions'].append({
+                        "Name": "Fix Trino - Ranger EMR 6.9",
+                        "ScriptBootstrapAction": {
+                            "Path": "s3://" + event["ResourceProperties"]["S3Bucket"] + "/" +
+                                    event["ResourceProperties"][
+                                        "S3Key"] + "/" + event["ResourceProperties"][
+                                        "ProjectVersion"] + "/scripts/replace-trino-plugin-emr-6.9.0.sh",
+                            "Args": [
+                                  "s3://" + event["ResourceProperties"]["S3ArtifactBucket"] + "/" +
+                                  event["ResourceProperties"][
+                                      "S3ArtifactKey"] + "/" + event["ResourceProperties"][
+                                      "ProjectVersion"]
+                            ]
+                        }
+                    })
+
+        if emrVersion.split(".")[0] == '6' and (emrVersion.split(".")[1] in ['9','10'] ):
+            cluster_parameters['Steps'].append({
+                "Name": "Fix JDBC for Hue",
+                "ActionOnFailure": "CONTINUE",
+                "HadoopJarStep": {
+                    "Jar": scriptRunnerJar,
+                    "Args": [
+                        "/mnt/tmp/aws-blog-emr-ranger/scripts/emr-steps/replace_jdbc_hue.sh"
+                    ]
+                }
+            })
+
         if isTrinoAppRequested:
             cluster_parameters['Steps'].append({
                 "Name": "Trino-update-user-mapping",
